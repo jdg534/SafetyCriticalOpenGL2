@@ -11,5 +11,8 @@ set(artifact_library_header_directory ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL
 target_include_directories(artifact_library PRIVATE ${egl_header_directory})
 target_include_directories(artifact_library PRIVATE ${open_gl_sc_2_header_directory})
 
-target_include_directories(artifact_library PUBLIC ${GLFW_SOURCE_DIR})
+#target_include_directories(artifact_library PUBLIC ${GLFW_SOURCE_DIR})
 target_link_libraries(artifact_library PUBLIC glfw)
+
+# target_include_directories(artifact_library PUBLIC ${GLEW_DIR}/include)
+target_link_libraries(artifact_library PUBLIC glbinding)

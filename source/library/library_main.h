@@ -1,6 +1,8 @@
 #pragma once
 // HI C++ might not accept this.if so go to #ifndef #define #endif
 
+#include <glbinding/gl/gl.h>
+#include <glbinding/glbinding.h> // include order dependent... >:(
 #include <GLFW/glfw3.h>
 
 // class for 
@@ -13,7 +15,12 @@ public:
 private:
 
 	void initialise();
+	void initialise_shaders();
+
+
 	void shutdown();
+
+	GLuint m_vertex_buffer_object_id = 0, m_vertex_attribute_object_id = 0;
 
 	GLFWwindow* m_window { nullptr };
 };
