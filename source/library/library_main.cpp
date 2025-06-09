@@ -1,9 +1,8 @@
 #include "library_main.h"
 
-#include <iostream>
-
 #include <gl2platform.h>
 
+#include <iostream>
 #include <exception>
 
 
@@ -73,6 +72,10 @@ void library_main::initialise()
 	m_window = glfwCreateWindow(800, 600, "A window", nullptr, nullptr);
 	if (m_window == nullptr)
 	{
+		const char* error_str[256];
+		error_str[0] = '\0';
+		const int error_code = glfwGetError(error_str);
+		std::cerr << "glfwCreateWindow() failed: " << *error_str << std::endl;
 		throw std::exception("glfwCreateWindow() failed");
 	}
 	glfwMakeContextCurrent(m_window);
