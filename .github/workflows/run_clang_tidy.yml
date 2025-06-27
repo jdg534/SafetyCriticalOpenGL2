@@ -5,7 +5,7 @@ on:
         paths:
             - 'source/**'
             - '.clang-tidy'
-            - '.github/workflows/clang-tidy.yml'
+            - '.github/workflows/run_clang_tidy.yml'
     pull_request:
         paths:
             - 'source/**'
