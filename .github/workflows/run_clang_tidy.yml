@@ -24,7 +24,10 @@ jobs:
               with:
                 submodules: true 
             - run: sudo apt update
-            - run: sudo apt install -y clang-tidy cmake g++ ninja-build libwayland-dev
+            - name: Get general build tools.
+              run: sudo apt install -y clang-tidy cmake g++ ninja-build
+            - name: Get build tools for dependencies.
+              run: sudo apt install -y libwayland-dev libxkbcommon-dev
             - run: pwd
             - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
             - run: |
