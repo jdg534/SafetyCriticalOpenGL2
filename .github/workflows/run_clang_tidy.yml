@@ -17,6 +17,7 @@ jobs:
         steps:
             - run: sudo apt update
             - run: sudo apt install -y clang-tidy cmake g++ ninja-build
+            - run: git submodule update --init
             - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
             - run: |
                 find source \( -name "*.cpp" -o -name "*.h" -o \) \
