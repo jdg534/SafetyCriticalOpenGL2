@@ -27,7 +27,7 @@ jobs:
             - name: Get general build tools.
               run: sudo apt install -y clang-tidy cmake g++ ninja-build
             - name: Get build tools for dependencies.
-              run: sudo apt install -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev
+              run: sudo apt install -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev
             - run: pwd
             - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
             - run: |
