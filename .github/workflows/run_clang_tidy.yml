@@ -31,5 +31,5 @@ jobs:
             - run: pwd
             - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
             - run: |
-                find source \( -name "*.cpp" -o -name "*.h" -o \) \
-                | xargs -I{} clang-tidy {} -p build
+                find source/ -name '*.cpp' -o -name '*.h' |
+                xargs -I{} clang-tidy {} -p build
