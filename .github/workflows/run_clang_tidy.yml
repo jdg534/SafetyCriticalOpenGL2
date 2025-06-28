@@ -12,12 +12,12 @@ on:
             - '.clang-tidy'
 
 jobs:
-    defaults:
-        run:
-            shell: bash
-            working-directory: ./
     clang-tidy:
         runs-on: ubuntu-latest
+        defaults:
+            run:
+                shell: bash
+                working-directory: ./
         steps:
             - run: sudo apt update
             - run: sudo apt install -y clang-tidy cmake g++ ninja-build
