@@ -24,7 +24,7 @@ jobs:
               with:
                 submodules: true 
             - run: sudo apt update
-            - run: sudo apt install -y clang-tidy cmake g++ ninja-build wayland
+            - run: sudo apt install -y clang-tidy cmake g++ ninja-build libwayland-dev
             - run: pwd
             - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
             - run: |
