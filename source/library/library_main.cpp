@@ -88,12 +88,23 @@ void library_main::initialise_shaders()
 
 }
 
+void library_main::initialise_object_buffers()
+{
+
+}
+
 void library_main::shutdown()
 {
+	shutdown_shaders();
 	if (m_window)
 	{
 		glfwDestroyWindow(m_window);
 		m_window = nullptr;
 	}
 	glfwTerminate();
+}
+
+void library_main::shutdown_shaders()
+{
+
 }

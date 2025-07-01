@@ -16,9 +16,12 @@ private:
 
 	void initialise();
 	void initialise_shaders();
-
+	void initialise_object_buffers();
 
 	void shutdown();
+	void shutdown_shaders();
+	void shutdown_object_buffers();
+
 
 	GLuint m_vertex_buffer_object_id = 0, m_vertex_attribute_object_id = 0;
 
