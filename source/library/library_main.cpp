@@ -79,6 +79,7 @@ void library_main::initialise()
 		throw std::exception("glfwCreateWindow() failed");
 	}
 	glfwMakeContextCurrent(m_window);
+	glbinding::initialize(glfwGetProcAddress);
 	initialise_shaders();
 }
 
