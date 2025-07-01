@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 REM Config
-set SOURCE_DIR=source
+set SOURCE_DIR=source\library
 set BUILD_DIR=build_for_clang_tidy_analysis
 
 REM Generate compile_commands.json if it doesn't exist

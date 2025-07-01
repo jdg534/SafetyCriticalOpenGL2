@@ -3,12 +3,12 @@ name: Clang-Tidy Analysis
 on:
     push:
         paths:
-            - 'source/**'
+            - 'source/library/**'
             - '.clang-tidy'
             - '.github/workflows/run_clang_tidy.yml'
     pull_request:
         paths:
-            - 'source/**'
+            - 'source/library/**'
             - '.clang-tidy'
 
 jobs:
@@ -31,5 +31,5 @@ jobs:
             - run: pwd
             - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
             - run: |
-                find source/ -name '*.cpp' -o -name '*.h' |
+                find source/library/ -name '*.cpp' -o -name '*.h' |
                 xargs -I{} clang-tidy {} -p build

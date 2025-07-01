@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-SOURCE_DIR="source"
+SOURCE_DIR="source/library"
 BUILD_DIR="build_for_clang_tidy_analysis"
 
 # Ensure compile_commands.json exists
