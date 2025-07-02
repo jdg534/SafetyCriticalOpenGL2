@@ -1,7 +1,10 @@
 #include "library_main.h"
 
-#include <gl2platform.h>
-// #include <glbinding/gl/functions.h>
+#define GLFW_INCLUDE_NONE // Prevents GLFW from including OpenGL headers
+#include <GLFW/glfw3.h>
+#include <glbinding/gl/gl.h>
+#include <glbinding/glbinding.h> // include order dependent... >:( TODO: add a include_opengl.h
+//#include <gl2platform.h>
 
 #include <iostream>
 #include <exception>
@@ -35,11 +38,11 @@ constexpr float VERTICES[] = {
 		 0.5f, -0.5f
 };
 
-GLuint compile_shader(gl::GLenum type, const char* src) {
-	GLuint s = gl::glCreateShader(type);
+gl::GLuint compile_shader(gl::GLenum type, const char* src) {
+	gl::GLuint s = gl::glCreateShader(type);
 	gl::glShaderSource(s, 1, &src, nullptr);
 	gl::glCompileShader(s);
-	GLint ok = 0;
+	gl::GLint ok = 0;
 	gl::glGetShaderiv(s, gl::GL_COMPILE_STATUS, &ok);
 	if (!ok)
 	{
@@ -52,13 +55,13 @@ GLuint compile_shader(gl::GLenum type, const char* src) {
 	return s;
 }
 
-GLuint link_shaders_to_program(GLuint vertex_shader_id, GLuint fragment_shader_id)
+gl::GLuint link_shaders_to_program(gl::GLuint vertex_shader_id, gl::GLuint fragment_shader_id)
 {
-	GLuint p = gl::glCreateProgram();
+	gl::GLuint p = gl::glCreateProgram();
 	gl::glAttachShader(p, vertex_shader_id);
 	gl::glAttachShader(p, fragment_shader_id);
 	gl::glLinkProgram(p);
-	GLint ok = 0;
+	gl::GLint ok = 0;
 	gl::glGetProgramiv(p, gl::GL_LINK_STATUS, &ok);
 	if (!ok)
 	{
@@ -87,7 +90,14 @@ void library_main::run()
 		running_time += delta_time;
 		angle += speed * delta_time;
 
+		gl::glClearColor(0.1f, 0.05f, 0.2f, 1.0f);
+		gl::glClear(gl::GL_COLOR_BUFFER_BIT);
 
+		gl::glUseProgram(shader_program_id);
+		gl::GLint angle_loc = gl::glGetUniformLocation(shader_program_id, "angle");
+		gl::glUniform1f(angle_loc, angle);
+		gl::glBindVertexArray(m_vertex_arrary_object_id);
+		gl::glDrawArrays(gl::GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
@@ -132,7 +142,14 @@ void library_main::initialise_shaders()
 
 void library_main::initialise_object_buffers()
 {
+	gl::glGenVertexArrays(1, &m_vertex_arrary_object_id);
+	gl::glGenBuffers(1, &m_vertex_buffer_object_id);
 
+	gl::glBindVertexArray(m_vertex_arrary_object_id);
+	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, m_vertex_buffer_object_id);
+	gl::glBufferData(gl::GL_ARRAY_BUFFER, sizeof(VERTICES), VERTICES, gl::GL_STATIC_DRAW); // refactor!
+	gl::glVertexAttribPointer(0, 2, gl::GL_FLOAT, gl::GL_FALSE, 2 * sizeof(float), nullptr);
+	gl::glEnableVertexAttribArray(0);
 }
 
 void library_main::shutdown()
@@ -156,5 +173,6 @@ void library_main::shutdown_shaders()
 
 void library_main::shutdown_object_buffers()
 {
-
+	gl::glDeleteBuffers(1, &m_vertex_buffer_object_id);
+	gl::glDeleteVertexArrays(1, &m_vertex_arrary_object_id);
 }
