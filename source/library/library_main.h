@@ -1,7 +1,7 @@
 #pragma once
 // HI C++ might not accept this.if so go to #ifndef #define #endif
 
-#include <glbinding\gl\types.h>
+#include <glbinding/gl/types.h>
 
 struct GLFWwindow;
 
