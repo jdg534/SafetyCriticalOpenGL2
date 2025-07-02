@@ -1,10 +1,8 @@
 #pragma once
 
-struct GLFWwindow;
-
+#include "render/include_opengl.h"
 #include "render/renderer.h"
 
-// class for 
 class library_main
 {
 public:

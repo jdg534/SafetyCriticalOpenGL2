@@ -1,12 +1,7 @@
 #pragma once
 
-// start of stuff to put in include_opengl.h
-#define GLFW_INCLUDE_NONE // Prevents GLFW from including OpenGL headers
-#include <GLFW/glfw3.h>
-#include <glbinding/gl/gl.h>
-#include <glbinding/glbinding.h> // include order dependent... >:( TODO: add a include_opengl.h
-//#include <gl2platform.h>
-// end of stuff to put in include_opengl.h
+#include "include_opengl.h"
+
 #include <glbinding/gl/types.h>
 
 class renderer
