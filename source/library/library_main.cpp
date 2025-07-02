@@ -1,13 +1,15 @@
 #include "library_main.h"
 
 #include <gl2platform.h>
+// #include <glbinding/gl/functions.h>
 
 #include <iostream>
 #include <exception>
 
 
 static constexpr char* VERTEX_SHADER = R"(
-#version 330 core // TODO get this to be OpenGL SC 2.0 complient, GPT4 generated.
+#version 330 core
+// TODO get this to be OpenGL SC 2.0 complient, GPT4 generated.
 layout (location = 0) in vec2 aPos;
 uniform float angle;
 void main() {
@@ -19,7 +21,8 @@ void main() {
 )";
 
 static constexpr char* FRAGMENT_SHADER = R"(
-#version 330 core // TODO get this to be OpenGL SC 2.0 complient, GPT4 generated.
+#version 330 core
+// TODO get this to be OpenGL SC 2.0 complient, GPT4 generated.
 out vec4 FragColor;
 void main() {
     FragColor = vec4(1.0, 0.5, 0.2, 1.0);
@@ -31,6 +34,42 @@ constexpr float VERTICES[] = {
 		-0.5f, -0.5f,
 		 0.5f, -0.5f
 };
+
+GLuint compile_shader(gl::GLenum type, const char* src) {
+	GLuint s = gl::glCreateShader(type);
+	gl::glShaderSource(s, 1, &src, nullptr);
+	gl::glCompileShader(s);
+	GLint ok = 0;
+	gl::glGetShaderiv(s, gl::GL_COMPILE_STATUS, &ok);
+	if (!ok)
+	{
+		char log[512];
+		std::memset(log, 0, 512);
+		gl::glGetShaderInfoLog(s, 512, nullptr, log);
+		std::cerr << "Shader compile error:\n" << log << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+	return s;
+}
+
+GLuint link_shaders_to_program(GLuint vertex_shader_id, GLuint fragment_shader_id)
+{
+	GLuint p = gl::glCreateProgram();
+	gl::glAttachShader(p, vertex_shader_id);
+	gl::glAttachShader(p, fragment_shader_id);
+	gl::glLinkProgram(p);
+	GLint ok = 0;
+	gl::glGetProgramiv(p, gl::GL_LINK_STATUS, &ok);
+	if (!ok)
+	{
+		char log[512];
+		std::memset(log, 0, 512);
+		gl::glGetProgramInfoLog(p, 512, nullptr, log);
+		std::cerr << "Program link error:\n" << log << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+	return p;
+}
 
 // public
 /////////
@@ -81,11 +120,14 @@ void library_main::initialise()
 	glfwMakeContextCurrent(m_window);
 	glbinding::initialize(glfwGetProcAddress);
 	initialise_shaders();
+	initialise_object_buffers();
 }
 
 void library_main::initialise_shaders()
 {
-
+	m_vertex_shader_object_id = compile_shader(gl::GL_VERTEX_SHADER, VERTEX_SHADER);
+	m_fragment_shader_id = compile_shader(gl::GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
+	shader_program_id = link_shaders_to_program(m_vertex_shader_object_id, m_fragment_shader_id);
 }
 
 void library_main::initialise_object_buffers()
@@ -95,6 +137,7 @@ void library_main::initialise_object_buffers()
 
 void library_main::shutdown()
 {
+	shutdown_object_buffers();
 	shutdown_shaders();
 	if (m_window)
 	{
@@ -105,6 +148,13 @@ void library_main::shutdown()
 }
 
 void library_main::shutdown_shaders()
+{
+	gl::glDeleteShader(m_vertex_shader_object_id);
+	gl::glDeleteShader(m_fragment_shader_id);
+	gl::glDeleteProgram(shader_program_id);
+}
+
+void library_main::shutdown_object_buffers()
 {
 
 }
