@@ -30,6 +30,8 @@ jobs:
               run: sudo apt install -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
             - run: pwd
             - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
+            - name: check compile_commands.json
+              run: cat build/compile_commands.json
             - run: |
                 find source/library/ -name '*.cpp' -o -name '*.h' |
                 xargs -I{} clang-tidy {} -p build
