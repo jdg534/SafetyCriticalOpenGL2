@@ -16,3 +16,8 @@ target_link_libraries(artifact_library PUBLIC glfw)
 
 # target_include_directories(artifact_library PUBLIC ${GLEW_DIR}/include)
 target_link_libraries(artifact_library PUBLIC glbinding)
+
+# rapid json
+target_include_directories(artifact_library PRIVATE ${rapidjson_header_directory})
+target_link_libraries(artifact_library PUBLIC RapidJSON)
+
