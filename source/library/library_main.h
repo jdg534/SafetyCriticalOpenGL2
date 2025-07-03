@@ -12,7 +12,7 @@ public:
 private:
 
 	void initialise();
-
+	GLFWwindow* initialise_window();
 	void shutdown();
 
 	GLFWwindow* m_window { nullptr };

@@ -1,11 +1,15 @@
 #include "library_main.h"
 
 #include "render/renderer.h"
-
 #include "render/include_opengl.h"
 
+#include <fstream>
+#include <sstream>
 #include <iostream>
 #include <exception>
+#include <string>
+
+#include <rapidjson/document.h>
 
 // public
 /////////
@@ -34,12 +38,56 @@ void library_main::initialise()
 	{
 		throw std::exception("glfwInit() failed");
 	}
+	m_window = initialise_window();
+	glfwMakeContextCurrent(m_window);
+	glbinding::initialize(glfwGetProcAddress);
+	m_renderer = new renderer(m_window);
+	m_renderer->initialise();
+}
+
+GLFWwindow* library_main::initialise_window()
+{
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // todo figure out correct values of SC 2.0
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // ''
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // ''
 
-	m_window = glfwCreateWindow(800, 600, "A window", nullptr, nullptr);
-	if (m_window == nullptr)
+	int window_width = 800;
+	int window_height = 600;
+	std::string window_title = "A window";
+
+	// refactor to std::filesystem::exists("assets/window_settings.json") force C++17
+	std::ifstream window_settings_file("assets/window_settings.json");
+	if (window_settings_file.good())
+	{
+		std::stringstream buffer;
+		buffer << window_settings_file.rdbuf();
+		std::string json_str = buffer.str();
+
+		rapidjson::Document doc;
+		if (doc.Parse(json_str.c_str()).HasParseError()) {
+			std::cerr << "JSON parse error\n";
+			return nullptr;
+		}
+		window_settings_file.close();
+		buffer.clear();
+		json_str.clear();
+
+		if (doc.HasMember("title") && doc["title"].IsString())
+		{
+			window_title = doc["title"].GetString();
+		}
+		if (doc.HasMember("width") && doc["width"].IsInt())
+		{
+			window_width = doc["width"].GetInt();
+		}
+		if (doc.HasMember("height") && doc["height"].IsInt())
+		{
+			window_height = doc["height"].GetInt();
+		}
+	}
+	
+	GLFWwindow* results = glfwCreateWindow(window_width, window_height, window_title.c_str(), nullptr, nullptr);
+	if (results == nullptr)
 	{
 		const char* error_str[256];
 		error_str[0] = '\0';
@@ -47,10 +95,7 @@ void library_main::initialise()
 		std::cerr << "glfwCreateWindow() failed: " << *error_str << std::endl;
 		throw std::exception("glfwCreateWindow() failed");
 	}
-	glfwMakeContextCurrent(m_window);
-	glbinding::initialize(glfwGetProcAddress);
-	m_renderer = new renderer(m_window);
-	m_renderer->initialise();
+	return results;
 }
 
 void library_main::shutdown()
