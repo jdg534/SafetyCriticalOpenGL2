@@ -28,5 +28,5 @@ private:
 	gl::GLuint m_vertex_shader_object_id = 0, m_fragment_shader_id = 0, shader_program_id = 0;
 	gl::GLuint m_vertex_arrary_object_id = 0, m_vertex_buffer_object_id = 0, m_vertex_attribute_object_id = 0;
 
-	const GLFWwindow* m_window { nullptr };
+	const GLFWwindow* m_window { nullptr }; // todo change to weak pointer.
 };
