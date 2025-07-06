@@ -17,6 +17,7 @@ target_link_libraries(artifact_library PUBLIC glfw)
 # target_include_directories(artifact_library PUBLIC ${GLEW_DIR}/include)
 target_link_libraries(artifact_library PUBLIC glbinding)
 
-# rapid json
-target_include_directories(artifact_library PRIVATE ${rapidjson_header_directory})
+# vcpkg acquired dependencies.
+target_link_libraries(artifact_library PRIVATE PNG::PNG)
+target_link_libraries(artifact_library PRIVATE ZLIB::ZLIB)
 target_link_libraries(artifact_library PUBLIC RapidJSON)

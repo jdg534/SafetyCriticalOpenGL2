@@ -10,9 +10,6 @@
 [submodule "submodules/glbinding"]
 	path = submodules/glbinding
 	url = https://github.com/cginternals/glbinding.git
-[submodule "submodules/rapidjson"]
-	path = submodules/rapidjson
-	url = https://github.com/Tencent/rapidjson.git
 [submodule "submodules/vcpkg"]
 	path = submodules/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
