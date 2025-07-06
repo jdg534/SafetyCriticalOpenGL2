@@ -1,0 +1,9 @@
+{
+  "name": "SafetyCriticalOpenGL2",
+  "version": "0.1.0",
+  "dependencies": [
+    "zlib",
+    "libpng",
+    "rapidjson"
+  ]
+}
