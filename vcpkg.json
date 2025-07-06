@@ -1,5 +1,5 @@
 {
-  "name": "SafetyCriticalOpenGL2",
+  "name": "safety-critical-opengl-2",
   "dependencies":
   [
     "zlib",
