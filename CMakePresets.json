@@ -1,20 +1,35 @@
 {
   "version": 5,
-  "cmakeMinimumRequired": {
+  "cmakeMinimumRequired":
+  {
     "major": 3,
     "minor": 21
   },
-  "configurePresets": [
-    {
-      "name": "windows-static",
-      "displayName": "Windows (x64 static)",
-      "description": "Build using vcpkg static triplet on Windows",
-      "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-static"
-      }
-    }
+  "configurePresets":
+  [
+	{
+		"name": "windows-static",
+		"displayName": "Windows (x64 static)",
+		"description": "Build using vcpkg static triplet on Windows",
+		"generator": "Visual Studio 17 2022",
+		"binaryDir": "${sourceDir}/build",
+		"cacheVariables":
+		{
+			"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"VCPKG_TARGET_TRIPLET": "x64-windows-static"
+		}
+	},
+	{
+		"name": "linux-static",
+		"displayName": "Linux x64",
+		"description": "Build using vcpkg static triplet on Linux",
+		"generator": "Unix Makefiles",
+		"binaryDir": "${sourceDir}/build",
+		"cacheVariables": 
+		{
+			"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"VCPKG_TARGET_TRIPLET": "x64-linux"
+		}
+	}
   ]
 }
