@@ -28,8 +28,9 @@ jobs:
               run: sudo apt install -y clang-tidy cmake g++ ninja-build
             - name: Get build tools for dependencies.
               run: sudo apt install -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
-            - run: pwd
-            - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
+            - run: git submodule update --init --recursive
+            # vcpkg install zlib libpng rapidjson ?
+            - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset=linux-static
             - name: check compile_commands.json
               run: cat build/compile_commands.json
             - run: |
