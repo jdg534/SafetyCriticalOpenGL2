@@ -4,6 +4,7 @@
   [
     "zlib",
     "libpng",
-    "rapidjson"
+    "rapidjson",
+    "assimp"
   ]
 }

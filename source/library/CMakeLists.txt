@@ -21,3 +21,5 @@ target_link_libraries(artifact_library PUBLIC glbinding)
 target_link_libraries(artifact_library PRIVATE PNG::PNG)
 target_link_libraries(artifact_library PRIVATE ZLIB::ZLIB)
 target_link_libraries(artifact_library PUBLIC RapidJSON)
+target_link_libraries(artifact_library PUBLIC assimp::assimp)
+

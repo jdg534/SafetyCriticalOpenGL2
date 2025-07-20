@@ -5,6 +5,7 @@ project(OpenGl_SC_Playground)
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 add_subdirectory(third_party_code)
 add_subdirectory(submodules)
