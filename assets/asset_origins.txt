@@ -1,0 +1,5 @@
+This file is for keeping a list of all files and their origin.
+It shouldn't be used for any functionality with the artifact executable.
+
+file, author, origin
+noto_sans_sc.png,Josh Gibson,made in paint.net

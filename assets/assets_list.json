@@ -1,0 +1,10 @@
+{
+	"assets" :
+	[
+		{
+			"name": "font_texture",
+			"type": "texture",
+			"path": "noto_sans_sc.png",
+		}
+	]
+}
