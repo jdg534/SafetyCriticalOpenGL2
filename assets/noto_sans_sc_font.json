@@ -10,1051 +10,840 @@
 			"character": "a",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 18, "width": 11
 			}
 		},
 		{
 			"character": "b",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 33, "width": 11
 			}
 		},
 		{
 			"character": "c",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 47, "width": 10
 			}
 		},
 		{
 			"character": "d",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 58, "width": 12
 			}
 		},
 		{
 			"character": "e",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 73, "width": 11
 			}
 		},
 		{
 			"character": "f",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 86, "width": 7
 			}
 		},
 		{
 			"character": "g",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 94, "width": 12
 			}
 		},
 		{
 			"character": "h",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 108, "width": 11
 			}
 		},
 		{
 			"character": "i",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 122, "width": 3
 			}
 		},
 		{
 			"character": "j",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 126, "width": 6
 			}
 		},
 		{
 			"character": "k",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 136, "width": 10
 			}
 		},
 		{
 			"character": "l",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 146, "width": 4
 			}
 		},
 		{
 			"character": "m",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 156, "width": 18
 			}
 		},
 		{
 			"character": "n",
 			"source_rectangle":
 			{
-				"top": 17,
-				"bottom": 42,
-				"left": 10,
-				"right": 20
+				"top": 17, "height": 23,
+				"left": 178, "width": 11
 			}
 		},
 		{
 			"character": "o",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 18, "width": 12
 			}
 		},
 		{
 			"character": "p",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 34, "width": 11
 			}
 		},
 		{
 			"character": "q",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 48, "width": 11
 			}
 		},
 		{
 			"character": "r",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 63, "width": 8
 			}
 		},
 		{
 			"character": "s",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 71, "width": 10
 			}
 		},
 		{
 			"character": "t",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 82, "width": 8
 			}
 		},
 		{
 			"character": "u",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 92, "width": 11
 			}
 		},
 		{
 			"character": "v",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 105, "width": 12
 			}
 		},
 		{
 			"character": "w",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 118, "width": 18
 			}
 		},
 		{
 			"character": "x",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 137, "width": 11
 			}
 		},
 		{
 			"character": "y",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 149, "width": 11
 			}
 		},
 		{
 			"character": "z",
 			"source_rectangle":
 			{
-				"top": 54,
-				"bottom": 77,
-				"left": 10,
-				"right": 20
+				"top": 54, "height": 23,
+				"left": 161, "width": 10
 			}
 		},
 		{
 			"character": "á",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 162, "width": 11
 			}
 		},
 		{
 			"character": "é",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 176, "width": 11
 			}
 		},
 		{
 			"character": "í",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 190, "width": 5
 			}
 		},
 		{
 			"character": "ó",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 196, "width": 12
 			}
 		},
 		{
 			"character": "ú",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 211, "width": 10
 			}
 		},
 		{
 			"character": "A",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 17, "width": 14
 			}
 		},
 		{
 			"character": "B",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 34, "width": 12
 			}
 		},
 		{
 			"character": "C",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 49, "width": 13
 			}
 		},
 		{
 			"character": "D",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 65, "width": 13
 			}
 		},
 		{
 			"character": "E",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 82, "width": 10
 			}
 		},
 		{
 			"character": "F",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 96, "width": 10
 			}
 		},
 		{
 			"character": "G",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 108, "width": 13
 			}
 		},
 		{
 			"character": "H",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 125, "width": 13
 			}
 		},
 		{
 			"character": "I",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 143, "width": 2
 			}
 		},
 		{
 			"character": "J",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 148, "width": 10
 			}
 		},
 		{
 			"character": "K",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 162, "width": 13
 			}
 		},
 		{
 			"character": "L",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 178, "width": 10
 			}
 		},
 		{
 			"character": "M",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 191, "width": 15
 			}
 		},
 		{
 			"character": "N",
 			"source_rectangle":
 			{
-				"top": 88,
-				"bottom": 111,
-				"left": 10,
-				"right": 20
+				"top": 88, "height": 23,
+				"left": 210, "width": 13
 			}
 		},
 		{
 			"character": "O",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 210, "width": 13
 			}
 		},
 		{
 			"character": "P",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 37, "width": 12
 			}
 		},
 		{
 			"character": "Q",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 51, "width": 16
 			}
 		},
 		{
 			"character": "R",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 70, "width": 12
 			}
 		},
 		{
 			"character": "S",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 84, "width": 12
 			}
 		},
 		{
 			"character": "T",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 97, "width": 13
 			}
 		},
 		{
 			"character": "U",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 113, "width": 13
 			}
 		},
 		{
 			"character": "V",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 128, "width": 13
 			}
 		},
 		{
 			"character": "W",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 141, "width": 21
 			}
 		},
 		{
 			"character": "X",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 163, "width": 13
 			}
 		},
 		{
 			"character": "Y",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 177, "width": 12
 			}
 		},
 		{
 			"character": "Z",
 			"source_rectangle":
 			{
-				"top": 121,
-				"bottom": 144,
-				"left": 10,
-				"right": 20
+				"top": 121, "height": 23,
+				"left": 190, "width": 12
 			}
 		},
 		{
 			"character": "Á",
 			"source_rectangle":
 			{
-				"top": 48,
-				"bottom": 71,
-				"left": 10,
-				"right": 20
+				"top": 48, "height": 23,
+				"left": 181, "width": 14
 			}
 		},
 		{
 			"character": "É",
 			"source_rectangle":
 			{
-				"top": 48,
-				"bottom": 71,
-				"left": 10,
-				"right": 20
+				"top": 48, "height": 23,
+				"left": 198, "width": 10
 			}
 		},
 		{
 			"character": "Í",
 			"source_rectangle":
 			{
-				"top": 48,
-				"bottom": 71,
-				"left": 10,
-				"right": 20
+				"top": 48, "height": 23,
+				"left": 212, "width": 5
 			}
 		},
 		{
 			"character": "Ó",
 			"source_rectangle":
 			{
-				"top": 48,
-				"bottom": 71,
-				"left": 10,
-				"right": 20
+				"top": 48, "height": 23,
+				"left": 218, "width": 15
 			}
 		},
 		{
 			"character": "Ú",
 			"source_rectangle":
 			{
-				"top": 48,
-				"bottom": 71,
-				"left": 10,
-				"right": 20
+				"top": 48, "height": 23,
+				"left": 237, "width": 13
 			}
 		},
 		{
 			"character": "0",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 18, "width": 11
 			}
 		},
 		{
 			"character": "1",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 32, "width": 10
 			}
 		},
 		{
 			"character": "2",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 45, "width": 11
 			}
 		},
 		{
 			"character": "3",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 58, "width": 11
 			}
 		},
 		{
 			"character": "4",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 71, "width": 12
 			}
 		},
 		{
 			"character": "5",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 85, "width": 11
 			}
 		},
 		{
 			"character": "6",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 10, "width": 20
 			}
 		},
 		{
 			"character": "7",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 111, "width": 11
 			}
 		},
 		{
 			"character": "8",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 125, "width": 11
 			}
 		},
 		{
 			"character": "9",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 138, "width": 11
 			}
 		},
 		{
 			"character": "+",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 151, "width": 12
 			}
 		},
 		{
 			"character": "-",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 165, "width": 6
 			}
 		},
 		{
 			"character": "=",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 173, "width": 11
 			}
 		},
 		{
 			"character": "/",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 186, "width": 8
 			}
 		},
 		{
 			"character": "*",
 			"source_rectangle":
 			{
-				"top": 153,
-				"bottom": 176,
-				"left": 10,
-				"right": 20
+				"top": 153, "height": 23,
+				"left": 196, "width": 8
 			}
 		},
 		{
 			"character": "<",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 18, "width": 12
 			}
 		},
 		{
 			"character": ">",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 31, "width": 12
 			}
 		},
 		{
 			"character": "{",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 44, "width": 7
 			}
 		},
 		{
 			"character": "}",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 52, "width": 7
 			}
 		},
 		{
 			"character": "(",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 62, "width": 5
 			}
 		},
 		{
 			"character": ")",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 69, "width": 5
 			}
 		},
 		{
 			"character": "[",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 79, "width": 4
 			}
 		},
 		{
 			"character": "]",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 85, "width": 5
 			}
 		},
 		{
 			"character": ".",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 94, "width": 3
 			}
 		},
 		{
 			"character": ",",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 100, "width": 4
 			}
 		},
 		{
 			"character": ";",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 107, "width": 4
 			}
 		},
 		{
 			"character": "?",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 114, "width": 8
 			}
 		},
 		{
 			"character": "~",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 125, "width": 11
 			}
 		},
 		{
 			"character": "#",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 138, "width": 12
 			}
 		},
 		{
 			"character": "'",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 152, "width": 3
 			}
 		},
 		{
 			"character": "@",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 158, "width": 20
 			}
 		},
 		{
 			"character": ":",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 188, "width": 3
 			}
 		},
 		{
 			"character": "\\",
 			"source_rectangle":
 			{
-				"top": 202,
-				"bottom": 225,
-				"left": 10,
-				"right": 20
+				"top": 202, "height": 23,
+				"left": 193, "width": 9
 			}
 		},
 		{
 			"character": "`",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 21, "width": 5
 			}
 		},
 		{
 			"character": "!",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 34, "width": 3
 			}
 		},
 		{
 			"character": "\"",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 49, "width": 7
 			}
 		},
 		{
 			"character": "£",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 60, "width": 11
 			}
 		},
 		{
 			"character": "$",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 73, "width": 10
 			}
 		},
 		{
 			"character": "%",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 86, "width": 20
 			}
 		},
 		{
 			"character": "^",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 109, "width": 10
 			}
 		},
 		{
 			"character": "&",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 121, "width": 15
 			}
 		},
 		{
 			"character": "|",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 150, "width": 2
 			}
 		},
 		{
 			"character": "¦",
 			"source_rectangle":
 			{
-				"top": 224,
-				"bottom": 247,
-				"bottom": 247,
-				"left": 10,
-				"right": 20
+				"top": 224, "height": 23,
+				"left": 157, "width": 2
 			}
 		}
 	],
