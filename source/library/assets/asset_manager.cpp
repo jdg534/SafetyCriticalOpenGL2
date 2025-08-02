@@ -33,10 +33,6 @@ void asset_manager::initialise(const std::string& assets_list_file_path)
 	m_assets.resize(num_assets);
 	for (int i = 0; i < num_assets; ++i)
 	{
-		//"name": "string"
-		//"type" : "string"
-		//"path" : "string"
-
 		if (!assets_entries[i].HasMember("name")
 		|| !assets_entries[i].HasMember("type")
 		|| !assets_entries[i].HasMember("path"))
@@ -59,8 +55,51 @@ void asset_manager::shutdown()
 	m_assets.clear();
 }
 
+asset_type asset_manager::to_type(const std::string& s)
+{
+	if (s == "texture") return asset_type::texture;
+	if (s == "font") return asset_type::font;
+	if (s == "static_model") return asset_type::static_model;
+	if (s == "rigged_model") return asset_type::rigged_model;
+	if (s == "materials") return asset_type::materials;
+	return asset_type::invalid;
+}
+
 asset* asset_manager::load_asset(const std::string& name, const std::string& type, const std::string& path)
 {
-	throw "Code ME!";
+	switch (to_type(type))
+	{
+		case asset_type::texture: return load_texture(name, path);
+		case asset_type::font: return load_font(name, path);
+		case asset_type::static_model: return load_static_model(name, path);
+		case asset_type::rigged_model: return load_rigged_model(name, path);
+		case asset_type::materials: return load_materials(name, path);
+		default: throw std::exception("asset type not recognised"); break;
+	}
 	return nullptr;
+}
+
+asset* asset_manager::load_texture(const std::string& name, const std::string& path)
+{
+	throw std::exception(__func__);
+}
+
+asset* asset_manager::load_font(const std::string& name, const std::string& path)
+{
+	throw std::exception(__func__);
+}
+
+asset* asset_manager::load_static_model(const std::string& name, const std::string& path)
+{
+	throw std::exception(__func__);
+}
+
+asset* asset_manager::load_rigged_model(const std::string& name, const std::string& path)
+{
+	throw std::exception(__func__);
+}
+
+asset* asset_manager::load_materials(const std::string& name, const std::string& path)
+{
+	throw std::exception(__func__);
 }
