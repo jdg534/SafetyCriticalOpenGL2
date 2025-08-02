@@ -2,6 +2,7 @@
 
 #include "render/include_opengl.h"
 #include "render/renderer.h"
+#include "assets/asset_manager.h"
 
 class library_main
 {
@@ -17,5 +18,6 @@ private:
 
 	GLFWwindow* m_window { nullptr };
 	renderer* m_renderer { nullptr };
+	asset_manager* m_asset_manager { nullptr };
 };
 

@@ -43,6 +43,13 @@ void library_main::initialise()
 	glbinding::initialize(glfwGetProcAddress);
 	m_renderer = new renderer(m_window);
 	m_renderer->initialise();
+
+	m_asset_manager = new asset_manager();
+	m_asset_manager->initialise("assets/assets_list.json");
+
+	// todo: any setup for objects that are to be used defining stuff to render.
+
+	// todo: any exposing stuff to the renderer (draw lists)
 }
 
 GLFWwindow* library_main::initialise_window()
@@ -50,6 +57,7 @@ GLFWwindow* library_main::initialise_window()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // todo figure out correct values of SC 2.0
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // ''
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // ''
+	// GLFW_ANGLE_PLATFORM_TYPE_OPENGLES, look into this.
 
 	int window_width = 800;
 	int window_height = 600;
@@ -100,6 +108,12 @@ GLFWwindow* library_main::initialise_window()
 
 void library_main::shutdown()
 {
+	if (m_asset_manager)
+	{
+		m_asset_manager->shutdown();
+		delete m_asset_manager;
+		m_asset_manager = nullptr;
+	}
 	if (m_renderer)
 	{
 		m_renderer->shutdown();

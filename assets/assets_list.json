@@ -1,10 +1,16 @@
 {
+	"assets_path": "assets",
 	"assets" :
 	[
 		{
 			"name": "font_texture",
 			"type": "texture",
-			"path": "noto_sans_sc.png",
+			"path": "noto_sans_sc.png"
+		},
+		{
+			"name": "font",
+			"type": "font_definition",
+			"path": "noto_sans_sc_font.json"
 		}
 	]
 }
