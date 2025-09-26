@@ -1,6 +1,6 @@
 {
 	"name": "noto_sans",
-	"atlas_path": "noto_sans_sc.png",
+	"atlas_asset_name": "font_texture",
 	"width": 256,
 	"height": 256,
 	"default_spacing": 10,

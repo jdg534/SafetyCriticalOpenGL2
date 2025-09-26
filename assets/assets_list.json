@@ -9,7 +9,7 @@
 		},
 		{
 			"name": "font",
-			"type": "font_definition",
+			"type": "font",
 			"path": "noto_sans_sc_font.json"
 		}
 	]
