@@ -2,23 +2,31 @@
 
 #include <string>
 #include <string_view>
+#include <memory>
 
 #include "asset_types.h"
+
+class asset_manager;
 
 class asset
 {
 public:
 
 	asset() = delete;
+	asset(const std::string& name, std::weak_ptr<asset_manager> asset_manager);
 	virtual ~asset();
-	asset(const std::string& name);
 
 	virtual void initialise(const std::string& file_path) = 0;
 	virtual void shutdown() = 0;
 	virtual asset_type get_type() const = 0;
 	
-	const std::string& get_name() const; // convert to string_view
+	std::string_view get_name() const;
+
+protected:
+
+	std::weak_ptr<asset_manager> get_asset_manager() const;
 
 private:
 	std::string m_name;
+	std::weak_ptr<asset_manager> m_asset_manager;
 };

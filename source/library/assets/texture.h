@@ -13,8 +13,8 @@ class texture : public asset
 public:
 
 	texture() = delete;
+	texture(const std::string& name, std::weak_ptr<asset_manager> asset_manager, gl::GLuint texture_id, unsigned int width, unsigned int height);
 	virtual ~texture();
-	texture(const std::string& name, gl::GLuint texture_id, unsigned int width, unsigned int height);
 
 	void initialise(const std::string& file_path) override;
 	void shutdown() override;

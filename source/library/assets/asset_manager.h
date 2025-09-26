@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-class asset_manager
+class asset_manager : public std::enable_shared_from_this<asset_manager>
 {
 public:
 

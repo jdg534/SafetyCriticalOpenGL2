@@ -198,8 +198,8 @@ std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::s
 	gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_WRAP_T, gl::GL_REPEAT);
 	gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MIN_FILTER, gl::GL_LINEAR_MIPMAP_LINEAR);
 	gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MAG_FILTER, gl::GL_LINEAR);
-
-	return std::make_shared<texture>(name.data(), texture_id, width, height);
+	
+	return std::make_shared<texture>(name.data(), shared_from_this(), texture_id, width, height);
 }
 
 std::shared_ptr<asset> asset_manager::load_font(std::string_view name, std::string_view path)
