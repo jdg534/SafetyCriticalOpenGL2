@@ -16,7 +16,7 @@ texture::~texture()
 	// delete stuff
 }
 
-void texture::initialise(const std::string& file_path)
+void texture::initialise(std::string_view file_path)
 {
 	// refactor this... trigger an asset loader.
 }

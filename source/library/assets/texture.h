@@ -16,11 +16,12 @@ public:
 	texture(const std::string& name, std::weak_ptr<asset_manager> asset_manager, gl::GLuint texture_id, unsigned int width, unsigned int height);
 	virtual ~texture();
 
-	void initialise(const std::string& file_path) override;
+	void initialise(std::string_view file_path) override;
 	void shutdown() override;
 	asset_type get_type() const override;
 
 private:
+
 	gl::GLuint m_texture_id;
 	unsigned int m_width;
 	unsigned int m_height;

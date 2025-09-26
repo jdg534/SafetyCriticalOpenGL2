@@ -16,7 +16,7 @@ public:
 	asset(const std::string& name, std::weak_ptr<asset_manager> asset_manager);
 	virtual ~asset();
 
-	virtual void initialise(const std::string& file_path) = 0;
+	virtual void initialise(std::string_view file_path) = 0;
 	virtual void shutdown() = 0;
 	virtual asset_type get_type() const = 0;
 	

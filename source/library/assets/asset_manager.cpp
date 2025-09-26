@@ -13,6 +13,7 @@
 
 #include "asset_utils.h"
 #include "../render/include_opengl.h"
+#include "font.h"
 #include "texture.h"
 
 void asset_manager::initialise(std::string_view assets_list_file_path)
@@ -103,6 +104,7 @@ std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::str
 // break this up into asset_loader.
 std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::string_view path)
 {
+	// into image::initialise()
 	if (path.find(".png") == std::string::npos)
 	{
 		throw std::exception("load texture called with non png texture.");
@@ -204,7 +206,9 @@ std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::s
 
 std::shared_ptr<asset> asset_manager::load_font(std::string_view name, std::string_view path)
 {
-	throw std::exception(__func__);
+	std::shared_ptr<font> result = std::make_shared<font>(name.data(), shared_from_this());
+	result->initialise(path);
+	return result;
 }
 
 std::shared_ptr<asset> asset_manager::load_static_model(std::string_view name, std::string_view path)
