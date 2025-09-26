@@ -2,20 +2,22 @@
 
 #include <exception>
 #include <iostream>
+#include <filesystem>
 #include <fstream>
-#include <string>
+#include <string_view>
 #include <sstream>
 
 #include <rapidjson/document.h>
 
 #include <png.h>
 
+#include "asset_utils.h"
 #include "../render/include_opengl.h"
 #include "texture.h"
 
-void asset_manager::initialise(const std::string& assets_list_file_path)
+void asset_manager::initialise(std::string_view assets_list_file_path)
 {
-	std::ifstream assets_list_file(assets_list_file_path);
+	std::ifstream assets_list_file(assets_list_file_path.data());
 	if (!assets_list_file.good())
 	{
 		throw std::exception("asset_manager::initialise failed to open file");
@@ -33,6 +35,8 @@ void asset_manager::initialise(const std::string& assets_list_file_path)
 	{
 		throw std::exception("asset_manager::initialise now assets");
 	}
+	// windows style file paths aren't considered.
+	const std::string_view assets_relative_to = asset_utils::get_directory_path(assets_list_file_path);
 	const auto assets_entries = doc["assets"].GetArray();
 	const int num_assets = assets_entries.Size();
 	m_assets.resize(num_assets);
@@ -44,9 +48,10 @@ void asset_manager::initialise(const std::string& assets_list_file_path)
 		{
 			throw std::exception("asset_manager::initialise an asset doesn't have a required field");
 		}
+		const std::string actual_file_path = std::string(assets_relative_to) + assets_entries[i]["path"].GetString();
 		m_assets[i] = load_asset(assets_entries[i]["name"].GetString(),
 			assets_entries[i]["type"].GetString(),
-			assets_entries[i]["path"].GetString());
+			actual_file_path);
 	}
 }
 
@@ -60,7 +65,7 @@ void asset_manager::shutdown()
 	m_assets.clear();
 }
 
-asset_type asset_manager::to_type(const std::string& s)
+asset_type asset_manager::to_type(std::string_view s)
 {
 	if (s == "texture") return asset_type::texture;
 	if (s == "font") return asset_type::font;
@@ -70,7 +75,7 @@ asset_type asset_manager::to_type(const std::string& s)
 	return asset_type::invalid;
 }
 
-asset* asset_manager::load_asset(const std::string& name, const std::string& type, const std::string& path)
+asset* asset_manager::load_asset(std::string_view name, std::string_view type, std::string_view path)
 {
 	switch (to_type(type))
 	{
@@ -85,14 +90,13 @@ asset* asset_manager::load_asset(const std::string& name, const std::string& typ
 }
 
 // break this up into asset_loader.
-
-asset* asset_manager::load_texture(const std::string& name, const std::string& path)
+asset* asset_manager::load_texture(std::string_view name, std::string_view path)
 {
 	if (path.find(".png") == std::string::npos)
 	{
 		throw std::exception("load texture called with non png texture.");
 	}
-	FILE* file = fopen(path.c_str(), "rb"); // path needs to be relevent to the assets list.
+	FILE* file = fopen(path.data(), "rb"); // path needs to be relevent to the assets list.
 	if (!file)
 	{
 		throw std::exception("failed to load png file");
@@ -102,7 +106,7 @@ asset* asset_manager::load_texture(const std::string& name, const std::string& p
 	fread(header, 1, 8, file);
 	if (png_sig_cmp(header, 0, 8)) {
 		fclose(file);
-		throw std::runtime_error("File is not a PNG: " + path);
+		throw std::runtime_error(std::string("File is not a PNG: ") + path.data());
 	}
 	// Init png structures
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -188,25 +192,25 @@ asset* asset_manager::load_texture(const std::string& name, const std::string& p
 	gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MIN_FILTER, gl::GL_LINEAR_MIPMAP_LINEAR);
 	gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MAG_FILTER, gl::GL_LINEAR);
 
-	return new texture(name, texture_id, width, height);
+	return new texture(name.data(), texture_id, width, height);
 }
 
-asset* asset_manager::load_font(const std::string& name, const std::string& path)
+asset* asset_manager::load_font(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
 
-asset* asset_manager::load_static_model(const std::string& name, const std::string& path)
+asset* asset_manager::load_static_model(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
 
-asset* asset_manager::load_rigged_model(const std::string& name, const std::string& path)
+asset* asset_manager::load_rigged_model(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
 
-asset* asset_manager::load_materials(const std::string& name, const std::string& path)
+asset* asset_manager::load_materials(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
