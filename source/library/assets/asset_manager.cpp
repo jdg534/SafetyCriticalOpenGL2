@@ -60,9 +60,20 @@ void asset_manager::shutdown()
 	for (auto asset : m_assets)
 	{
 		asset->shutdown();
-		delete asset;
 	}
 	m_assets.clear();
+}
+
+std::weak_ptr<asset> asset_manager::get_asset_on_name(std::string_view asset_name) const
+{
+	for (const auto asset : m_assets)
+	{
+		if (asset->get_name() == asset_name)
+		{
+			return asset;
+		}
+	}
+	throw std::runtime_error(std::string("Could not find the asset with name: ") + asset_name.data());
 }
 
 asset_type asset_manager::to_type(std::string_view s)
@@ -75,7 +86,7 @@ asset_type asset_manager::to_type(std::string_view s)
 	return asset_type::invalid;
 }
 
-asset* asset_manager::load_asset(std::string_view name, std::string_view type, std::string_view path)
+std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::string_view type, std::string_view path)
 {
 	switch (to_type(type))
 	{
@@ -90,7 +101,7 @@ asset* asset_manager::load_asset(std::string_view name, std::string_view type, s
 }
 
 // break this up into asset_loader.
-asset* asset_manager::load_texture(std::string_view name, std::string_view path)
+std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::string_view path)
 {
 	if (path.find(".png") == std::string::npos)
 	{
@@ -138,22 +149,18 @@ asset* asset_manager::load_texture(std::string_view name, std::string_view path)
 	const png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 
 	// Convert palettes/gray/16-bit to RGBA8
-	if (bit_depth == 16)
-		png_set_strip_16(png_ptr);
-	if (color_type == PNG_COLOR_TYPE_PALETTE)
-		png_set_palette_to_rgb(png_ptr);
-	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-		png_set_expand_gray_1_2_4_to_8(png_ptr);
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-		png_set_tRNS_to_alpha(png_ptr);
+	if (bit_depth == 16) { png_set_strip_16(png_ptr); }
+	if (color_type == PNG_COLOR_TYPE_PALETTE) { png_set_palette_to_rgb(png_ptr); }
+	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) { png_set_expand_gray_1_2_4_to_8(png_ptr); }
+	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) { png_set_tRNS_to_alpha(png_ptr); }
 	if (color_type == PNG_COLOR_TYPE_RGB ||
 		color_type == PNG_COLOR_TYPE_GRAY ||
 		color_type == PNG_COLOR_TYPE_PALETTE)
-		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+	{ png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER); }
 
 	if (color_type == PNG_COLOR_TYPE_GRAY ||
 		color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-		png_set_gray_to_rgb(png_ptr);
+	{ png_set_gray_to_rgb(png_ptr); }
 
 	png_read_update_info(png_ptr, info_ptr);
 
@@ -192,25 +199,25 @@ asset* asset_manager::load_texture(std::string_view name, std::string_view path)
 	gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MIN_FILTER, gl::GL_LINEAR_MIPMAP_LINEAR);
 	gl::glTexParameteri(gl::GL_TEXTURE_2D, gl::GL_TEXTURE_MAG_FILTER, gl::GL_LINEAR);
 
-	return new texture(name.data(), texture_id, width, height);
+	return std::make_shared<texture>(name.data(), texture_id, width, height);
 }
 
-asset* asset_manager::load_font(std::string_view name, std::string_view path)
+std::shared_ptr<asset> asset_manager::load_font(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
 
-asset* asset_manager::load_static_model(std::string_view name, std::string_view path)
+std::shared_ptr<asset> asset_manager::load_static_model(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
 
-asset* asset_manager::load_rigged_model(std::string_view name, std::string_view path)
+std::shared_ptr<asset> asset_manager::load_rigged_model(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
 
-asset* asset_manager::load_materials(std::string_view name, std::string_view path)
+std::shared_ptr<asset> asset_manager::load_materials(std::string_view name, std::string_view path)
 {
 	throw std::exception(__func__);
 }
