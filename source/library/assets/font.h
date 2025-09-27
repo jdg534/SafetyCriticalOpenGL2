@@ -8,11 +8,18 @@
 
 struct glyph_image_info
 {
-	char glyph;
+	char32_t glyph;
 	int top_px;
 	int bottom_px;
 	int left_px;
 	int right_px;
+};
+
+struct kerning_info
+{
+	char32_t first_glyph;
+	char32_t second_glyth;
+	float additional_spacing;
 };
 
 class font : public asset
@@ -30,6 +37,7 @@ public:
 private:
 
 	std::vector<glyph_image_info> m_glyph_in_image_values;
+	std::vector<kerning_info> m_kerning_info;
 	std::string m_atlas_asset_name;
 	float m_default_spacing = 10.0f; // pixels...
 };
