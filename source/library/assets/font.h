@@ -17,8 +17,8 @@ struct glyph_image_info
 
 struct kerning_info
 {
-	char32_t first_glyph;
-	char32_t second_glyth;
+	char32_t previous_glyph;
+	char32_t current_glyph;
 	float additional_spacing;
 };
 

@@ -69,7 +69,7 @@ void font::initialise(std::string_view file_path)
 	m_default_spacing = doc["default_spacing"].GetFloat();
 
 	// <read_glyphs()>
-	const auto glyph_entries = doc["glyphs"].GetArray();
+	const auto& glyph_entries = doc["glyphs"].GetArray();
 	const int num_glyphs = glyph_entries.Size();
 	m_glyph_in_image_values.resize(num_glyphs);
 	for (int i = 0; i < num_glyphs; ++i)
@@ -83,7 +83,18 @@ void font::initialise(std::string_view file_path)
 		m_glyph_in_image_values[i].right_px = m_glyph_in_image_values[i].left_px + source_rectangle["width"].GetFloat();
 	}
 	// </read_glyphs()>
-	// TODO: write read_kerning()
+	// <read_kerning()>
+	const auto& kerning_entries = doc["kerning"];
+	const int num_kerning_entries = kerning_entries.Size();
+	m_kerning_info.resize(num_kerning_entries);
+	for (int i = 0; i < num_kerning_entries; ++i)
+	{
+		const auto& kerning_info = kerning_entries[i].GetObject();
+		m_kerning_info[i].additional_spacing = kerning_info["addition_spacing"].GetFloat();
+		m_kerning_info[i].previous_glyph = utf8_to_char32(kerning_info["previous_glyph"].GetString());
+		m_kerning_info[i].current_glyph = utf8_to_char32(kerning_info["current_glyph"].GetString());
+	}
+	// </read_kerning()>
 }
 
 void font::shutdown()
