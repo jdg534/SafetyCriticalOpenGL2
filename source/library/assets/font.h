@@ -3,10 +3,12 @@
 #include <string>
 #include <string_view>
 
+#include <rapidjson/document.h>
+
 #include "asset.h"
 #include "../render/include_opengl.h"
 
-struct glyph_image_info
+struct glyph_info
 {
 	char32_t glyph;
 	int top_px;
@@ -36,7 +38,10 @@ public:
 
 private:
 
-	std::vector<glyph_image_info> m_glyph_in_image_values;
+	void initialise_glyph_info(const rapidjson::Document& font_file);
+	void initialise_kerning_info(const rapidjson::Document& font_file);
+
+	std::vector<glyph_info> m_glyph_info;
 	std::vector<kerning_info> m_kerning_info;
 	std::string m_atlas_asset_name;
 	float m_default_spacing = 10.0f; // pixels...
