@@ -1,10 +1,11 @@
 #pragma once
 
 #include <string>
+#include <memory>
+#include <vector>
+
 #include "asset.h"
 
-#include <vector>
-#include <memory>
 
 class asset_manager : public std::enable_shared_from_this<asset_manager>
 {
