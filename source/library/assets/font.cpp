@@ -35,7 +35,7 @@ char32_t utf8_to_char32(const char* utf8str)
 	throw std::runtime_error("Invalid UTF-8 sequence");
 }
 
-font::font(const std::string& name, std::weak_ptr<asset_manager> asset_manager)
+font::font(const std::string& name, std::weak_ptr<const asset_manager> asset_manager)
 	: asset(name, asset_manager)
 {
 

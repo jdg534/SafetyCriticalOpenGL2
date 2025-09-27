@@ -7,7 +7,7 @@
 /////////
 
 
-texture::texture(const std::string& name, std::weak_ptr<asset_manager> asset_manager)
+texture::texture(const std::string& name, std::weak_ptr<const asset_manager> asset_manager)
 	: asset(name, asset_manager)
 	, m_texture_id(-1)
 	, m_width(-1)

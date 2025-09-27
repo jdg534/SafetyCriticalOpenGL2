@@ -102,14 +102,14 @@ std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::str
 // break this up into asset_loader.
 std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::string_view path)
 {
-	std::shared_ptr<texture> result = std::make_shared<texture>(name.data(), shared_from_this());
+	std::shared_ptr<texture> result = std::make_shared<texture>(name.data(), weak_from_this());
 	result->initialise(path);
 	return result;
 }
 
 std::shared_ptr<asset> asset_manager::load_font(std::string_view name, std::string_view path)
 {
-	std::shared_ptr<font> result = std::make_shared<font>(name.data(), shared_from_this());
+	std::shared_ptr<font> result = std::make_shared<font>(name.data(), weak_from_this());
 	result->initialise(path);
 	return result;
 }

@@ -27,7 +27,7 @@ class font : public asset
 public:
 
 	font() = delete;
-	font(const std::string& name, std::weak_ptr<asset_manager> asset_manager);
+	font(const std::string& name, std::weak_ptr<const asset_manager> asset_manager);
 	virtual ~font();
 
 	void initialise(std::string_view file_path) override;

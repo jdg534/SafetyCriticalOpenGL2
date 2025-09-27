@@ -13,7 +13,7 @@ class asset
 public:
 
 	asset() = delete;
-	asset(const std::string& name, std::weak_ptr<asset_manager> asset_manager);
+	asset(const std::string& name, std::weak_ptr<const asset_manager> asset_manager);
 	virtual ~asset();
 
 	virtual void initialise(std::string_view file_path) = 0;
@@ -24,9 +24,9 @@ public:
 
 protected:
 
-	std::weak_ptr<asset_manager> get_asset_manager() const;
+	std::weak_ptr<const asset_manager> get_asset_manager() const;
 
 private:
 	std::string m_name;
-	std::weak_ptr<asset_manager> m_asset_manager;
+	std::weak_ptr<const asset_manager> m_asset_manager;
 };
