@@ -10,6 +10,7 @@
 #include <string>
 
 #include <rapidjson/document.h>
+#include <filesystem>
 
 // public
 /////////
@@ -63,10 +64,9 @@ GLFWwindow* library_main::initialise_window()
 	int window_height = 600;
 	std::string window_title = "A window";
 
-	// refactor to std::filesystem::exists("assets/window_settings.json") force C++17
-	std::ifstream window_settings_file("assets/window_settings.json");
-	if (window_settings_file.good())
+	if (std::filesystem::exists("assets/window_settings.json"))
 	{
+		std::ifstream window_settings_file("assets/window_settings.json");
 		std::stringstream buffer;
 		buffer << window_settings_file.rdbuf();
 		std::string json_str = buffer.str();
