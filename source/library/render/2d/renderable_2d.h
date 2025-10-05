@@ -1,6 +1,8 @@
 #ifndef _RENDERABLE_2D_H_
 #define _RENDERABLE_2D_H_
 
+#include "../vertex_types.h"
+
 /* to cover:
 * quad
 * text_block (Array of quads texture from font atlas)
@@ -12,6 +14,7 @@
 * index buffer id and range 
 * texture id
 * shader (program) id
+* transform & parent (to get the parent's transform)
 */
 
 #endif // _RENDERABLE_2D_H_

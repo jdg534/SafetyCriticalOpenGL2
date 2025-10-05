@@ -11,6 +11,7 @@
 * index buffer id and range
 * texture id
 * shader (program) id
+* transform & parent (to get the parent's transform)
 */
 
 
