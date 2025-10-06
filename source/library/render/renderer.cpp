@@ -61,6 +61,8 @@ void renderer::initialise_shaders()
 	m_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, VERTEX_SHADER);
 	m_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
 	shader_program_id = shaders_compilation::link_shaders_to_program(m_vertex_shader_object_id, m_fragment_shader_id);
+
+	// other shaders
 }
 
 void renderer::initialise_object_buffers()
@@ -74,7 +76,6 @@ void renderer::initialise_object_buffers()
 	gl::glVertexAttribPointer(0, 2, gl::GL_FLOAT, gl::GL_FALSE, 2 * sizeof(float), nullptr);
 	gl::glEnableVertexAttribArray(0);
 }
-
 
 void renderer::shutdown_shaders()
 {

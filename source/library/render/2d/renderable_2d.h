@@ -2,19 +2,21 @@
 #define _RENDERABLE_2D_H_
 
 #include "../vertex_types.h"
+#include "../renderable.h"
 
 /* to cover:
 * quad
 * text_block (Array of quads texture from font atlas)
 */
 
-/* need:
-* vertex structure (Vec2d pos, Vec2d tex_coords, Vec3d blend_colour)
-* vertex buffer id
-* index buffer id and range 
-* texture id
-* shader (program) id
-* transform & parent (to get the parent's transform)
-*/
+class renderable_2d : public renderable
+{
+public:
+
+
+
+private:
+
+};
 
 #endif // _RENDERABLE_2D_H_
