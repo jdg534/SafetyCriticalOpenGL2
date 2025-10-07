@@ -37,6 +37,6 @@ void main()
 {
     vec4 tex = texture(u_texture, vs_out_uv);
     if (u_alpha_cut_off > 0.0 && tex.a <= u_alpha_cut_off) discard;
-    fragColor = tex * u_tint;
+    fs_out_frag_color = tex * u_tint;
 }
 )";

@@ -62,7 +62,13 @@ void renderer::initialise_shaders()
 	m_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
 	shader_program_id = shaders_compilation::link_shaders_to_program(m_vertex_shader_object_id, m_fragment_shader_id);
 
-	// other shaders
+	m_static_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, STATIC_MESH_VERTEX_SHADER);
+	m_static_geometry_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, STATIC_MESH_FRAGMENT_SHADER);
+	m_static_geometry_program_id = shaders_compilation::link_shaders_to_program(m_static_geometry_vertex_shader_object_id, m_static_geometry_fragment_shader_id);
+
+	m_textured_quad_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TEXTURED_QUAD_VERTEX_SHADER);
+	m_textured_quad_geometry_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TEXTURED_QUAD_FRAGMENT_SHADER);
+	m_textured_quad_geometry_program_id = shaders_compilation::link_shaders_to_program(m_textured_quad_geometry_vertex_shader_object_id, m_textured_quad_geometry_fragment_shander_id);
 }
 
 void renderer::initialise_object_buffers()
@@ -82,6 +88,14 @@ void renderer::shutdown_shaders()
 	gl::glDeleteShader(m_vertex_shader_object_id);
 	gl::glDeleteShader(m_fragment_shader_id);
 	gl::glDeleteProgram(shader_program_id);
+	// the above are placeholders. delete them when both 3d geometry and textured quads can be drawn.
+
+	gl::glDeleteShader(m_static_geometry_vertex_shader_object_id);
+	gl::glDeleteShader(m_static_geometry_fragment_shader_id);
+	gl::glDeleteProgram(m_static_geometry_program_id);
+	gl::glDeleteShader(m_textured_quad_geometry_vertex_shader_object_id);
+	gl::glDeleteShader(m_textured_quad_geometry_fragment_shander_id);
+	gl::glDeleteProgram(m_textured_quad_geometry_program_id);
 }
 
 void renderer::shutdown_object_buffers()
