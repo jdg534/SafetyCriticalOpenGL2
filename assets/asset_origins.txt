@@ -3,3 +3,6 @@ It shouldn't be used for any functionality with the artifact executable.
 
 file, author, origin
 noto_sans_sc.png,Josh Gibson,made in paint.net
+textures/grass.png,?,https://architextures.org/textures/3213
+textures/soil.png,?,https://architextures.org/textures/1996
+textures/snow.png,?,https://architextures.org/textures/5530
