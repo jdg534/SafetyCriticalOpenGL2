@@ -4,6 +4,9 @@
 #include "render/renderer.h"
 #include "assets/asset_manager.h"
 
+#include <memory>
+// temp includes. "should" move scene stuff into scene class.
+
 class library_main
 {
 public:
@@ -17,7 +20,7 @@ private:
 	void shutdown();
 
 	GLFWwindow* m_window { nullptr };
-	renderer* m_renderer { nullptr };
-	asset_manager* m_asset_manager { nullptr };
+	std::unique_ptr<renderer> m_renderer;
+	std::unique_ptr < asset_manager> m_asset_manager;
 };
 

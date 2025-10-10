@@ -12,6 +12,8 @@
 #include <rapidjson/document.h>
 #include <filesystem>
 
+// temp test drawable values.
+
 // public
 /////////
 
@@ -42,15 +44,18 @@ void library_main::initialise()
 	m_window = initialise_window();
 	glfwMakeContextCurrent(m_window);
 	glbinding::initialize(glfwGetProcAddress);
-	m_renderer = new renderer(m_window);
+	m_renderer = std::make_unique<renderer>(m_window);
 	m_renderer->initialise();
 
-	m_asset_manager = new asset_manager();
+	m_asset_manager = std::make_unique<asset_manager>();
 	m_asset_manager->initialise("assets/assets_list.json");
 
 	// todo: any setup for objects that are to be used defining stuff to render.
 
+
 	// todo: any exposing stuff to the renderer (draw lists)
+
+	// after this line add flag to not permit allocations. those aren't permitted after initialisation. also free() / delete.
 }
 
 GLFWwindow* library_main::initialise_window()
@@ -111,14 +116,12 @@ void library_main::shutdown()
 	if (m_asset_manager)
 	{
 		m_asset_manager->shutdown();
-		delete m_asset_manager;
-		m_asset_manager = nullptr;
+		m_asset_manager.reset();
 	}
 	if (m_renderer)
 	{
 		m_renderer->shutdown();
-		delete m_renderer;
-		m_renderer = nullptr;
+		m_renderer.reset();
 	}
 	if (m_window)
 	{
