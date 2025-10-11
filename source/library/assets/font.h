@@ -6,6 +6,7 @@
 #include <rapidjson/document.h>
 
 #include "asset.h"
+#include "texture.h"
 #include "../render/include_opengl.h"
 
 struct glyph_info
@@ -24,6 +25,14 @@ struct kerning_info
 	float additional_spacing;
 };
 
+struct source_rect // refactor this to be somewhere more generic later if needed
+{
+	float top;
+	float bottom;
+	float left;
+	float right;
+};
+
 class font : public asset
 {
 public:
@@ -37,11 +46,17 @@ public:
 	asset_type get_type() const override;
 
 	bool is_string_supported(const std::vector<char32_t>& to_check) const;
+	int get_character_height() const;
+	glyph_info get_glyph_info(char32_t glyph) const;
+	kerning_info get_kerning_info(char32_t previous_glyph, char32_t current_glyph) const;
+	source_rect get_texture_coordinates_for_glyph(char32_t glyph) const;
+	std::weak_ptr<texture> get_texture() const;
 
 private:
 
 	void initialise_glyph_info(const rapidjson::Document& font_file);
 	void initialise_kerning_info(const rapidjson::Document& font_file);
+	bool does_contain_white_space_character() const;
 
 	std::vector<glyph_info> m_glyph_info;
 	std::vector<kerning_info> m_kerning_info;

@@ -20,6 +20,10 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
+	unsigned int get_width() const;
+	unsigned int get_height() const;
+	gl::GLuint get_id() const;
+
 private:
 
 	gl::GLuint m_texture_id;

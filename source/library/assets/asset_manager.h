@@ -6,6 +6,10 @@
 
 #include "asset.h"
 
+// notes
+////////
+
+// this class MUST be created via make_shared, it gets passed as a weak_ptr to the assets.
 
 class asset_manager : public std::enable_shared_from_this<asset_manager>
 {

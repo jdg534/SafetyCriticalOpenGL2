@@ -25,7 +25,7 @@ private:
 
 	GLFWwindow* m_window { nullptr };
 	std::unique_ptr<renderer> m_renderer;
-	std::unique_ptr<asset_manager> m_asset_manager;
+	std::shared_ptr<asset_manager> m_asset_manager; // needs to be constructed via make_shared, weak_ptr to be passed around
 
 	// temp text assets
 	std::unique_ptr<text_block> m_test_text;

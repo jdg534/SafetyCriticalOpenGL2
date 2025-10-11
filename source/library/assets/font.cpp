@@ -1,6 +1,7 @@
 #include "font.h"
 
 #include "../utilities/text_utilities.h"
+#include "asset_manager.h"
 
 #include <algorithm>
 #include <fstream>
@@ -11,6 +12,7 @@
 #include <rapidjson/encodings.h>
 
 using namespace rapidjson;
+using namespace std;
 
 // public
 /////////
@@ -48,6 +50,11 @@ void font::initialise(std::string_view file_path)
 	m_default_spacing = font_info["default_spacing"].GetFloat();
 	initialise_glyph_info(font_info);
 	initialise_kerning_info(font_info);
+
+	if (!does_contain_white_space_character())
+	{
+		throw runtime_error("font does not contain a white space character.");
+	}
 }
 
 void font::shutdown()
@@ -64,7 +71,6 @@ asset_type font::get_type() const
 bool font::is_string_supported(const std::vector<char32_t>& to_check) const
 {
 	// checks all characters are supported by the font.
-	using namespace std;
 	return all_of(begin(to_check), end(to_check),
 		[this](char32_t character)
 		{
@@ -78,6 +84,64 @@ bool font::is_string_supported(const std::vector<char32_t>& to_check) const
 					return supported_glyph.glyph == character;
 				});
 		});
+}
+
+int font::get_character_height() const
+{
+	int max_height = 0;
+	for (const auto& glyph : m_glyph_info)
+	{
+		const int glyph_height = glyph.bottom_px - glyph.top_px;
+		max_height = max_height < glyph_height ? glyph_height : max_height;
+	}
+	return max_height;
+}
+
+glyph_info font::get_glyph_info(char32_t glyph) const
+{
+	auto iter = find_if(cbegin(m_glyph_info), cend(m_glyph_info), [=](const glyph_info& info) { return info.glyph == glyph; });
+	if (iter != m_glyph_info.end())
+	{
+		return *iter;
+	}
+	return get_glyph_info(' '); // this character is expected to be present.
+}
+
+kerning_info font::get_kerning_info(char32_t previous_glyph, char32_t current_glyph) const
+{
+	auto iter = find_if(begin(m_kerning_info), end(m_kerning_info), [=](const kerning_info& info)
+		{
+			return previous_glyph == info.previous_glyph
+				&& current_glyph == info.current_glyph;
+		});
+	if (iter != m_kerning_info.end())
+	{
+		return *iter;
+	}
+	return kerning_info{0,0,0}; // default.
+}
+
+source_rect font::get_texture_coordinates_for_glyph(char32_t glyph) const
+{
+	// 0,0 is bottom left. width,height is top right.
+	const glyph_info info = get_glyph_info(glyph); // info 0,0 top left, 1,1 bottom right
+	const auto texture = get_texture();
+	source_rect result;
+	const float atlas_width = static_cast<float>(texture.lock()->get_width());
+	const float atlas_height = static_cast<float>(texture.lock()->get_height());
+	result.left = info.left_px / atlas_width;
+	result.right = info.right_px / atlas_width;
+	const float glyph_height = info.bottom_px - info.top_px;
+	result.top = atlas_height - info.top_px;
+	result.bottom = result.top - glyph_height;
+	result.top /= atlas_height;
+	result.bottom /= atlas_height;
+	return result;
+}
+
+weak_ptr<texture> font::get_texture() const
+{
+	return dynamic_pointer_cast<texture>(get_asset_manager().lock()->get_asset_on_name(m_atlas_asset_name).lock());
 }
 
 // private
@@ -112,4 +176,12 @@ void font::initialise_kerning_info(const Document& font_file)
 		m_kerning_info[i].previous_glyph = text_utilities::utf8_to_char32(kerning_info["previous_glyph"].GetString());
 		m_kerning_info[i].current_glyph = text_utilities::utf8_to_char32(kerning_info["current_glyph"].GetString());
 	}
+}
+
+bool font::does_contain_white_space_character() const
+{
+	return any_of(begin(m_glyph_info), end(m_glyph_info), [](const glyph_info& info)
+		{
+			return text_utilities::is_character_white_space(info.glyph);
+		});
 }

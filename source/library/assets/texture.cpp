@@ -133,5 +133,20 @@ asset_type texture::get_type() const
 	return asset_type::texture;
 }
 
+unsigned int texture::get_width() const
+{
+	return m_width;
+}
+
+unsigned int texture::get_height() const
+{
+	return m_height;
+}
+
+gl::GLuint texture::get_id() const
+{
+	return m_texture_id;
+}
+
 // private
 //////////

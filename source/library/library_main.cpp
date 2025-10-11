@@ -49,7 +49,7 @@ void library_main::initialise()
 	m_renderer = std::make_unique<renderer>(m_window);
 	m_renderer->initialise();
 
-	m_asset_manager = std::make_unique<asset_manager>();
+	m_asset_manager = std::make_shared<asset_manager>();
 	m_asset_manager->initialise("assets/assets_list.json");
 
 	std::weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");

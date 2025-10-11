@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include "../../vertex_types.h"
+#include "../../../assets/texture.h"
 
 text_block::text_block(const std::vector<char32_t>& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit)
 	: renderable_2d()
@@ -94,21 +95,72 @@ void text_block::update_glyphs()
 	assert(m_glyphs.size() == m_character_limit);
 	// pick up here. set the state.
 	const size_t vertex_buffer_size = vertex_types::vertex2d_struct_size * m_character_limit * 4;
-	const size_t index_buffer_size = sizeof(unsigned short) * m_character_limit * 4;
+	const size_t index_buffer_size = sizeof(unsigned short) * m_character_limit * 6;
 
 	std::vector<vertex_types::vertex_2d> vertex_buffer_data;
 	vertex_buffer_data.resize(m_character_limit * 4);
 	std::memset(&vertex_buffer_data[0], 0, vertex_buffer_size);
 	std::vector<unsigned short> index_buffer;
-	index_buffer.resize(m_character_limit * 4);
-	std::memset(&vertex_buffer_data[0], 0, vertex_buffer_size);
+	index_buffer.resize(m_character_limit * 6);
+	std::memset(&index_buffer[0], 0, index_buffer_size);
 
 	float current_x = 0.0f;
 	float current_y = 0.0f;
+	
+	// remember that memset 0 was done on both buffers (everything will be set to 0)
+	// 0,0 is bottom left in texutre coordinates.
+
+	// patten:
+	// 0-1-2
+	// 3-2-1
+
+	const auto font_ptr = m_font_to_use.lock();
+	const auto texture = font_ptr->get_texture();
+	const unsigned int atlas_width = texture.lock()->get_width();
+	const unsigned int atlas_height = texture.lock()->get_height();
 
 	for (int glyph_index = 0; glyph_index < m_character_limit; ++glyph_index)
 	{
-		
+		const char32_t previous_glyph = glyph_index == 0 ? m_text[0] : m_text[glyph_index - 1];
+		const glyph_info previous_glyph_info = font_ptr->get_glyph_info(previous_glyph);
+		const char32_t current_glyph = m_text[glyph_index];
+		const glyph_info current_glyph_info = font_ptr->get_glyph_info(current_glyph);
+		const float current_glyph_width = current_glyph_info.right_px - current_glyph_info.left_px;
+		const float current_glyph_height = current_glyph_info.bottom_px - current_glyph_info.top_px;
+		const kerning_info kerning_info = font_ptr->get_kerning_info(previous_glyph, current_glyph);
+		const source_rect glyph_texture_coordinates = font_ptr->get_texture_coordinates_for_glyph(current_glyph);
+		const int vertex_buffer_index_offset = 4 * glyph_index;
+		const int index_buffer_offset = 6 * glyph_index;
+		vertex_buffer_data[vertex_buffer_index_offset + 0].position.x = current_x;
+		vertex_buffer_data[vertex_buffer_index_offset + 0].position.y = current_y;
+		vertex_buffer_data[vertex_buffer_index_offset + 0].texture_coordinates.x = glyph_texture_coordinates.left;
+		vertex_buffer_data[vertex_buffer_index_offset + 0].texture_coordinates.y = glyph_texture_coordinates.top;
+
+		vertex_buffer_data[vertex_buffer_index_offset + 1].position.x = current_x + current_glyph_width;
+		vertex_buffer_data[vertex_buffer_index_offset + 1].position.y = current_y;
+		vertex_buffer_data[vertex_buffer_index_offset + 1].texture_coordinates.x = glyph_texture_coordinates.right;
+		vertex_buffer_data[vertex_buffer_index_offset + 1].texture_coordinates.y = glyph_texture_coordinates.top;
+
+		vertex_buffer_data[vertex_buffer_index_offset + 2].position.x = current_x;
+		vertex_buffer_data[vertex_buffer_index_offset + 2].position.y = current_y + current_glyph_height;
+		vertex_buffer_data[vertex_buffer_index_offset + 2].texture_coordinates.x = glyph_texture_coordinates.left;
+		vertex_buffer_data[vertex_buffer_index_offset + 2].texture_coordinates.y = glyph_texture_coordinates.bottom;
+
+		vertex_buffer_data[vertex_buffer_index_offset + 3].position.x = current_x + current_glyph_width;
+		vertex_buffer_data[vertex_buffer_index_offset + 3].position.y = current_y + current_glyph_height;
+		vertex_buffer_data[vertex_buffer_index_offset + 3].texture_coordinates.x = glyph_texture_coordinates.right;
+		vertex_buffer_data[vertex_buffer_index_offset + 3].texture_coordinates.y = glyph_texture_coordinates.bottom;
+
+		// patten:
+		// 0-1-2
+		// 3-2-1
+		index_buffer[index_buffer_offset + 0] = vertex_buffer_index_offset + 0;
+		index_buffer[index_buffer_offset + 1] = vertex_buffer_index_offset + 1;
+		index_buffer[index_buffer_offset + 2] = vertex_buffer_index_offset + 2;
+
+		index_buffer[index_buffer_offset + 3] = vertex_buffer_index_offset + 3;
+		index_buffer[index_buffer_offset + 4] = vertex_buffer_index_offset + 2;
+		index_buffer[index_buffer_offset + 5] = vertex_buffer_index_offset + 1;
 	}
 
 	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, get_vertex_buffer_id());
