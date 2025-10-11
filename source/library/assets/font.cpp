@@ -1,5 +1,6 @@
 #include "font.h"
 
+#include <algorithm>
 #include <fstream>
 #include <string_view>
 #include <sstream>
@@ -80,6 +81,26 @@ void font::shutdown()
 asset_type font::get_type() const
 {
 	return asset_type::font;
+}
+
+bool font::is_string_supported(const std::vector<char32_t>& to_check) const
+{
+	// checks all characters are supported by the font.
+	using namespace std;
+	return all_of(begin(to_check), end(to_check),
+		[this](char32_t character)
+		{
+			constexpr array<char32_t, 5> white_space_chars = { ' ','\t','\n', '\r', '\0'};
+			if (any_of(begin(white_space_chars), end(white_space_chars), [character](char32_t white_space_char) { return white_space_char == character; }))
+			{
+				return true;
+			}
+			return any_of(begin(m_glyph_info), end(m_glyph_info),
+				[character](const glyph_info& supported_glyph)
+				{
+					return supported_glyph.glyph == character;
+				});
+		});
 }
 
 // private

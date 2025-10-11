@@ -6,13 +6,17 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-// Note this DOES NOT own the buffers
+// Note this DOES NOT own the buffers, child classes may own them 
 
 class renderable
 {
 public:
 
 	virtual ~renderable();
+
+	virtual void initialise() = 0;
+	virtual void shutdown() = 0;
+	virtual void draw() = 0;
 
 	gl::GLuint get_vertex_buffer_id() const;
 	gl::GLuint get_index_buffer_id() const;
@@ -30,8 +34,6 @@ public:
 	void set_parent(std::weak_ptr<renderable> parent);
 	void clear_parent();
 	void set_transform(const glm::mat4x4& transform);
-
-	virtual void draw();
 
 private:
 

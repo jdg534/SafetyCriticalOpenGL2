@@ -36,6 +36,8 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
+	bool is_string_supported(const std::vector<char32_t>& to_check) const;
+
 private:
 
 	void initialise_glyph_info(const rapidjson::Document& font_file);

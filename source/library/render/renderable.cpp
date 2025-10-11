@@ -83,7 +83,3 @@ void renderable::set_transform(const glm::mat4x4& transform)
 	m_transform = transform;
 }
 
-void draw()
-{
-	// make this pure virtual?
-}
