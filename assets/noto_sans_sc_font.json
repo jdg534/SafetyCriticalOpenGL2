@@ -842,6 +842,14 @@
 				"top": 224, "height": 23,
 				"left": 157, "width": 2
 			}
+		},
+		{
+			"character": " ",
+			"source_rectangle":
+			{
+				"top": 17, "height": 23,
+				"left": 198, "width": 10
+			}
 		}
 	],
 	"kerning":
