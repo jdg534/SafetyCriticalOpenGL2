@@ -118,8 +118,11 @@ void text_block::update_glyphs()
 	const auto texture = font_ptr->get_texture();
 	const unsigned int atlas_width = texture.lock()->get_width();
 	const unsigned int atlas_height = texture.lock()->get_height();
+	const float tallest_glyph_height = static_cast<float>(font_ptr->get_character_height());
 
-	for (int glyph_index = 0; glyph_index < m_character_limit; ++glyph_index)
+	const int characters_to_set = std::min(static_cast<int>(m_character_limit), static_cast<int>(m_text.size()));
+
+	for (int glyph_index = 0; glyph_index < characters_to_set; ++glyph_index)
 	{
 		const char32_t previous_glyph = glyph_index == 0 ? m_text[0] : m_text[glyph_index - 1];
 		const glyph_info previous_glyph_info = font_ptr->get_glyph_info(previous_glyph);
@@ -161,6 +164,15 @@ void text_block::update_glyphs()
 		index_buffer[index_buffer_offset + 3] = vertex_buffer_index_offset + 3;
 		index_buffer[index_buffer_offset + 4] = vertex_buffer_index_offset + 2;
 		index_buffer[index_buffer_offset + 5] = vertex_buffer_index_offset + 1;
+
+		// update current_x & current_y. 
+		current_x += current_glyph_width + kerning_info.additional_spacing;
+		if (current_glyph == '\r' || current_glyph == '\n')
+		{
+			// new line, only dealing with left alighment for now.
+			current_x = 0.0f;
+			current_y += tallest_glyph_height * 2.5f; // remember the shader flips y axis to point down.
+		}
 	}
 
 	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, get_vertex_buffer_id());
