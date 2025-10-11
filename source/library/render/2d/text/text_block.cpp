@@ -120,9 +120,9 @@ void text_block::update_glyphs()
 	const unsigned int atlas_height = texture.lock()->get_height();
 	const float tallest_glyph_height = static_cast<float>(font_ptr->get_character_height());
 
-	const int characters_to_set = std::min(static_cast<int>(m_character_limit), static_cast<int>(m_text.size()));
+	const int num_glyphs_to_set = std::min(static_cast<int>(m_character_limit), static_cast<int>(m_text.size()));
 
-	for (int glyph_index = 0; glyph_index < characters_to_set; ++glyph_index)
+	for (int glyph_index = 0; glyph_index < num_glyphs_to_set; ++glyph_index)
 	{
 		const char32_t previous_glyph = glyph_index == 0 ? m_text[0] : m_text[glyph_index - 1];
 		const glyph_info previous_glyph_info = font_ptr->get_glyph_info(previous_glyph);
