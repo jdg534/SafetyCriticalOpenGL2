@@ -1,5 +1,7 @@
 #include "font.h"
 
+#include "../utilities/text_utilities.h"
+
 #include <algorithm>
 #include <fstream>
 #include <string_view>
@@ -12,30 +14,6 @@ using namespace rapidjson;
 
 // public
 /////////
-
-char32_t utf8_to_char32(const char* utf8str)
-{
-	// llm generated... only 1 character length strings should be used.
-	const unsigned char* s = reinterpret_cast<const unsigned char*>(utf8str);
-	if (*s < 0x80)
-	{
-		return *s;
-	}
-	else if ((*s >> 5) == 0x6)
-	{
-		return ((s[0] & 0x1F) << 6) | (s[1] & 0x3F);
-	}
-	else if ((*s >> 4) == 0xE)
-	{
-		return ((s[0] & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
-	}
-	else if ((*s >> 3) == 0x1E)
-	{
-		return ((s[0] & 0x07) << 18) | ((s[1] & 0x3F) << 12)
-			|  ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
-	}
-	throw std::runtime_error("Invalid UTF-8 sequence");
-}
 
 font::font(const std::string& name, std::weak_ptr<const asset_manager> asset_manager)
 	: asset(name, asset_manager)
@@ -90,8 +68,7 @@ bool font::is_string_supported(const std::vector<char32_t>& to_check) const
 	return all_of(begin(to_check), end(to_check),
 		[this](char32_t character)
 		{
-			constexpr array<char32_t, 5> white_space_chars = { ' ','\t','\n', '\r', '\0'};
-			if (any_of(begin(white_space_chars), end(white_space_chars), [character](char32_t white_space_char) { return white_space_char == character; }))
+			if (text_utilities::is_character_white_space(character))
 			{
 				return true;
 			}
@@ -114,7 +91,7 @@ void font::initialise_glyph_info(const Document& font_file)
 	for (int i = 0; i < num_glyphs; ++i)
 	{
 		const auto& glyph_info = glyph_entries[i].GetObject();
-		m_glyph_info[i].glyph = utf8_to_char32(glyph_info["character"].GetString());
+		m_glyph_info[i].glyph = text_utilities::utf8_to_char32(glyph_info["character"].GetString());
 		const auto& source_rectangle = glyph_info["source_rectangle"].GetObject();
 		m_glyph_info[i].top_px = source_rectangle["top"].GetFloat();
 		m_glyph_info[i].bottom_px = m_glyph_info[i].top_px + source_rectangle["height"].GetFloat();
@@ -132,7 +109,7 @@ void font::initialise_kerning_info(const Document& font_file)
 	{
 		const auto& kerning_info = kerning_entries[i].GetObject();
 		m_kerning_info[i].additional_spacing = kerning_info["addition_spacing"].GetFloat();
-		m_kerning_info[i].previous_glyph = utf8_to_char32(kerning_info["previous_glyph"].GetString());
-		m_kerning_info[i].current_glyph = utf8_to_char32(kerning_info["current_glyph"].GetString());
+		m_kerning_info[i].previous_glyph = text_utilities::utf8_to_char32(kerning_info["previous_glyph"].GetString());
+		m_kerning_info[i].current_glyph = text_utilities::utf8_to_char32(kerning_info["current_glyph"].GetString());
 	}
 }

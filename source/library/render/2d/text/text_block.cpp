@@ -94,13 +94,22 @@ void text_block::update_glyphs()
 	assert(m_glyphs.size() == m_character_limit);
 	// pick up here. set the state.
 	const size_t vertex_buffer_size = vertex_types::vertex2d_struct_size * m_character_limit * 4;
-	std::vector<vertex_types::vertex_2d> vertex_buffer_data;
-	vertex_buffer_data.resize(m_character_limit * 4);
-	std::vector<unsigned short> index_buffer;
-	index_buffer.resize(m_character_limit * 4);
 	const size_t index_buffer_size = sizeof(unsigned short) * m_character_limit * 4;
 
+	std::vector<vertex_types::vertex_2d> vertex_buffer_data;
+	vertex_buffer_data.resize(m_character_limit * 4);
+	std::memset(&vertex_buffer_data[0], 0, vertex_buffer_size);
+	std::vector<unsigned short> index_buffer;
+	index_buffer.resize(m_character_limit * 4);
+	std::memset(&vertex_buffer_data[0], 0, vertex_buffer_size);
 
+	float current_x = 0.0f;
+	float current_y = 0.0f;
+
+	for (int glyph_index = 0; glyph_index < m_character_limit; ++glyph_index)
+	{
+		
+	}
 
 	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, get_vertex_buffer_id());
 	gl::glBufferData(gl::GL_ARRAY_BUFFER, vertex_buffer_size, vertex_buffer_data.data(), gl::GL_STATIC_DRAW);
