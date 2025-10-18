@@ -5,6 +5,11 @@ renderable::~renderable()
 
 }
 
+renderable_type renderable::get_renderable_type() const
+{
+	return m_renderable_type;
+}
+
 gl::GLuint renderable::get_vertex_buffer_id() const
 {
 	return m_vertex_buffer_id;
@@ -83,3 +88,14 @@ void renderable::set_transform(const glm::mat4x4& transform)
 	m_transform = transform;
 }
 
+void renderable::set_renderable_type(renderable_type renderable_type)
+{
+	if (m_renderable_type == renderable_type::INVALID)
+	{
+		m_renderable_type = renderable_type;
+	}
+	else
+	{
+		throw std::exception("Attempting to override renderable type");
+	}
+}

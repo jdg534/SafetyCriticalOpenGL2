@@ -46,7 +46,7 @@ void library_main::initialise()
 	m_window = initialise_window();
 	glfwMakeContextCurrent(m_window);
 	glbinding::initialize(glfwGetProcAddress);
-	m_renderer = std::make_unique<renderer>(m_window);
+	m_renderer = std::make_unique<renderer>(m_window, 50);
 	m_renderer->initialise();
 
 	m_asset_manager = std::make_shared<asset_manager>();
@@ -65,12 +65,17 @@ void library_main::initialise()
 
 
 	// todo: any setup for objects that are to be used defining stuff to render.
-	m_test_text = std::make_unique<text_block>(text_to_display, font_ptr, 50);
+	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 50);
 	m_test_text->initialise();
 
 	// todo: any exposing stuff to the renderer (draw lists)
 
-	// after this line add flag to not permit allocations. those aren't permitted after initialisation. also free() / delete.
+	m_renderer->add_to_render_list(m_test_text);
+	/*
+	after this line add flag to not permit allocations. those aren't permitted after initialisation. also free() / delete.
+	only during initialisation should allocations be tolerated.
+	*/
+	m_renderer->sort_render_list();
 }
 
 GLFWwindow* library_main::initialise_window()

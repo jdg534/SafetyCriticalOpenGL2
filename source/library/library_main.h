@@ -28,6 +28,6 @@ private:
 	std::shared_ptr<asset_manager> m_asset_manager; // needs to be constructed via make_shared, weak_ptr to be passed around
 
 	// temp text assets
-	std::unique_ptr<text_block> m_test_text;
+	std::shared_ptr<text_block> m_test_text;
 };
 
