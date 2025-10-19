@@ -30,6 +30,7 @@ public:
 	virtual void draw() = 0;
 
 	renderable_type get_renderable_type() const;
+	gl::GLuint get_vertex_array_id() const;
 	gl::GLuint get_vertex_buffer_id() const;
 	gl::GLuint get_index_buffer_id() const;
 	gl::GLuint get_start_in_index_buffer() const;
@@ -40,6 +41,7 @@ public:
 	const glm::mat4x4& get_transform() const;
 	glm::mat4x4 get_net_transform() const;
 
+	void set_vertex_array_id(gl::GLuint vertex_array_id);
 	void set_vertex_buffer_id(gl::GLuint vertex_buffer_id);
 	void set_index_buffer_id(gl::GLuint index_buffer_id);
 	void set_start_in_index_buffer(gl::GLuint start_index_buffer);
@@ -57,6 +59,7 @@ private:
 
 	// look into the byte order and alignment later if needed.
 	renderable_type m_renderable_type { renderable_type::INVALID };
+	gl::GLuint m_vertex_array_id { 0 };
 	gl::GLuint m_vertex_buffer_id { 0 };
 	gl::GLuint m_index_buffer_id { 0 };
 	gl::GLuint m_start_in_index_buffer { 0 };

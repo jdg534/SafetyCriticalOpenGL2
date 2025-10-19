@@ -20,6 +20,11 @@ renderable_type renderable::get_renderable_type() const
 	return m_renderable_type;
 }
 
+gl::GLuint renderable::get_vertex_array_id() const
+{
+	return m_vertex_array_id;
+}
+
 gl::GLuint renderable::get_vertex_buffer_id() const
 {
 	return m_vertex_buffer_id;
@@ -70,6 +75,11 @@ glm::mat4x4 renderable::get_net_transform() const
 			0.0f, 0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f);
 	return parent_transform * m_transform;
+}
+
+void renderable::set_vertex_array_id(gl::GLuint vertex_array_id)
+{
+	m_vertex_array_id = vertex_array_id;
 }
 
 void renderable::set_vertex_buffer_id(gl::GLuint vertex_buffer_id)
