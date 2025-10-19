@@ -8,6 +8,8 @@
 #include "renderable.h"
 
 #include <glbinding/gl/types.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.inl>
 
 #include <algorithm>
 #include <iostream>
@@ -22,13 +24,12 @@ constexpr float VERTICES[] = {
 // public
 /////////
 
-renderer::renderer(GLFWwindow* window, const size_t render_list_cap)
-	: m_window(window)
+renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap)
+	: m_framebuffer_size(framebuffer_size)
 	, m_render_list_cap(render_list_cap)
 {
 
 }
-
 
 void renderer::initialise()
 {
@@ -62,20 +63,23 @@ void renderer::render_frame()
 	angle += 0.01f;
 	// </place holder code>
 
-	const int n_renderable_elements = m_render_list.size();
-	for (int i = 0; i < n_renderable_elements; ++i)
+	
+	for (auto to_draw_iter : m_render_list)
 	{
-		if (need_to_switch_to_3d_static_mesh_shader(i))
+		auto to_draw = to_draw_iter.lock();
+		switch (to_draw->get_renderable_type())
 		{
-			gl::glUseProgram(m_static_geometry_program_id);
-			m_current_shader_program = m_static_geometry_program_id;
+			case renderable_type::STATIC_GEOMETRY:
+				switch_to_3d_static_mesh_shader();
+				break;
+			case renderable_type::_2D_GEOMETRY:
+				switch_to_2d_shader();
+				break;
+			default:
+				throw std::exception("attempted to render unsupported type");
+				break;
 		}
-		else if (need_to_switch_to_2d_shader(i))
-		{
-			gl::glUseProgram(m_textured_quad_geometry_program_id);
-			m_current_shader_program = m_textured_quad_geometry_program_id;
-		}
-		m_render_list[i].lock()->draw();
+		to_draw->draw();
 	}
 }
 
@@ -84,6 +88,19 @@ void renderer::add_to_render_list(std::weak_ptr<renderable> to_add)
 	if (m_render_list.size() < m_render_list_cap)
 	{
 		m_render_list.push_back(to_add);
+		auto to_add_to_mod = to_add.lock();
+		switch (to_add_to_mod->get_renderable_type())
+		{
+			case renderable_type::STATIC_GEOMETRY:
+				to_add_to_mod->set_shader_program(m_static_geometry_program_id);
+				break;
+			case renderable_type::_2D_GEOMETRY:
+				to_add_to_mod->set_shader_program(m_textured_quad_geometry_program_id);
+				break;
+			default:
+				throw std::exception("attempted to add unsupported renderable type");
+				break;
+		}
 	}
 	else
 	{
@@ -116,6 +133,11 @@ void renderer::sort_render_list()
 		{ return a.lock()->get_renderable_type() == renderable_type::_2D_GEOMETRY; });
 	if (first_3d_iter != cend(m_render_list)) { m_index_of_first_3d_static_mesh = distance(cbegin(m_render_list), first_3d_iter); }
 	if (first_2d_iter != cend(m_render_list)) { m_index_of_first_2d_renderable = distance(cbegin(m_render_list), first_2d_iter); }
+}
+
+void renderer::set_framebuffer_size(glm::vec2 framebuffer_size)
+{
+	m_framebuffer_size = framebuffer_size;
 }
 
 // private
@@ -169,17 +191,27 @@ void renderer::shutdown_object_buffers()
 	gl::glDeleteVertexArrays(1, &m_vertex_arrary_object_id);
 }
 
-bool renderer::need_to_switch_to_3d_static_mesh_shader(int renderable_item_index) const
+void renderer::switch_to_3d_static_mesh_shader()
 {
-	return m_current_shader_program != m_static_geometry_program_id
-		&& renderable_item_index >= m_index_of_first_3d_static_mesh
-		&& renderable_item_index < m_index_of_first_2d_renderable;
+	if (m_current_shader_program == m_static_geometry_program_id) return;
+	gl::glUseProgram(m_static_geometry_program_id);
+	m_current_shader_program = m_static_geometry_program_id;
+
+	// TODO: code this!
+	// set the uniforms. as they appear in: source/library/render/shaders/static_mesh_shader.h
 }
 
-// if adding rigged geometry put the check here.
-
-bool renderer::need_to_switch_to_2d_shader(int renderable_item_index) const
+void renderer::switch_to_2d_shader()
 {
-	return m_current_shader_program != m_textured_quad_geometry_program_id
-		&& renderable_item_index < m_index_of_first_2d_renderable;
+	if (m_current_shader_program == m_textured_quad_geometry_program_id) return;
+	gl::glUseProgram(m_textured_quad_geometry_program_id);
+	m_current_shader_program = m_textured_quad_geometry_program_id;
+
+	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/textured_quad_shader.h
+	// other uniforms are to be set by the renderable object.
+	const gl::GLint u_resolution_location = gl::glGetUniformLocation(m_textured_quad_geometry_program_id, "u_resolution");
+	if (u_resolution_location != -1)
+	{
+		gl::glUniform2fv(u_resolution_location, 1, glm::value_ptr(m_framebuffer_size));
+	}
 }

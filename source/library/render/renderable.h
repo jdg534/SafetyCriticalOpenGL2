@@ -22,6 +22,7 @@ class renderable
 {
 public:
 
+	renderable();
 	virtual ~renderable();
 
 	virtual void initialise() = 0;
@@ -33,6 +34,7 @@ public:
 	gl::GLuint get_index_buffer_id() const;
 	gl::GLuint get_start_in_index_buffer() const;
 	gl::GLuint get_index_count() const;
+	gl::GLuint get_shader_program() const;
 	const std::weak_ptr<renderable> get_parent() const;
 	bool is_parent_set() const;
 	const glm::mat4x4& get_transform() const;
@@ -42,6 +44,7 @@ public:
 	void set_index_buffer_id(gl::GLuint index_buffer_id);
 	void set_start_in_index_buffer(gl::GLuint start_index_buffer);
 	void set_index_count(gl::GLuint index_count);
+	void set_shader_program(gl::GLuint shader_program);
 	void set_parent(std::weak_ptr<renderable> parent);
 	void clear_parent();
 	void set_transform(const glm::mat4x4& transform);
@@ -58,6 +61,7 @@ private:
 	gl::GLuint m_index_buffer_id { 0 };
 	gl::GLuint m_start_in_index_buffer { 0 };
 	gl::GLuint m_index_count { 0 };
+	gl::GLuint m_shader_program { 0 };
 	std::weak_ptr<renderable> m_parent;
 	glm::mat4x4 m_transform;
 };

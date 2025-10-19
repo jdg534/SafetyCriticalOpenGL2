@@ -1,5 +1,15 @@
 #include "renderable.h"
 
+renderable::renderable()
+{
+	// need to make the transform to identity matrix.
+	m_transform = glm::mat4x4(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+}
+
 renderable::~renderable()
 {
 
@@ -30,6 +40,11 @@ gl::GLuint renderable::get_index_count() const
 	return m_index_count;
 }
 
+gl::GLuint renderable::get_shader_program() const
+{
+	return m_shader_program;
+}
+
 const std::weak_ptr<renderable> renderable::get_parent() const
 {
 	return m_parent;
@@ -49,7 +64,11 @@ glm::mat4x4 renderable::get_net_transform() const
 {
 	const glm::mat4x4 parent_transform = is_parent_set()
 		? get_parent().lock()->get_net_transform()
-		: glm::mat4x4(); // identity matrix?
+		: glm::mat4x4(
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f);
 	return parent_transform * m_transform;
 }
 
@@ -71,6 +90,11 @@ void renderable::set_start_in_index_buffer(gl::GLuint start_index_buffer)
 void renderable::set_index_count(gl::GLuint index_count)
 {
 	m_index_count = index_count;
+}
+
+void renderable::set_shader_program(gl::GLuint shader_program)
+{
+	m_shader_program = shader_program;
 }
 
 void renderable::set_parent(std::weak_ptr<renderable> parent)

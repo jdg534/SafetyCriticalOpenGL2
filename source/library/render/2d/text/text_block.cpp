@@ -1,8 +1,10 @@
 #include "text_block.h"
 
-#include <cassert>
 #include "../../vertex_types.h"
 #include "../../../assets/texture.h"
+
+#include <cassert>
+#include <glm/gtc/type_ptr.inl>
 
 text_block::text_block(const std::vector<char32_t>& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit)
 	: renderable_2d()
@@ -11,6 +13,7 @@ text_block::text_block(const std::vector<char32_t>& starting_text, const std::we
 	, m_character_limit(character_limit)
 {
 	m_text.reserve(character_limit);
+	set_renderable_type(renderable_type::_2D_GEOMETRY);
 }
 
 void text_block::initialise()
@@ -35,7 +38,53 @@ void text_block::shutdown()
 
 void text_block::draw()
 {
+	// set the uniforms, vertex and index buffers. the draw
+	// uniforms, as would be present within:
+	// excluding non object specfic uniforms like frame_buffer_size.
+	const gl::GLint shader_program = get_shader_program();
+	// gl::glUseProgram(shader_program);
 
+	const size_t n_glyphs_to_draw = std::min(m_text.size(), static_cast<size_t>(m_character_limit));
+	const gl::GLsizei index_count = n_glyphs_to_draw * 6;
+
+	const gl::GLint u_tint_loc = gl::glGetUniformLocation(shader_program, "u_tint");
+	const gl::GLint u_alphaCut_loc = gl::glGetUniformLocation(shader_program, "u_alpha_cut_off");
+	const gl::GLint u_transform_loc = gl::glGetUniformLocation(shader_program, "u_transform");
+	const gl::GLint u_texture_loc = gl::glGetUniformLocation(shader_program, "u_texture");
+
+	const glm::mat4x4 net_transform = get_net_transform(); // make it identity if needed.
+
+	gl::glUniform4f(u_tint_loc, 1.0f, 1.0f, 1.0f, 1.0f);
+	gl::glUniform1f(u_alphaCut_loc, 0.0f);
+	gl::glUniformMatrix4fv(u_transform_loc, 1, gl::GL_FALSE, glm::value_ptr(net_transform));
+	
+	// set the texture
+	gl::glActiveTexture(gl::GL_TEXTURE0);
+	gl::glBindTexture(gl::GL_TEXTURE_2D, m_font_to_use.lock()->get_texture().lock()->get_id());
+	gl::glUniform1i(u_texture_loc, 0); // as in gl::GL_TEXTURE0
+
+	// buffers
+	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, get_vertex_buffer_id());
+	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, get_index_buffer_id());
+	gl::glBindVertexArray(get_vertex_buffer_id());
+	
+
+	// set the vertex attrib arrays
+	// Define vertex attributes
+	gl::GLsizei stride = vertex_types::vertex2d_struct_size;
+
+
+	// layout(location = 0) in vec2 vs_in_position_in_pixels;    // pixel coordinates (x, y)
+	gl::glEnableVertexAttribArray(0);
+	gl::glVertexAttribPointer(0, 2, gl::GL_FLOAT, gl::GL_FALSE, stride, nullptr);
+	// layout(location = 1) in vec2 vs_in_uv;
+	gl::glEnableVertexAttribArray(1);
+	gl::glVertexAttribPointer(1, 2, gl::GL_FLOAT, gl::GL_FALSE, stride, nullptr);
+
+	// draw
+	gl::glDrawElements(gl::GL_TRIANGLES, index_count, gl::GL_UNSIGNED_SHORT, nullptr);
+
+	gl::glBindVertexArray(0); // clear the vertex array.
 }
 
 void text_block::set_text(const std::vector<char32_t>& new_text)
@@ -63,6 +112,8 @@ void text_block::setup_glyphs()
 
 	m_glyphs.resize(m_character_limit);
 
+	// TODO: this needs to glGenVertexArrays /w a m_vao_id, see the gpt prompt.
+
 	// make the buffer, want to get to off set.
 	gl::GLuint buffer_ids[2];
 	gl::glGenBuffers(2, buffer_ids); // [0] vertex buffer, [1] index buffer
@@ -81,7 +132,7 @@ void text_block::setup_glyphs()
 	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, index_buffer_size, index_buffer.data(), gl::GL_STATIC_DRAW);
 	set_index_buffer_id(buffer_ids[1]);
 	set_start_in_index_buffer(0);
-	set_index_count(0); // the quads will do this
+	set_index_count(m_text.size() * 4); // the quads will do this, NO!
 	for (size_t glyph_index = 0; glyph_index < m_character_limit; ++glyph_index)
 	{
 		m_glyphs[glyph_index] = std::make_unique<glyph>();

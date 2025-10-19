@@ -5,6 +5,7 @@
 
 #include "assets/font.h"
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -12,12 +13,24 @@
 #include <string>
 
 #include <rapidjson/document.h>
-#include <filesystem>
+#include <glm/glm.hpp>
 
 // temp test drawable values.
 
+library_main* library_main::s_instance_ptr = nullptr;
+
 // public
 /////////
+
+library_main::library_main()
+{
+	s_instance_ptr = this;
+}
+
+library_main::~library_main()
+{
+	s_instance_ptr = nullptr;
+}
 
 void library_main::run()
 {
@@ -30,6 +43,7 @@ void library_main::run()
 		m_renderer->render_frame();
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
+
 	}
 	shutdown();
 }
@@ -46,8 +60,11 @@ void library_main::initialise()
 	m_window = initialise_window();
 	glfwMakeContextCurrent(m_window);
 	glbinding::initialize(glfwGetProcAddress);
-	m_renderer = std::make_unique<renderer>(m_window, 50);
+	int framebuffer_width = 0, framebuffer_height = 0;
+	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
+	m_renderer = std::make_unique<renderer>(glm::vec2(static_cast<float>(framebuffer_width), static_cast<float>(framebuffer_height)), 50);
 	m_renderer->initialise();
+	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
 
 	m_asset_manager = std::make_shared<asset_manager>();
 	m_asset_manager->initialise("assets/assets_list.json");
@@ -68,14 +85,13 @@ void library_main::initialise()
 	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 50);
 	m_test_text->initialise();
 
-	// todo: any exposing stuff to the renderer (draw lists)
-
 	m_renderer->add_to_render_list(m_test_text);
+	m_renderer->sort_render_list();
+
 	/*
 	after this line add flag to not permit allocations. those aren't permitted after initialisation. also free() / delete.
 	only during initialisation should allocations be tolerated.
 	*/
-	m_renderer->sort_render_list();
 }
 
 GLFWwindow* library_main::initialise_window()
@@ -154,4 +170,14 @@ void library_main::shutdown()
 		m_window = nullptr;
 	}
 	glfwTerminate();
+}
+
+void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int height)
+{
+	s_instance_ptr->on_framebuffer_resize(window, width, height);
+}
+
+void library_main::on_framebuffer_resize(GLFWwindow* window, int width, int height)
+{
+	m_renderer->set_framebuffer_size(glm::vec2(static_cast<float>(width), static_cast<float>(height)));
 }
