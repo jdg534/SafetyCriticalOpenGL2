@@ -11,6 +11,16 @@
 			"name": "font",
 			"type": "font",
 			"path": "noto_sans_sc_font.json"
+		},
+		{
+			"name": "plain_white",
+			"type": "texture",
+			"path": "textures/plain_white.png"
+		},
+		{
+			"name": "plain_white_font",
+			"type": "font",
+			"path": "plain_white_quad_font.json"
 		}
 	]
 }
