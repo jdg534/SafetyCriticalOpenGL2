@@ -71,7 +71,7 @@ void library_main::initialise()
 	m_asset_manager = std::make_shared<asset_manager>();
 	m_asset_manager->initialise("assets/assets_list.json");
 
-	std::weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("plain_white_font");
+	std::weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
 
 	std::weak_ptr<font> font_ptr = std::dynamic_pointer_cast<font>(font_asset_ptr.lock());
 	std::vector<char32_t> text_to_display;
@@ -87,21 +87,21 @@ void library_main::initialise()
 	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 50);
 	m_test_text->initialise();
 	
-	glm::vec2 test_quad_size{ 100.0f, 100.0f };
-	// const std::weak_ptr<texture>& texture, const glm::vec2& position, const glm::vec2& size
-	m_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
+	std::weak_ptr<texture> test_quad_texture = std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
+	m_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
 	m_test_quad->initialise();
-
-	m_red_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_test_quad->set_tint({1.0f, 1.0f, 0.0f, 1.0f});
+	m_red_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
 	m_red_test_quad->initialise();
 	m_red_test_quad->set_tint({1.0f, 0.0f, 0.0f, 1.0f});
-	m_green_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_green_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
 	m_green_test_quad->initialise();
 	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
-	m_blue_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_blue_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
 	m_blue_test_quad->initialise();
 	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
-	m_magenta_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_magenta_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
 	m_magenta_test_quad->initialise();
 	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
 
@@ -226,15 +226,15 @@ void library_main::tick(float delta_time)
 
 	static constexpr float delta_time_cap = 0.25f;
 	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
-	static float angle = 0.0f, const turn_speed_degrees = 1.0f;
+	static float angle = 0.0f, turn_speed_degrees = 1.0f;
 	angle += turn_speed_degrees * delta_time_to_use;
 
 	int frame_buffer_width = 0, frame_buffer_height = 0;
 	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
-	const float flt_fbw = static_cast<float>(frame_buffer_width), const flt_fbh = static_cast<float>(frame_buffer_height);
+	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
 	
 	mat4x4 translate_matrix = identity<mat4x4>();
-	vec3 translate_to_middle_of_screen = { flt_fbw, frame_buffer_height, 0.0f };
+	vec3 translate_to_middle_of_screen = { flt_fbw * 0.5f, frame_buffer_height * 0.5f, 0.0f };
 	translate_matrix = translate(translate_matrix, translate_to_middle_of_screen);
 	mat4x4 rotate_matrix = identity<mat4x4>();
 	rotate_matrix = rotate(rotate_matrix, angle, { 0.0f, 0.0f, 1.0f });
@@ -246,4 +246,6 @@ void library_main::tick(float delta_time)
 	m_green_test_quad->set_transform(translate(identity<mat4x4>(), {flt_fbw, 0.0f, 0.0f})); // should be top right
 	m_blue_test_quad->set_transform(translate(identity<mat4x4>(), { flt_fbw, flt_fbh, 0.0f }));  // should be bottom right
 	m_magenta_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, flt_fbh, 0.0f }));  // should be bottom left
+
+	m_test_text->set_transform(translate(identity<mat4x4>(), {200.0f, 200.0f, 0.0f}));
 }
