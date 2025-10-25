@@ -69,7 +69,7 @@ void library_main::initialise()
 	m_asset_manager = std::make_shared<asset_manager>();
 	m_asset_manager->initialise("assets/assets_list.json");
 
-	std::weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
+	std::weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("plain_white_font");
 
 	std::weak_ptr<font> font_ptr = std::dynamic_pointer_cast<font>(font_asset_ptr.lock());
 	std::vector<char32_t> text_to_display;
@@ -99,6 +99,12 @@ GLFWwindow* library_main::initialise_window()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // todo figure out correct values of SC 2.0
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // ''
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // ''
+#ifdef NDEBUG
+	// non debug code.
+#else
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+#endif
+
 	// GLFW_ANGLE_PLATFORM_TYPE_OPENGLES, look into this.
 
 	int window_width = 800;
