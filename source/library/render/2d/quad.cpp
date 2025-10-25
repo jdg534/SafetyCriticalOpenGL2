@@ -99,9 +99,9 @@ void quad::draw()
 	GLint loc_alpha_cut = glGetUniformLocation(shader_program, "u_alpha_cut_off");
 	GLint loc_texture = glGetUniformLocation(shader_program, "u_texture");
 
-	glm::mat3 transform_matrix_to_pass = get_transform();
+	glm::mat4 transform_matrix_to_pass = get_net_transform();
 
-	glUniformMatrix3fv(loc_transform, 1, GL_FALSE, glm::value_ptr(transform_matrix_to_pass));
+	glUniformMatrix4fv(loc_transform, 1, GL_FALSE, glm::value_ptr(transform_matrix_to_pass));
 	glUniform4f(loc_tint, 1.0f, 1.0f, 1.0f, 1.0f);
 	glUniform1f(loc_alpha_cut, 0.0f);
 	glUniform1i(loc_texture, 0); // 0 as in GL_TEXTURE0

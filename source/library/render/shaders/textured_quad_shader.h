@@ -7,13 +7,13 @@ layout(location = 0) in vec2 vs_in_position_in_pixels;    // pixel coordinates (
 layout(location = 1) in vec2 vs_in_uv;
 
 uniform vec2 u_resolution; // viewport size in pixels (width, height)
-uniform mat3 u_transform;  // optional 2D transform in pixel-space (affine)
+uniform mat4 u_transform;  // optional 2D transform in pixel-space (affine). done as 4x4 to work with the class structure used.
 
 out vec2 vs_out_uv;
 
 void main()
 {
-    vec3 post_transform_px = u_transform * vec3(vs_in_position_in_pixels, 1.0);
+    vec4 post_transform_px = u_transform * vec4(vs_in_position_in_pixels, 1.0, 1.0);
     vec2 normalised_device_coords = (post_transform_px.xy / u_resolution) * 2.0 - 1.0; // [0..res] -> [-1..1]
     normalised_device_coords.y = -normalised_device_coords.y; // flip Y (positive Y goes down)
 
