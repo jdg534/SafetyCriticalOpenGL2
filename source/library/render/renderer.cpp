@@ -15,12 +15,6 @@
 #include <iostream>
 #include <exception>
 
-constexpr float VERTICES[] = {
-		 0.0f,  0.5f,
-		-0.5f, -0.5f,
-		 0.5f, -0.5f
-};
-
 // public
 /////////
 
