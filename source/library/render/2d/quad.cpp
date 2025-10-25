@@ -7,7 +7,7 @@ using namespace gl;
 // public
 /////////
 
-quad::quad(const std::weak_ptr<texture>& texture, const glm::vec2& position, const glm::vec2& size)
+quad::quad(const std::weak_ptr<texture>& texture, const glm::vec2& size)
 	: renderable_2d()
 	, m_texture(texture)
 	, m_tint(1.0f, 1.0f, 1.0f, 1.0f)
@@ -25,10 +25,10 @@ quad::quad(const std::weak_ptr<texture>& texture, const glm::vec2& position, con
 
 	vertex_2d vertex_buffer_data[4] = // pos, tc
 	{
-		{ glm::vec2 { position.x - quarer_size.x, position.y - quarer_size.y },glm::vec2{0.0f, 1.0}},
-		{ glm::vec2 { position.x + quarer_size.x, position.y - quarer_size.y },glm::vec2{1.0, 1.0}},
-		{ glm::vec2 { position.x - quarer_size.x, position.y + quarer_size.y },glm::vec2{0.0, 0.0}},
-		{ glm::vec2 { position.x + quarer_size.x, position.y + quarer_size.y },glm::vec2{1.0, 0.0}}
+		{ glm::vec2 { 0.0f - quarer_size.x, 0.0f - quarer_size.y },glm::vec2{0.0f, 1.0}},
+		{ glm::vec2 { 0.0f + quarer_size.x, 0.0f - quarer_size.y },glm::vec2{1.0, 1.0}},
+		{ glm::vec2 { 0.0f - quarer_size.x, 0.0f + quarer_size.y },glm::vec2{0.0, 0.0}},
+		{ glm::vec2 { 0.0f + quarer_size.x, 0.0f + quarer_size.y },glm::vec2{1.0, 0.0}}
 	};
 	constexpr GLsizeiptr vertex_buffer_size = vertex2d_struct_size * 4;
 	

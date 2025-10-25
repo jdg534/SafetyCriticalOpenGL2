@@ -29,6 +29,7 @@ private:
 
 	static void s_on_framebuffer_resize(GLFWwindow* window, int width, int height);
 	void on_framebuffer_resize(GLFWwindow* window, int width, int height);
+	void tick(float delta_time);
 
 	GLFWwindow* m_window { nullptr };
 	std::unique_ptr<renderer> m_renderer;

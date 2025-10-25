@@ -14,6 +14,7 @@
 
 #include <rapidjson/document.h>
 #include <glm/glm.hpp>
+#include <glm/ext/matrix_transform.inl>
 
 // temp test drawable values.
 
@@ -40,10 +41,10 @@ void library_main::run()
 	{
 		const float delta_time = static_cast<float>(glfwGetTime()) - running_time;
 		running_time += delta_time;
+		tick(delta_time);
 		m_renderer->render_frame();
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
-
 	}
 	shutdown();
 }
@@ -62,7 +63,7 @@ void library_main::initialise()
 	glbinding::initialize(glfwGetProcAddress);
 	int framebuffer_width = 0, framebuffer_height = 0;
 	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
-	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), const flt_framebuffer_height = static_cast<float>(framebuffer_height);
+	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
 	m_renderer = std::make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50);
 	m_renderer->initialise();
 	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
@@ -86,10 +87,9 @@ void library_main::initialise()
 	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 50);
 	m_test_text->initialise();
 	
-	glm::vec2 test_quad_position { flt_framebuffer_width * 0.5f, flt_framebuffer_width * 0.5f }; // put it in middle of the screen.
-	glm::vec2 test_quad_size{ flt_framebuffer_width * 0.5f, flt_framebuffer_height * 0.5f };
+	glm::vec2 test_quad_size{ 100.0f, 100.0f };
 	// const std::weak_ptr<texture>& texture, const glm::vec2& position, const glm::vec2& size
-	m_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_position, test_quad_size);
+	m_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
 	m_test_quad->initialise();
 
 	m_renderer->add_to_render_list(m_test_quad);
@@ -195,4 +195,26 @@ void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int he
 void library_main::on_framebuffer_resize(GLFWwindow* window, int width, int height)
 {
 	m_renderer->set_framebuffer_size(glm::vec2(static_cast<float>(width), static_cast<float>(height)));
+}
+
+void library_main::tick(float delta_time)
+{
+	using namespace glm;
+
+	static constexpr float delta_time_cap = 0.25f;
+	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
+	static float angle = 0.0f, const turn_speed_degrees = 1.0f;
+	angle += turn_speed_degrees * delta_time_to_use;
+
+	int frame_buffer_width = 0, frame_buffer_height = 0;
+	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
+	const float flt_fbw = static_cast<float>(frame_buffer_width), const flt_fbh = static_cast<float>(frame_buffer_height);
+	mat4x4 translate_matrix = identity<mat4x4>();
+	vec3 translate_to_middle_of_screen = { flt_fbw, frame_buffer_height, 0.0f };
+	translate_matrix = translate(translate_matrix, translate_to_middle_of_screen);
+	mat4x4 rotate_matrix = identity<mat4x4>();
+	rotate_matrix = rotate(rotate_matrix, angle, { 0.0f, 0.0f, 1.0f });
+	mat4x4 transform = identity<mat4x4>();
+	transform = translate_matrix * rotate_matrix;
+	m_test_quad->set_transform(transform);
 }
