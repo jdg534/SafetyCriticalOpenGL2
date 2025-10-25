@@ -92,7 +92,25 @@ void library_main::initialise()
 	m_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
 	m_test_quad->initialise();
 
+	m_red_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_red_test_quad->initialise();
+	m_red_test_quad->set_tint({1.0f, 0.0f, 0.0f, 1.0f});
+	m_green_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_green_test_quad->initialise();
+	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
+	m_blue_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_blue_test_quad->initialise();
+	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
+	m_magenta_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_size);
+	m_magenta_test_quad->initialise();
+	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
+
 	m_renderer->add_to_render_list(m_test_quad);
+	m_renderer->add_to_render_list(m_red_test_quad);
+	m_renderer->add_to_render_list(m_green_test_quad);
+	m_renderer->add_to_render_list(m_blue_test_quad);
+	m_renderer->add_to_render_list(m_magenta_test_quad);
+
 	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
 	m_renderer->sort_render_list();
 
@@ -164,6 +182,11 @@ GLFWwindow* library_main::initialise_window()
 
 void library_main::shutdown()
 {
+	for (auto test_quad : {m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad })
+	{
+		test_quad->shutdown();
+		test_quad.reset();
+	}
 	if (m_test_text)
 	{
 		m_test_text->shutdown();
@@ -209,6 +232,7 @@ void library_main::tick(float delta_time)
 	int frame_buffer_width = 0, frame_buffer_height = 0;
 	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
 	const float flt_fbw = static_cast<float>(frame_buffer_width), const flt_fbh = static_cast<float>(frame_buffer_height);
+	
 	mat4x4 translate_matrix = identity<mat4x4>();
 	vec3 translate_to_middle_of_screen = { flt_fbw, frame_buffer_height, 0.0f };
 	translate_matrix = translate(translate_matrix, translate_to_middle_of_screen);
@@ -217,4 +241,9 @@ void library_main::tick(float delta_time)
 	mat4x4 transform = identity<mat4x4>();
 	transform = translate_matrix * rotate_matrix;
 	m_test_quad->set_transform(transform);
+
+	m_red_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, 0.0f, 0.0f })); // should be top left
+	m_green_test_quad->set_transform(translate(identity<mat4x4>(), {flt_fbw, 0.0f, 0.0f})); // should be top right
+	m_blue_test_quad->set_transform(translate(identity<mat4x4>(), { flt_fbw, flt_fbh, 0.0f }));  // should be bottom right
+	m_magenta_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, flt_fbh, 0.0f }));  // should be bottom left
 }

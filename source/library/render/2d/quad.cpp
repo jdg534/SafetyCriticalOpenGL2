@@ -55,7 +55,7 @@ quad::quad(const std::weak_ptr<texture>& texture, const glm::vec2& size)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_size, index_buffer, GL_STATIC_DRAW);
 	set_index_buffer_id(buffer_ids[1]);
 	set_start_in_index_buffer(0);
-	set_index_count(4);
+	set_index_count(6);
 
 	// layout(location = 0): vec2 position
 	glEnableVertexAttribArray(0);
@@ -102,7 +102,7 @@ void quad::draw()
 	glm::mat4 transform_matrix_to_pass = get_net_transform();
 
 	glUniformMatrix4fv(loc_transform, 1, GL_FALSE, glm::value_ptr(transform_matrix_to_pass));
-	glUniform4f(loc_tint, 1.0f, 1.0f, 1.0f, 1.0f);
+	glUniform4fv(loc_tint, 1, glm::value_ptr(get_tint()));
 	glUniform1f(loc_alpha_cut, 0.0f);
 	glUniform1i(loc_texture, 0); // 0 as in GL_TEXTURE0
 

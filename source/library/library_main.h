@@ -38,6 +38,10 @@ private:
 	// temp text assets
 	std::shared_ptr<text_block> m_test_text;
 	std::shared_ptr<quad> m_test_quad;
+	std::shared_ptr<quad> m_red_test_quad;
+	std::shared_ptr<quad> m_green_test_quad;
+	std::shared_ptr<quad> m_blue_test_quad;
+	std::shared_ptr<quad> m_magenta_test_quad;
 
 	static library_main* s_instance_ptr;
 };
