@@ -62,7 +62,8 @@ void library_main::initialise()
 	glbinding::initialize(glfwGetProcAddress);
 	int framebuffer_width = 0, framebuffer_height = 0;
 	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
-	m_renderer = std::make_unique<renderer>(glm::vec2(static_cast<float>(framebuffer_width), static_cast<float>(framebuffer_height)), 50);
+	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), const flt_framebuffer_height = static_cast<float>(framebuffer_height);
+	m_renderer = std::make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50);
 	m_renderer->initialise();
 	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
 
@@ -84,9 +85,17 @@ void library_main::initialise()
 	// todo: any setup for objects that are to be used defining stuff to render.
 	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 50);
 	m_test_text->initialise();
+	
+	glm::vec2 test_quad_position { flt_framebuffer_width * 0.5f, flt_framebuffer_width * 0.5f }; // put it in middle of the screen.
+	glm::vec2 test_quad_size{ flt_framebuffer_width * 0.5f, flt_framebuffer_height * 0.5f };
+	// const std::weak_ptr<texture>& texture, const glm::vec2& position, const glm::vec2& size
+	m_test_quad = std::make_shared<quad>(std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock()), test_quad_position, test_quad_size);
+	m_test_quad->initialise();
 
-	m_renderer->add_to_render_list(m_test_text);
+	m_renderer->add_to_render_list(m_test_quad);
+	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
 	m_renderer->sort_render_list();
+
 
 	/*
 	after this line add flag to not permit allocations. those aren't permitted after initialisation. also free() / delete.

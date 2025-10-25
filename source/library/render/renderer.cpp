@@ -47,18 +47,20 @@ void renderer::shutdown()
 
 void renderer::render_frame()
 {
+	using namespace gl;
 	static float angle = 0.0f; // refactor the placeholder out.
-	gl::glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	gl::glClear(gl::GL_COLOR_BUFFER_BIT);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// <place holder code>
-	gl::glUseProgram(shader_program_id); // shader specfic
+	glUseProgram(shader_program_id); // shader specfic
 	m_current_shader_program = shader_program_id;
-	gl::GLint angle_loc = gl::glGetUniformLocation(shader_program_id, "angle");
-	gl::glUniform1f(angle_loc, angle);
+	GLint angle_loc = glGetUniformLocation(shader_program_id, "angle");
+	glUniform1f(angle_loc, angle);
 
-	gl::glBindVertexArray(m_vertex_arrary_object_id); // drawable specfic
-	gl::glDrawArrays(gl::GL_TRIANGLES, 0, 3);
+	glBindVertexArray(m_vertex_arrary_object_id); // drawable specfic
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	angle += 0.01f;
 	// </place holder code>
@@ -196,7 +198,7 @@ void renderer::switch_to_3d_static_mesh_shader()
 	if (m_current_shader_program == m_static_geometry_program_id) return;
 	gl::glUseProgram(m_static_geometry_program_id);
 	m_current_shader_program = m_static_geometry_program_id;
-
+	gl::glEnable(gl::GL_DEPTH_TEST);
 	// TODO: code this!
 	// set the uniforms. as they appear in: source/library/render/shaders/static_mesh_shader.h
 }
@@ -214,4 +216,7 @@ void renderer::switch_to_2d_shader()
 	{
 		gl::glUniform2fv(u_resolution_location, 1, glm::value_ptr(m_framebuffer_size));
 	}
+	gl::glEnable(gl::GL_BLEND);
+	gl::glBlendFunc(gl::GL_SRC_ALPHA, gl::GL_ONE_MINUS_SRC_ALPHA);
+	gl::glDisable(gl::GL_DEPTH_TEST);
 }
