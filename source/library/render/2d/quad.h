@@ -19,12 +19,8 @@ public:
 	void shutdown() override;
 	void draw() override;
 
-	glm::vec4 get_tint() const;
-	void set_tint(const glm::vec4& tint);
-
 private:
 
-	glm::vec4 m_tint;
 	std::weak_ptr<texture> m_texture;
 };
 

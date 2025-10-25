@@ -7,6 +7,8 @@ class glyph : public renderable_2d
 {
 public:
 
+	glyph();
+
 	void initialise() override;
 	void shutdown() override;
 	void draw() override;

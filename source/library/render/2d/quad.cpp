@@ -8,11 +8,9 @@ using namespace gl;
 /////////
 
 quad::quad(const std::weak_ptr<texture>& texture, const glm::vec2& size)
-	: renderable_2d()
+	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
 	, m_texture(texture)
-	, m_tint(1.0f, 1.0f, 1.0f, 1.0f)
 {
-	set_renderable_type(renderable_type::_2D_GEOMETRY);
 	using namespace gl;
 	using namespace vertex_types;
 	// 0,0 is bottom left in texutre coordinates.
@@ -117,14 +115,3 @@ void quad::draw()
 	glDrawElements(GL_TRIANGLES, get_index_count(), GL_UNSIGNED_SHORT, 0);
 	glBindVertexArray(0);
 }
-
-glm::vec4 quad::get_tint() const
-{
-	return m_tint;
-}
-
-void quad::set_tint(const glm::vec4& tint)
-{
-	m_tint = tint;
-}
-
