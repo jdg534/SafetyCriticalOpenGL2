@@ -19,9 +19,9 @@ class text_block
 public:
 
 	text_block() = delete;
-	text_block(const std::vector<char32_t>& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit);
+	text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit);
 
-	void set_text(const std::vector<char32_t>& new_text);
+	void set_text(const std::u32string& new_text);
 
 	void initialise() override;
 	void shutdown() override;
@@ -33,7 +33,7 @@ private:
 	void update_glyphs();
 
 	const std::uint16_t m_character_limit;
-	std::vector<char32_t> m_text;
+	std::u32string m_text;
 	std::vector<std::unique_ptr<glyph>> m_glyphs;
 	std::weak_ptr<font> m_font_to_use;
 };

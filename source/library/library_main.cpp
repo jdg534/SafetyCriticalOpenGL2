@@ -74,17 +74,10 @@ void library_main::initialise()
 	std::weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
 
 	std::weak_ptr<font> font_ptr = std::dynamic_pointer_cast<font>(font_asset_ptr.lock());
-	std::vector<char32_t> text_to_display;
-	// some text.
-	text_to_display.resize(11);
-	text_to_display[0] = 's'; text_to_display[1] = 'o'; text_to_display[2] = 'm'; text_to_display[3] = 'e';
-	text_to_display[4] = ' ';
-	text_to_display[5] = 't'; text_to_display[6] = 'e'; text_to_display[7] = 'x'; text_to_display[8] = 't';
-	text_to_display[9] = '.'; text_to_display[10] = 0; // null terminator character.
-
+	std::u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ¡…Õ”⁄\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 + -=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¶·ÈÌÛ˙";
 
 	// todo: any setup for objects that are to be used defining stuff to render.
-	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 50);
+	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 200);
 	m_test_text->initialise();
 	
 	const glm::vec2 test_quad_size{ 100.0f, 100.0f };

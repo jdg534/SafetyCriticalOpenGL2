@@ -45,7 +45,7 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
-	bool is_string_supported(const std::vector<char32_t>& to_check) const;
+	bool is_string_supported(const std::u32string& to_check) const;
 	int get_character_height() const;
 	glyph_info get_glyph_info(char32_t glyph) const;
 	kerning_info get_kerning_info(char32_t previous_glyph, char32_t current_glyph) const;

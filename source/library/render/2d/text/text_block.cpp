@@ -12,7 +12,7 @@ using namespace vertex_types;
 // public
 /////////
 
-text_block::text_block(const std::vector<char32_t>& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit)
+text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit)
 	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
 	, m_text(starting_text)
 	, m_font_to_use(font_to_use)
@@ -87,7 +87,7 @@ void text_block::draw()
 	glBindVertexArray(0); // clear the vertex array.
 }
 
-void text_block::set_text(const std::vector<char32_t>& new_text)
+void text_block::set_text(const std::u32string& new_text)
 {
 	if (new_text.size() > m_character_limit)
 	{
