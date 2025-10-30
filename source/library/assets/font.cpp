@@ -123,22 +123,15 @@ kerning_info font::get_kerning_info(char32_t previous_glyph, char32_t current_gl
 
 source_rect font::get_texture_coordinates_for_glyph(char32_t glyph) const
 {
-	// 0,0 is bottom left. width,height is top right.
-	const glyph_info info = get_glyph_info(glyph); // info 0,0 top left, 1,1 bottom right
+	const glyph_info info = get_glyph_info(glyph);
 	const auto texture = get_texture();
 	source_rect result;
-
-	// TODO: fix this once put the test sprite on screen.
-
 	const float atlas_width = static_cast<float>(texture.lock()->get_width());
 	const float atlas_height = static_cast<float>(texture.lock()->get_height());
 	result.left = info.left_px / atlas_width;
 	result.right = info.right_px / atlas_width;
-	const float glyph_height = info.bottom_px - info.top_px;
-	result.top = atlas_height - info.top_px;
-	result.bottom = result.top - glyph_height;
-	result.top /= atlas_height;
-	result.bottom /= atlas_height;
+	result.top = info.top_px / atlas_height;
+	result.bottom = info.bottom_px / atlas_height;
 	return result;
 }
 
