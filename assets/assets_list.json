@@ -18,6 +18,11 @@
 			"path": "textures/plain_white.png"
 		},
 		{
+			"name": "smiley",
+			"type": "texture",
+			"path": "textures/test_smile.png"
+		},
+		{
 			"name": "plain_white_font",
 			"type": "font",
 			"path": "plain_white_quad_font.json"
