@@ -12,11 +12,12 @@ using namespace vertex_types;
 // public
 /////////
 
-text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit)
+text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit, line_spaceing line_spaceing)
 	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
 	, m_text(starting_text)
 	, m_font_to_use(font_to_use)
 	, m_character_limit(character_limit)
+	, m_line_spaceing(line_spaceing)
 {
 	m_text.reserve(character_limit);
 }
@@ -33,12 +34,14 @@ void text_block::initialise()
 
 void text_block::shutdown()
 {
-	m_glyphs.clear();
 	m_text.clear();
-	gl::GLuint buffer_ids[2]{ get_vertex_buffer_id(), get_index_buffer_id() };
-	gl::glDeleteBuffers(2, buffer_ids);
+	GLuint buffer_ids[2]{ get_vertex_buffer_id(), get_index_buffer_id() };
+	glDeleteBuffers(2, buffer_ids);
+	GLuint vertex_array_id = get_vertex_array_id();
+	glDeleteVertexArrays(1, &vertex_array_id);
 	set_vertex_buffer_id(0);
 	set_index_buffer_id(0);
+	set_vertex_array_id(0);
 }
 
 // private
@@ -75,12 +78,6 @@ void text_block::draw()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, get_index_buffer_id());
 	glBindVertexArray(get_vertex_array_id());
 
-	// set the vertex attrib arrays
-	// Define vertex attributes
-
-	// layout(location = 0) in vec2 vs_in_position_in_pixels;    // pixel coordinates (x, y)
-	
-
 	// draw
 	glBindVertexArray(get_vertex_array_id()); // clear the vertex array.
 	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_SHORT, 0);
@@ -107,12 +104,8 @@ void text_block::setup_glyphs()
 {
 	assert(m_character_limit > 0);
 	assert(m_text.size() <= m_character_limit);
-	assert(m_glyphs.size() == 0); // this should only change once
 	assert(!m_font_to_use.expired());
 
-	m_glyphs.resize(m_character_limit);
-
-	// TODO: this needs to glGenVertexArrays /w a m_vao_id, see the gpt prompt.
 	GLuint vertex_array_id = 0;
 	glGenVertexArrays(1, &vertex_array_id);
 	glBindVertexArray(vertex_array_id);
@@ -136,11 +129,7 @@ void text_block::setup_glyphs()
 	set_index_buffer_id(buffer_ids[1]);
 	set_start_in_index_buffer(0);
 	set_index_count(m_text.size() * 6); // the quads will do this, NO!
-	for (size_t glyph_index = 0; glyph_index < m_character_limit; ++glyph_index)
-	{
-		m_glyphs[glyph_index] = std::make_unique<glyph>();
-		m_glyphs[glyph_index]->set_parent(weak_from_this());
-	}
+	
 	// layout(location = 0): vec2 position
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, vertex2d_struct_size, (void*)offsetof(vertex_2d, position));
@@ -156,7 +145,6 @@ void text_block::setup_glyphs()
 
 void text_block::update_glyphs()
 {
-	assert(m_glyphs.size() == m_character_limit);
 	// pick up here. set the state.
 	const size_t vertex_buffer_size = vertex2d_struct_size * m_character_limit * 4;
 	const size_t index_buffer_size = sizeof(unsigned short) * m_character_limit * 6;
@@ -229,14 +217,13 @@ void text_block::update_glyphs()
 		index_buffer[index_buffer_offset + 4] = vertex_buffer_index_offset + 2;
 		index_buffer[index_buffer_offset + 5] = vertex_buffer_index_offset + 1;
 
-		// update current_x & current_y. 
+		// update current_x & current_y.
 		current_x += current_glyph_width + kerning_info.additional_spacing;
 		if (current_glyph == '\r' || current_glyph == '\n')
 		{
 			// new line, only dealing with left alighment for now.
 			current_x = 0.0f;
-			current_y += tallest_glyph_height * 2.5f; // remember the shader flips y axis to point down.
-			// TODO (if needed): have a variable for the line spacing, maybe an enum.
+			current_y += tallest_glyph_height * get_vertical_spacing_modifier();
 		}
 	}
 
@@ -244,4 +231,16 @@ void text_block::update_glyphs()
 	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, get_index_buffer_id());
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_size, index_buffer.data(), GL_STATIC_DRAW);
+}
+
+float text_block::get_vertical_spacing_modifier() const
+{
+	switch (m_line_spaceing)
+	{
+		case line_spaceing::FIXED: return 1.0f;
+		case line_spaceing::RELATIVE_1_2: return 1.2f;
+		case line_spaceing::RELATIVE_1_5: return 1.5f;
+		case line_spaceing::DOUBLE: return 2.0f;
+	}
+	return 1.0f;
 }

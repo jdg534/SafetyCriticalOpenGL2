@@ -78,8 +78,8 @@ void library_main::initialise()
 	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
 	u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ÁÉÍÓÚ\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 + -=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¦áéíóú";
 
-	// todo: any setup for objects that are to be used defining stuff to render.
-	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200);
+	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
+	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200, line_spaceing::RELATIVE_1_2);
 	m_test_text->initialise();
 	
 	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
