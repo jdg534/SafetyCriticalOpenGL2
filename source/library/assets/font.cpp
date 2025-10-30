@@ -127,6 +127,9 @@ source_rect font::get_texture_coordinates_for_glyph(char32_t glyph) const
 	const glyph_info info = get_glyph_info(glyph); // info 0,0 top left, 1,1 bottom right
 	const auto texture = get_texture();
 	source_rect result;
+
+	// TODO: fix this once put the test sprite on screen.
+
 	const float atlas_width = static_cast<float>(texture.lock()->get_width());
 	const float atlas_height = static_cast<float>(texture.lock()->get_height());
 	result.left = info.left_px / atlas_width;

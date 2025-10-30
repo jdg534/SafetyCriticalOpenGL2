@@ -20,7 +20,7 @@
 		{
 			"name": "smiley",
 			"type": "texture",
-			"path": "textures/test_smile.png"
+			"path": "test_smile.png"
 		},
 		{
 			"name": "plain_white_font",

@@ -16,6 +16,8 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.inl>
 
+using namespace std;
+
 // temp test drawable values.
 
 library_main* library_main::s_instance_ptr = nullptr;
@@ -71,38 +73,42 @@ void library_main::initialise()
 	m_asset_manager = std::make_shared<asset_manager>();
 	m_asset_manager->initialise("assets/assets_list.json");
 
-	std::weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
+	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
 
-	std::weak_ptr<font> font_ptr = std::dynamic_pointer_cast<font>(font_asset_ptr.lock());
-	std::u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ÁÉÍÓÚ\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 + -=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¦áéíóú";
+	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
+	u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ÁÉÍÓÚ\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 + -=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¦áéíóú";
 
 	// todo: any setup for objects that are to be used defining stuff to render.
-	m_test_text = std::make_shared<text_block>(text_to_display, font_ptr, 200);
+	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200);
 	m_test_text->initialise();
 	
 	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
-	std::weak_ptr<texture> test_quad_texture = std::dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
-	m_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
+	weak_ptr<texture> test_quad_texture = dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
+	m_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
 	m_test_quad->initialise();
 	m_test_quad->set_tint({1.0f, 1.0f, 0.0f, 1.0f});
-	m_red_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
+	m_red_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
 	m_red_test_quad->initialise();
 	m_red_test_quad->set_tint({1.0f, 0.0f, 0.0f, 1.0f});
-	m_green_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
+	m_green_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
 	m_green_test_quad->initialise();
 	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
-	m_blue_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
+	m_blue_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
 	m_blue_test_quad->initialise();
 	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
-	m_magenta_test_quad = std::make_shared<quad>(test_quad_texture, test_quad_size);
+	m_magenta_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
 	m_magenta_test_quad->initialise();
 	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
+
+	m_test_smiley_quad = make_shared<quad>(dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("smiley").lock()),
+		test_quad_size);
 
 	m_renderer->add_to_render_list(m_test_quad);
 	m_renderer->add_to_render_list(m_red_test_quad);
 	m_renderer->add_to_render_list(m_green_test_quad);
 	m_renderer->add_to_render_list(m_blue_test_quad);
 	m_renderer->add_to_render_list(m_magenta_test_quad);
+	m_renderer->add_to_render_list(m_test_smiley_quad);
 
 	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
 	m_renderer->sort_render_list();
@@ -175,7 +181,7 @@ GLFWwindow* library_main::initialise_window()
 
 void library_main::shutdown()
 {
-	for (auto test_quad : {m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad })
+	for (auto test_quad : {m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad, m_test_smiley_quad })
 	{
 		test_quad->shutdown();
 		test_quad.reset();
@@ -239,6 +245,7 @@ void library_main::tick(float delta_time)
 	m_green_test_quad->set_transform(translate(identity<mat4x4>(), {flt_fbw, 0.0f, 0.0f})); // should be top right
 	m_blue_test_quad->set_transform(translate(identity<mat4x4>(), { flt_fbw, flt_fbh, 0.0f }));  // should be bottom right
 	m_magenta_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, flt_fbh, 0.0f }));  // should be bottom left
+	m_test_smiley_quad->set_transform(translate(identity<mat4x4>(), { 50.0f, 50.0f, 0.0f }));
 
 	m_test_text->set_transform(translate(identity<mat4x4>(), {200.0f, 200.0f, 0.0f}));
 }

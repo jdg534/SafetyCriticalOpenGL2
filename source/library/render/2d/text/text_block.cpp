@@ -236,6 +236,7 @@ void text_block::update_glyphs()
 			// new line, only dealing with left alighment for now.
 			current_x = 0.0f;
 			current_y += tallest_glyph_height * 2.5f; // remember the shader flips y axis to point down.
+			// TODO (if needed): have a variable for the line spacing, maybe an enum.
 		}
 	}
 
