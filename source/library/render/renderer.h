@@ -9,8 +9,7 @@
 #include <memory>
 #include <vector>
 
-// todo add a foward declare header for all struct and class types.
-class renderable;
+#include "renderable.decl.h"
 
 class renderer
 {

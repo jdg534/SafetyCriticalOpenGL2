@@ -7,7 +7,7 @@
 
 #include "asset_types.h"
 
-class asset_manager;
+#include "asset_manager.decl.h"
 
 class asset
 {
