@@ -7,8 +7,6 @@
 #include "asset.h"
 #include "../render/include_opengl.h"
 
-// https://chatgpt.com/c/68ae29ce-4638-8325-b17a-f42ae5a7b74d we just want the struct to have the id and some data.
-
 class texture : public asset
 {
 public:
