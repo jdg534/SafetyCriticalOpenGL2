@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _ASSET_H_
+#define _ASSET_H_
 
 #include <string>
 #include <string_view>
@@ -30,3 +31,5 @@ private:
 	std::string m_name;
 	std::weak_ptr<const asset_manager> m_asset_manager;
 };
+
+#endif // _ASSET_H_

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _ASSET_MANAGER_H_
+#define _ASSET_MANAGER_H_
 
 #include <string>
 #include <memory>
@@ -33,3 +34,5 @@ private:
 
 	std::vector<std::shared_ptr<asset>> m_assets;
 };
+
+#endif // _ASSET_MANAGER_H_

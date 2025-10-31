@@ -1,4 +1,5 @@
-#pragma once // TODO convert to ifndef, define & endif. pragma once isn't in the c++ standard
+#ifndef _FONT_H_
+#define _FONT_H_
 
 #include <string>
 #include <string_view>
@@ -64,3 +65,4 @@ private:
 	float m_default_spacing = 10.0f; // pixels...
 };
 
+#endif // _FONT_H_

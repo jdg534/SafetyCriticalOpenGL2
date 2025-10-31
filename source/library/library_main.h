@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _LIBRARY_MAIN_H_
+#define _LIBRARY_MAIN_H_
 
 #include "render/include_opengl.h"
 #include "render/renderer.h"
@@ -47,3 +48,4 @@ private:
 	static library_main* s_instance_ptr;
 };
 
+#endif // _LIBRARY_MAIN_H_

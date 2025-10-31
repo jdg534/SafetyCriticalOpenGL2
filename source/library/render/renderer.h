@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _RENDERER_H_
+#define _RENDERER_H_
 
 #include "include_opengl.h"
 
@@ -52,3 +53,5 @@ private:
 	std::vector<std::weak_ptr<renderable>> m_render_list;
 	const size_t m_render_list_cap { 0 };
 };
+
+#endif // _RENDERER_H_

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _STATIC_MESH_SHADER_H_
+#define _STATIC_MESH_SHADER_H_
 
 static constexpr char* STATIC_MESH_VERTEX_SHADER = R"(
 #version 330 core
@@ -59,3 +60,5 @@ void main()
     fs_out_frag_color = surface_colour;
 }
 )";
+
+#endif // _STATIC_MESH_SHADER_H_

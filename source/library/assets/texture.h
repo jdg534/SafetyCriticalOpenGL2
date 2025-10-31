@@ -1,4 +1,5 @@
-#pragma once // TODO convert to ifndef, define & endif. pragma once isn't in the c++ standard
+#ifndef _TEXTURE_H_
+#define _TEXTURE_H_
 
 #include <string>
 #include <string_view>
@@ -31,3 +32,4 @@ private:
 	unsigned int m_height;
 };
 
+#endif // _TEXTURE_H_

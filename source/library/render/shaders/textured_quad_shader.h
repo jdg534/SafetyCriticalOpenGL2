@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _TEXTURED_QUAD_SHADER_H_
+#define _TEXTURED_QUAD_SHADER_H_
 
 static constexpr char* TEXTURED_QUAD_VERTEX_SHADER = R"(
 #version 330 core
@@ -40,3 +41,5 @@ void main()
     fs_out_frag_color = tex * u_tint;
 }
 )";
+
+#endif // _TEXTURED_QUAD_SHADER_H_
