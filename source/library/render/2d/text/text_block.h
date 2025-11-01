@@ -10,6 +10,7 @@
 
 // concuptually this is a array of glyphs with a root transform.
 // An instance has ownership of the relevent buffers.
+
 enum class line_spaceing : uint8_t
 {
 	FIXED,
@@ -28,6 +29,9 @@ public:
 	text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit, line_spaceing line_spaceing);
 
 	void set_text(const std::u32string& new_text);
+	void set_line_spacing(line_spaceing line_spacing);
+	line_spaceing get_line_spacing() const;
+	std::u32string_view get_text() const;
 
 	void initialise() override;
 	void shutdown() override;

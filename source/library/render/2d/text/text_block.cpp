@@ -100,6 +100,22 @@ void text_block::set_text(const std::u32string& new_text)
 	update_glyphs();
 }
 
+void text_block::set_line_spacing(line_spaceing line_spacing)
+{
+	m_line_spaceing = line_spacing;
+	update_glyphs();
+}
+
+line_spaceing text_block::get_line_spacing() const
+{
+	return m_line_spaceing;
+}
+
+std::u32string_view text_block::get_text() const
+{
+	return m_text;
+}
+
 void text_block::setup_glyphs()
 {
 	assert(m_character_limit > 0);
@@ -128,7 +144,7 @@ void text_block::setup_glyphs()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_size, index_buffer.data(), GL_STATIC_DRAW);
 	set_index_buffer_id(buffer_ids[1]);
 	set_start_in_index_buffer(0);
-	set_index_count(m_text.size() * 6); // the quads will do this, NO!
+	set_index_count(m_text.size() * 6);
 	
 	// layout(location = 0): vec2 position
 	glEnableVertexAttribArray(0);
@@ -145,7 +161,6 @@ void text_block::setup_glyphs()
 
 void text_block::update_glyphs()
 {
-	// pick up here. set the state.
 	const size_t vertex_buffer_size = vertex2d_struct_size * m_character_limit * 4;
 	const size_t index_buffer_size = sizeof(unsigned short) * m_character_limit * 6;
 
