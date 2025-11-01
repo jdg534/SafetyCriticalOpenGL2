@@ -3,6 +3,9 @@
 #include "render/renderer.h"
 #include "render/include_opengl.h"
 
+#include "assets/font.h"
+
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -10,9 +13,27 @@
 #include <string>
 
 #include <rapidjson/document.h>
+#include <glm/glm.hpp>
+#include <glm/ext/matrix_transform.inl>
+
+using namespace std;
+
+// temp test drawable values.
+
+library_main* library_main::s_instance_ptr = nullptr;
 
 // public
 /////////
+
+library_main::library_main()
+{
+	s_instance_ptr = this;
+}
+
+library_main::~library_main()
+{
+	s_instance_ptr = nullptr;
+}
 
 void library_main::run()
 {
@@ -22,6 +43,7 @@ void library_main::run()
 	{
 		const float delta_time = static_cast<float>(glfwGetTime()) - running_time;
 		running_time += delta_time;
+		tick(delta_time);
 		m_renderer->render_frame();
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
@@ -41,8 +63,29 @@ void library_main::initialise()
 	m_window = initialise_window();
 	glfwMakeContextCurrent(m_window);
 	glbinding::initialize(glfwGetProcAddress);
-	m_renderer = new renderer(m_window);
+	int framebuffer_width = 0, framebuffer_height = 0;
+	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
+	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
+	m_renderer = std::make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50);
 	m_renderer->initialise();
+	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
+
+	initialise_test_data();
+
+	m_renderer->add_to_render_list(m_test_quad);
+	m_renderer->add_to_render_list(m_red_test_quad);
+	m_renderer->add_to_render_list(m_green_test_quad);
+	m_renderer->add_to_render_list(m_blue_test_quad);
+	m_renderer->add_to_render_list(m_magenta_test_quad);
+	m_renderer->add_to_render_list(m_test_smiley_quad);
+
+	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
+	m_renderer->sort_render_list();
+
+	/*
+	after this line add flag to not permit allocations to deallocations.
+	allocations and deallocation should only be tolerated in initialisation and shutdown.
+	*/
 }
 
 GLFWwindow* library_main::initialise_window()
@@ -50,15 +93,21 @@ GLFWwindow* library_main::initialise_window()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // todo figure out correct values of SC 2.0
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // ''
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // ''
+#ifdef NDEBUG
+	// non debug code.
+#else
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+#endif
+
+	// GLFW_ANGLE_PLATFORM_TYPE_OPENGLES, look into this.
 
 	int window_width = 800;
 	int window_height = 600;
 	std::string window_title = "A window";
 
-	// refactor to std::filesystem::exists("assets/window_settings.json") force C++17
-	std::ifstream window_settings_file("assets/window_settings.json");
-	if (window_settings_file.good())
+	if (std::filesystem::exists("assets/window_settings.json"))
 	{
+		std::ifstream window_settings_file("assets/window_settings.json");
 		std::stringstream buffer;
 		buffer << window_settings_file.rdbuf();
 		std::string json_str = buffer.str();
@@ -98,13 +147,54 @@ GLFWwindow* library_main::initialise_window()
 	return results;
 }
 
+void library_main::initialise_test_data()
+{
+	m_asset_manager = std::make_shared<asset_manager>();
+	m_asset_manager->initialise("assets/assets_list.json");
+
+	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
+
+	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
+	u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ¡…Õ”⁄\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 +-=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¶·ÈÌÛ˙";
+
+	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
+	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200, line_spaceing::RELATIVE_1_2);
+	m_test_text->initialise();
+
+	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
+	weak_ptr<texture> test_quad_texture = dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
+	m_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_test_quad->initialise();
+	m_test_quad->set_tint({ 1.0f, 1.0f, 0.0f, 1.0f });
+	m_red_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_red_test_quad->initialise();
+	m_red_test_quad->set_tint({ 1.0f, 0.0f, 0.0f, 1.0f });
+	m_green_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_green_test_quad->initialise();
+	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
+	m_blue_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_blue_test_quad->initialise();
+	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
+	m_magenta_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_magenta_test_quad->initialise();
+	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
+
+	m_test_smiley_quad = make_shared<quad>(dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("smiley").lock()),
+		test_quad_size);
+}
+
 void library_main::shutdown()
 {
+	shutdown_test_data();
+	if (m_asset_manager)
+	{
+		m_asset_manager->shutdown();
+		m_asset_manager.reset();
+	}
 	if (m_renderer)
 	{
 		m_renderer->shutdown();
-		delete m_renderer;
-		m_renderer = nullptr;
+		m_renderer.reset();
 	}
 	if (m_window)
 	{
@@ -112,4 +202,59 @@ void library_main::shutdown()
 		m_window = nullptr;
 	}
 	glfwTerminate();
+}
+
+void library_main::shutdown_test_data()
+{
+	for (auto test_quad : { m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad, m_test_smiley_quad })
+	{
+		test_quad->shutdown();
+		test_quad.reset();
+	}
+	if (m_test_text)
+	{
+		m_test_text->shutdown();
+		m_test_text.reset();
+	}
+}
+
+void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int height)
+{
+	s_instance_ptr->on_framebuffer_resize(window, width, height);
+}
+
+void library_main::on_framebuffer_resize(GLFWwindow* window, int width, int height)
+{
+	m_renderer->set_framebuffer_size(glm::vec2(static_cast<float>(width), static_cast<float>(height)));
+}
+
+void library_main::tick(float delta_time)
+{
+	using namespace glm;
+
+	static constexpr float delta_time_cap = 0.25f;
+	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
+	static float angle = 0.0f, turn_speed_degrees = 1.0f;
+	angle += turn_speed_degrees * delta_time_to_use;
+
+	int frame_buffer_width = 0, frame_buffer_height = 0;
+	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
+	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
+	
+	mat4x4 translate_matrix = identity<mat4x4>();
+	vec3 translate_to_middle_of_screen = { flt_fbw * 0.5f, frame_buffer_height * 0.5f, 0.0f };
+	translate_matrix = translate(translate_matrix, translate_to_middle_of_screen);
+	mat4x4 rotate_matrix = identity<mat4x4>();
+	rotate_matrix = rotate(rotate_matrix, angle, { 0.0f, 0.0f, 1.0f });
+	mat4x4 transform = identity<mat4x4>();
+	transform = translate_matrix * rotate_matrix;
+	m_test_quad->set_transform(transform);
+
+	m_red_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, 0.0f, 0.0f })); // should be top left
+	m_green_test_quad->set_transform(translate(identity<mat4x4>(), {flt_fbw, 0.0f, 0.0f})); // should be top right
+	m_blue_test_quad->set_transform(translate(identity<mat4x4>(), { flt_fbw, flt_fbh, 0.0f }));  // should be bottom right
+	m_magenta_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, flt_fbh, 0.0f }));  // should be bottom left
+	m_test_smiley_quad->set_transform(translate(identity<mat4x4>(), { 50.0f, 50.0f, 0.0f }));
+
+	m_test_text->set_transform(translate(identity<mat4x4>(), {200.0f, 200.0f, 0.0f}));
 }

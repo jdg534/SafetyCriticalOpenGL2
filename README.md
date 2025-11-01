@@ -29,7 +29,7 @@ git submodules update --init
 
 To create the build directory run:
 
-cmake -S ./ -B build
+cmake --preset=windows-static
 
 Assuming Visual Studio, is your default cmake generator simply run the start up project.
 
