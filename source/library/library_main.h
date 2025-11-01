@@ -26,7 +26,9 @@ private:
 
 	void initialise();
 	GLFWwindow* initialise_window();
+	void initialise_test_data();
 	void shutdown();
+	void shutdown_test_data();
 
 	static void s_on_framebuffer_resize(GLFWwindow* window, int width, int height);
 	void on_framebuffer_resize(GLFWwindow* window, int width, int height);

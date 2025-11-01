@@ -70,38 +70,7 @@ void library_main::initialise()
 	m_renderer->initialise();
 	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
 
-	m_asset_manager = std::make_shared<asset_manager>();
-	m_asset_manager->initialise("assets/assets_list.json");
-
-	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
-
-	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
-	u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ¡…Õ”⁄\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 + -=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¶·ÈÌÛ˙";
-
-	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
-	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200, line_spaceing::RELATIVE_1_2);
-	m_test_text->initialise();
-	
-	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
-	weak_ptr<texture> test_quad_texture = dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
-	m_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_test_quad->initialise();
-	m_test_quad->set_tint({1.0f, 1.0f, 0.0f, 1.0f});
-	m_red_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_red_test_quad->initialise();
-	m_red_test_quad->set_tint({1.0f, 0.0f, 0.0f, 1.0f});
-	m_green_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_green_test_quad->initialise();
-	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
-	m_blue_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_blue_test_quad->initialise();
-	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
-	m_magenta_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_magenta_test_quad->initialise();
-	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
-
-	m_test_smiley_quad = make_shared<quad>(dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("smiley").lock()),
-		test_quad_size);
+	initialise_test_data();
 
 	m_renderer->add_to_render_list(m_test_quad);
 	m_renderer->add_to_render_list(m_red_test_quad);
@@ -113,10 +82,9 @@ void library_main::initialise()
 	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
 	m_renderer->sort_render_list();
 
-
 	/*
-	after this line add flag to not permit allocations. those aren't permitted after initialisation. also free() / delete.
-	only during initialisation should allocations be tolerated.
+	after this line add flag to not permit allocations to deallocations.
+	allocations and deallocation should only be tolerated in initialisation and shutdown.
 	*/
 }
 
@@ -179,18 +147,45 @@ GLFWwindow* library_main::initialise_window()
 	return results;
 }
 
+void library_main::initialise_test_data()
+{
+	m_asset_manager = std::make_shared<asset_manager>();
+	m_asset_manager->initialise("assets/assets_list.json");
+
+	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
+
+	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
+	u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ¡…Õ”⁄\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 +-=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¶·ÈÌÛ˙";
+
+	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
+	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200, line_spaceing::RELATIVE_1_2);
+	m_test_text->initialise();
+
+	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
+	weak_ptr<texture> test_quad_texture = dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
+	m_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_test_quad->initialise();
+	m_test_quad->set_tint({ 1.0f, 1.0f, 0.0f, 1.0f });
+	m_red_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_red_test_quad->initialise();
+	m_red_test_quad->set_tint({ 1.0f, 0.0f, 0.0f, 1.0f });
+	m_green_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_green_test_quad->initialise();
+	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
+	m_blue_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_blue_test_quad->initialise();
+	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
+	m_magenta_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
+	m_magenta_test_quad->initialise();
+	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
+
+	m_test_smiley_quad = make_shared<quad>(dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("smiley").lock()),
+		test_quad_size);
+}
+
 void library_main::shutdown()
 {
-	for (auto test_quad : {m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad, m_test_smiley_quad })
-	{
-		test_quad->shutdown();
-		test_quad.reset();
-	}
-	if (m_test_text)
-	{
-		m_test_text->shutdown();
-		m_test_text.reset();
-	}
+	shutdown_test_data();
 	if (m_asset_manager)
 	{
 		m_asset_manager->shutdown();
@@ -207,6 +202,20 @@ void library_main::shutdown()
 		m_window = nullptr;
 	}
 	glfwTerminate();
+}
+
+void library_main::shutdown_test_data()
+{
+	for (auto test_quad : { m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad, m_test_smiley_quad })
+	{
+		test_quad->shutdown();
+		test_quad.reset();
+	}
+	if (m_test_text)
+	{
+		m_test_text->shutdown();
+		m_test_text.reset();
+	}
 }
 
 void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int height)
