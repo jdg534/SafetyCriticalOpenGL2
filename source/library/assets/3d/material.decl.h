@@ -1,6 +1,6 @@
-#ifndef _MODEL_DECL_H_
-#define _MODEL_DECL_H_
+#ifndef _MATERIAL_DECL_H_
+#define _MATERIAL_DECL_H_
 
-class model;
+class material;
 
-#endif // _MODEL_DECL_H_
+#endif // _MATERIAL_DECL_H_
