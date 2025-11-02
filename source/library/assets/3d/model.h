@@ -9,7 +9,8 @@
 #include <assimp/scene.h>
 
 #include "../asset.h"
-#include "material.h"
+#include "material.h" // refactor the fwd decl
+#include "mesh.h" // refactor the fwd decl
 
 class model : public asset
 {
@@ -29,6 +30,7 @@ private:
 	void initialise_meshes(const aiScene* scene);
 
 	std::vector<std::shared_ptr<material>> m_materials;
+	std::vector<std::shared_ptr<mesh>> m_meshs;
 };
 
 #endif // _MODEL_H_
