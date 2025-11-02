@@ -26,6 +26,11 @@
 			"name": "plain_white_font",
 			"type": "font",
 			"path": "plain_white_quad_font.json"
+		},
+		{
+			"name": "grass_cube",
+			"type": "static_model",
+			"path": "models/grass_cube.obj"
 		}
 	]
 }

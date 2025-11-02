@@ -28,9 +28,7 @@ private:
 	std::shared_ptr<asset> load_asset(std::string_view name, std::string_view type, std::string_view path);
 	std::shared_ptr<asset> load_texture(std::string_view name, std::string_view path);
 	std::shared_ptr<asset> load_font(std::string_view name, std::string_view path);
-	std::shared_ptr<asset> load_static_model(std::string_view name, std::string_view path);
-	std::shared_ptr<asset> load_rigged_model(std::string_view name, std::string_view path);
-	std::shared_ptr<asset> load_materials(std::string_view name, std::string_view path);
+	std::shared_ptr<asset> load_model(std::string_view name, std::string_view path);
 
 	std::vector<std::shared_ptr<asset>> m_assets;
 };
