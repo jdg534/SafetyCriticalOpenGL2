@@ -26,7 +26,10 @@ void mesh::initialise()
     // this is a placeholder
 }
 
-
+void mesh::initialise_assimp_struct(const aiMesh* initialise_with)
+{
+	throw std::runtime_error("TODO: code mesh::initialise_assimp_struct()");
+}
 
 void mesh::shutdown()
 {

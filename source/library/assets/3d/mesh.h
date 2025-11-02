@@ -20,6 +20,7 @@ public:
 	virtual ~mesh();
 
 	void initialise() override;
+	void initialise_assimp_struct(const aiMesh* initialise_with);
 	void shutdown() override;
 	asset_type get_type() const override;
 

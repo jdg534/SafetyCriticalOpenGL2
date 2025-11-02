@@ -34,19 +34,18 @@ void model::initialise()
         aiProcess_MakeLeftHanded; // see if the texutre coods come out right
 
     const aiScene* scene = importer.ReadFile(get_path().data(), flags);
-    if (!scene || !scene->mRootNode) {
-        throw std::exception(importer.GetErrorString());
-    }
+    if (!scene || !scene->mRootNode) { throw std::exception(importer.GetErrorString()); }
 
     initialise_materials(scene->mNumMaterials, *scene->mMaterials);
     initialise_meshes(scene);
 }
 
-
-
 void model::shutdown()
 {
-	// TODO: CODE ME!
+    for (auto mesh : m_meshs) { mesh->shutdown(); }
+    for (auto material : m_materials) { material->shutdown(); }
+    m_meshs.clear();
+    m_materials.clear();
 }
 
 asset_type model::get_type() const
@@ -75,5 +74,12 @@ void model::initialise_materials(unsigned int num_materials, const aiMaterial* m
 
 void model::initialise_meshes(const aiScene* scene)
 {
-    throw std::runtime_error("TODO: code model::initialise_meshes");
+    const unsigned int num_meshes = scene->mNumMeshes;
+    m_meshs.resize(num_meshes);
+    for (unsigned int i = 0; i < num_meshes; ++i)
+    {
+        const aiMesh* current_mesh = *scene->mMeshes + i;
+        m_meshs[i] = std::make_shared<mesh>(current_mesh->mName.C_Str(), get_path().data(), get_asset_manager());
+        m_meshs[i]->initialise_assimp_struct(current_mesh);
+    }
 }
