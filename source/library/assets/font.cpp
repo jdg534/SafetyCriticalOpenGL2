@@ -17,8 +17,8 @@ using namespace std;
 // public
 /////////
 
-font::font(const std::string& name, std::weak_ptr<const asset_manager> asset_manager)
-	: asset(name, asset_manager)
+font::font(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager)
+	: asset(name, path, asset_manager)
 {
 
 }
@@ -28,9 +28,9 @@ font::~font()
 
 }
 
-void font::initialise(std::string_view file_path)
+void font::initialise()
 {
-	std::ifstream assets_list_file(file_path.data());
+	std::ifstream assets_list_file(get_path().data());
 	if (!assets_list_file.good())
 	{
 		throw std::exception("asset_manager::initialise failed to open file");

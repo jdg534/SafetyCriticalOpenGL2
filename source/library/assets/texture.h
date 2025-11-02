@@ -12,10 +12,10 @@ class texture : public asset
 public:
 
 	texture() = delete;
-	texture(const std::string& name, std::weak_ptr<const asset_manager> asset_manager);
+	texture(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
 	virtual ~texture();
 
-	void initialise(std::string_view file_path) override;
+	void initialise() override;
 	void shutdown() override;
 	asset_type get_type() const override;
 

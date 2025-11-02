@@ -20,6 +20,10 @@ public:
 	void shutdown();
 
 	std::weak_ptr<asset> get_asset_on_name(std::string_view asset_name) const;
+	std::weak_ptr<asset> get_asset_on_path(std::string_view asset_path) const;
+
+	// also have a request load texture, some materials will make you load the texture
+	void request_load_texture(std::string_view name, std::string_view file_path);
 
 private:
 
@@ -28,7 +32,7 @@ private:
 	std::shared_ptr<asset> load_asset(std::string_view name, std::string_view type, std::string_view path);
 	std::shared_ptr<asset> load_texture(std::string_view name, std::string_view path);
 	std::shared_ptr<asset> load_font(std::string_view name, std::string_view path);
-	std::shared_ptr<asset> load_model(std::string_view name, std::string_view path);
+	std::shared_ptr<asset> load_model(std::string_view name, std::string_view path); // (triggers the loading of materials)
 
 	std::vector<std::shared_ptr<asset>> m_assets;
 };

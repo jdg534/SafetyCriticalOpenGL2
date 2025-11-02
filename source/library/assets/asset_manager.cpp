@@ -13,7 +13,7 @@
 #include "../render/include_opengl.h"
 #include "font.h"
 #include "texture.h"
-#include "model.h"
+#include "3d/model.h"
 
 void asset_manager::initialise(std::string_view assets_list_file_path)
 {
@@ -76,6 +76,23 @@ std::weak_ptr<asset> asset_manager::get_asset_on_name(std::string_view asset_nam
 	throw std::runtime_error(std::string("Could not find the asset with name: ") + asset_name.data());
 }
 
+std::weak_ptr<asset> asset_manager::get_asset_on_path(std::string_view asset_path) const
+{
+	for (const auto asset : m_assets)
+	{
+		if (asset->get_path() == asset_path)
+		{
+			return asset;
+		}
+	}
+	throw std::runtime_error(std::string("Could not find the asset with path: ") + asset_path.data());
+}
+
+void asset_manager::request_load_texture(std::string_view name, std::string_view file_path)
+{
+	throw std::runtime_error("CODE asset_manager::request_load_texture");
+}
+
 asset_type asset_manager::to_type(std::string_view s)
 {
 	if (s == "texture") return asset_type::texture;
@@ -99,21 +116,21 @@ std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::str
 // break this up into asset_loader.
 std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::string_view path)
 {
-	std::shared_ptr<texture> result = std::make_shared<texture>(name.data(), weak_from_this());
-	result->initialise(path);
+	std::shared_ptr<texture> result = std::make_shared<texture>(name.data(), path.data(), weak_from_this());
+	result->initialise();
 	return result;
 }
 
 std::shared_ptr<asset> asset_manager::load_font(std::string_view name, std::string_view path)
 {
-	std::shared_ptr<font> result = std::make_shared<font>(name.data(), weak_from_this());
-	result->initialise(path);
+	std::shared_ptr<font> result = std::make_shared<font>(name.data(), path.data(), weak_from_this());
+	result->initialise();
 	return result;
 }
 
 std::shared_ptr<asset> asset_manager::load_model(std::string_view name, std::string_view path)
 {
-	std::shared_ptr<model> result = std::make_shared<model>(name.data(), weak_from_this());
-	result->initialise(path);
+	std::shared_ptr<model> result = std::make_shared<model>(name.data(), path.data(), weak_from_this());
+	result->initialise();
 	return result;
 }

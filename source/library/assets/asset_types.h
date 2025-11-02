@@ -8,7 +8,9 @@ enum class asset_type : std::uint8_t
 	invalid,
 	texture,
 	font,
-	model, // only foucus on static_models, see if can incorporate material loading.
+	model,
+	mesh, // loaded when loading a model
+	material, // loaded when loading a model
 };
 
 #endif // _ASSET_TYPES_H_
