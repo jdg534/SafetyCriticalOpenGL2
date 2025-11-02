@@ -29,7 +29,7 @@
 		},
 		{
 			"name": "grass_cube",
-			"type": "static_model",
+			"type": "model",
 			"path": "models/grass_cube.obj"
 		}
 	]
