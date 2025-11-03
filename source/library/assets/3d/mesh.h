@@ -5,8 +5,7 @@
 #include <string>
 #include <string_view>
 
-#include <assimp/material.h>
-#include <assimp/scene.h>
+#include <assimp/mesh.h>
 
 #include "../asset.h"
 #include "material.h"
