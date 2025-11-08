@@ -4,6 +4,7 @@
 #include "render/include_opengl.h"
 
 #include "assets/font.h"
+#include "assets/3d/model.h"
 
 #include <filesystem>
 #include <fstream>
@@ -81,7 +82,12 @@ void library_main::initialise()
 	m_renderer->add_to_render_list(m_test_smiley_quad);
 
 	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
+
+	// 3d stuff will be z buffered. (order doesn't matter.
+	m_renderer->add_to_render_list(m_test_cube);
+
 	m_renderer->sort_render_list();
+
 
 	/*
 	after this line add flag to not permit allocations to deallocations.
@@ -179,6 +185,8 @@ void library_main::initialise_test_data()
 
 	m_test_smiley_quad = make_shared<quad>(dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("smiley").lock()),
 		test_quad_size);
+
+	m_test_cube = make_shared<static_model>(dynamic_pointer_cast<model>(m_asset_manager->get_asset_on_name("grass_cube").lock()));
 }
 
 void library_main::shutdown()
@@ -209,6 +217,8 @@ void library_main::shutdown_test_data()
 		test_quad->shutdown();
 		test_quad.reset();
 	}
+	m_test_cube->shutdown();
+	m_test_cube.reset();
 	if (m_test_text)
 	{
 		m_test_text->shutdown();
@@ -255,4 +265,6 @@ void library_main::tick(float delta_time)
 	m_test_smiley_quad->set_transform(translate(identity<mat4x4>(), { 50.0f, 50.0f, 0.0f }));
 
 	m_test_text->set_transform(translate(identity<mat4x4>(), {200.0f, 200.0f, 0.0f}));
+
+	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
 }

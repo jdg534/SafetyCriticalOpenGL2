@@ -45,7 +45,7 @@ private:
 
 	const std::uint16_t m_character_limit;
 	std::u32string m_text;
-	std::weak_ptr<font> m_font_to_use;
+	std::weak_ptr<font> m_font_to_use; // refactor to: weak_ptr<const font>
 	line_spaceing m_line_spaceing;
 };
 

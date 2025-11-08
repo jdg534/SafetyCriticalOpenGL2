@@ -21,7 +21,7 @@ public:
 
 private:
 
-	std::weak_ptr<texture> m_texture;
+	std::weak_ptr<texture> m_texture; // refactor to weak_ptr<const texture>
 };
 
 #endif // _QUAD_H_

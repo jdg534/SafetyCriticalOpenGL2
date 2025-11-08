@@ -1,14 +1,21 @@
 #ifndef _STATIC_MODEL_3D_H_
 #define _STATIC_MODEL_3D_H_
 
-#include "renderable_3d.h"
+#include <memory>
 
-// note that this doesn't own the buffers or vertex arrays
+#include "renderable_3d.h"
+#include "../../assets/3d/model.h"
+
+// note that this doesn't own any 
 
 class static_model : public renderable_3d
 {
 
 public:
+
+	static_model() = delete;
+	static_model(std::weak_ptr<model> model); // refactor to weak_ptr<const model>
+	virtual ~static_model();
 
 	void initialise() override;
 	void shutdown() override;
@@ -16,10 +23,7 @@ public:
 
 private:
 
+	std::weak_ptr<model> m_model; // refactor to weak_ptr<const model>
 };
-
-// This is a placeholder.
-// This will be the base class for geomentry.
-// Terrain will be another class (inheriting from this)
 
 #endif // _STATIC_MODEL_3D_H_
