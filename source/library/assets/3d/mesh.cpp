@@ -22,14 +22,11 @@ mesh::mesh(const std::string& name, const std::string& path, std::weak_ptr<const
 
 }
 
-mesh::~mesh()
-{
-	// TODO: CODE ME!
-}
+mesh::~mesh() { }
 
 void mesh::initialise()
 {
-    // this is a placeholder
+    // this is a placeholder, initialise_assimp_struct() should be called instead.
 }
 
 void mesh::initialise_assimp_struct(const aiMesh* initialise_with)
