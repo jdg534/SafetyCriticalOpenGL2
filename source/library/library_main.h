@@ -12,6 +12,7 @@
 
 #include "render/2d/text/text_block.h"
 #include "render/2d/quad.h"
+#include "render/3d/static_model.h"
 
 class library_main
 {
@@ -39,6 +40,7 @@ private:
 	std::shared_ptr<asset_manager> m_asset_manager; // needs to be constructed via make_shared, weak_ptr to be passed around
 
 	// temp text assets
+	std::shared_ptr<static_model> m_test_cube;
 	std::shared_ptr<text_block> m_test_text;
 	std::shared_ptr<quad> m_test_quad;
 	std::shared_ptr<quad> m_red_test_quad;

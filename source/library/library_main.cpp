@@ -18,8 +18,6 @@
 
 using namespace std;
 
-// temp test drawable values.
-
 library_main* library_main::s_instance_ptr = nullptr;
 
 // public
@@ -69,6 +67,9 @@ void library_main::initialise()
 	m_renderer = std::make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50);
 	m_renderer->initialise();
 	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
+
+	m_asset_manager = std::make_shared<asset_manager>();
+	m_asset_manager->initialise("assets/assets_list.json");
 
 	initialise_test_data();
 
@@ -149,9 +150,6 @@ GLFWwindow* library_main::initialise_window()
 
 void library_main::initialise_test_data()
 {
-	m_asset_manager = std::make_shared<asset_manager>();
-	m_asset_manager->initialise("assets/assets_list.json");
-
 	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
 
 	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
