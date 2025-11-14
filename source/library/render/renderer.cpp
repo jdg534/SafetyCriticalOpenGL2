@@ -140,7 +140,10 @@ void renderer::switch_to_3d_static_mesh_shader()
 	m_current_shader_program = m_static_geometry_program_id;
 	gl::glEnable(gl::GL_DEPTH_TEST);
 	// TODO: code this!
-	// set the uniforms. as they appear in: source/library/render/shaders/static_mesh_shader.h
+	/* uniforms to set:
+	uniform mat4 u_view; // TODO, refactor to be u_view_projection matrix. once once got it working.
+	uniform mat4 u_projection; // set it in render_frame() add a camera class first.
+	*/
 }
 
 void renderer::switch_to_2d_shader()
