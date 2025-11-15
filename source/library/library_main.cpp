@@ -5,6 +5,7 @@
 
 #include "assets/font.h"
 #include "assets/3d/model.h"
+#include "render/3d/camera.h"
 
 #include <filesystem>
 #include <fstream>
@@ -65,7 +66,12 @@ void library_main::initialise()
 	int framebuffer_width = 0, framebuffer_height = 0;
 	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
 	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
-	m_renderer = std::make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50);
+
+	m_camera = make_shared<camera>();
+	m_camera->set_view_port_width(flt_framebuffer_width);
+	m_camera->set_view_port_height(flt_framebuffer_height);
+
+	m_renderer = make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50, m_camera);
 	m_renderer->initialise();
 	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
 
@@ -233,7 +239,11 @@ void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int he
 
 void library_main::on_framebuffer_resize(GLFWwindow* window, int width, int height)
 {
-	m_renderer->set_framebuffer_size(glm::vec2(static_cast<float>(width), static_cast<float>(height)));
+	const float flt_width = static_cast<float>(width);
+	const float flt_height = static_cast<float>(height);
+	m_renderer->set_framebuffer_size(glm::vec2(flt_width, flt_height));
+	m_camera->set_view_port_width(flt_width);
+	m_camera->set_view_port_height(flt_height);
 }
 
 void library_main::tick(float delta_time)

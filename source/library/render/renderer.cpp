@@ -6,6 +6,7 @@
 #include "shaders/shaders_compilation.h"
 
 #include "renderable.h"
+#include "3d/camera.h"
 
 #include <glbinding/gl/types.h>
 #include <glm/glm.hpp>
@@ -18,9 +19,10 @@
 // public
 /////////
 
-renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap)
+renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap, std::weak_ptr<const camera> camera)
 	: m_framebuffer_size(framebuffer_size)
 	, m_render_list_cap(render_list_cap)
+	, m_camera(camera)
 {
 
 }
@@ -105,6 +107,11 @@ void renderer::sort_render_list()
 void renderer::set_framebuffer_size(glm::vec2 framebuffer_size)
 {
 	m_framebuffer_size = framebuffer_size;
+}
+
+void renderer::set_camera(std::weak_ptr<const camera> camera)
+{
+	m_camera = camera;
 }
 
 // private

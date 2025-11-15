@@ -13,6 +13,7 @@
 #include "render/2d/text/text_block.h"
 #include "render/2d/quad.h"
 #include "render/3d/static_model.h"
+#include "render/3d/camera.h"
 
 
 class library_main
@@ -49,7 +50,8 @@ private:
 	std::shared_ptr<quad> m_blue_test_quad;
 	std::shared_ptr<quad> m_magenta_test_quad;
 	std::shared_ptr<quad> m_test_smiley_quad;
-
+	
+	std::shared_ptr<camera> m_camera;
 
 	static library_main* s_instance_ptr;
 };

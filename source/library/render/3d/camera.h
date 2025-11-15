@@ -39,9 +39,9 @@ public:
 
 private:
 
-	glm::vec3 m_position;
-	glm::vec3 m_look_at_position;
-	glm::vec3 m_up_vector;
+	glm::vec3 m_position = { 0.0f, 0.0f, 0.0f };
+	glm::vec3 m_look_at_position = {0.0f, 0.0f, 10.0f};
+	glm::vec3 m_up_vector = {0.0f, 1.0f, 0.0f};
 	float m_field_of_view_angle_radians = { 0.785398f }; // 45 degrees
 	float m_view_port_width = { 800.0f };
 	float m_view_port_height ={ 600.0f };
