@@ -103,10 +103,35 @@ void material::initialise_assimp_struct(const aiMaterial* assimp_material)
 
 void material::shutdown()
 {
-	// TODO: CODE ME!
+	// placeholder, we don't put anything on heap. The asset manager will remove the textures.
 }
 
 asset_type material::get_type() const
 {
 	return asset_type::material;
+}
+
+const glm::vec4& material::get_diffuse_colour() const
+{
+    return m_diffuse_colour;
+}
+
+const glm::vec4& material::get_ambient_colour() const
+{
+    return m_ambient_colour;
+}
+
+const glm::vec4& material::get_specular_colour() const
+{
+    return m_specular_colour;
+}
+
+float material::get_shininess() const
+{
+    return m_shininess;
+}
+
+const std::unordered_map<texture_purpose, std::weak_ptr<texture>>& material::get_textures() const
+{
+    return m_textures;
 }

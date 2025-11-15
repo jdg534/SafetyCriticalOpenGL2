@@ -53,6 +53,16 @@ asset_type model::get_type() const
 	return asset_type::model;
 }
 
+const std::vector<std::shared_ptr<material>>& model::get_materials() const
+{
+    return m_materials;
+}
+
+const std::vector<std::shared_ptr<mesh>>& model::get_meshs() const
+{
+    return m_meshs;
+}
+
 // private
 //////////
 

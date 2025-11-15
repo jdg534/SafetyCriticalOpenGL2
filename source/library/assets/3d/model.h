@@ -24,6 +24,9 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
+	const std::vector<std::shared_ptr<material>>& get_materials() const;
+	const std::vector<std::shared_ptr<mesh>>& get_meshs() const;
+
 private:
 
 	void initialise_materials(unsigned int num_materials, const aiMaterial* materials);

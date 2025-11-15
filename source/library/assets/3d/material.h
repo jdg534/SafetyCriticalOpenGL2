@@ -38,6 +38,13 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
+    const glm::vec4& get_diffuse_colour() const;
+    const glm::vec4& get_ambient_colour() const;
+    const glm::vec4& get_specular_colour() const;
+    float get_shininess() const;
+
+    const std::unordered_map<texture_purpose, std::weak_ptr<texture>>& get_textures() const;
+
 private:
 
     glm::vec4 m_diffuse_colour { 1.0f, 1.0f, 1.0f, 1.0f };
