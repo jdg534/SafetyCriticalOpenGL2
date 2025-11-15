@@ -35,3 +35,25 @@ char32_t text_utilities::utf8_to_char32(const char* utf8str)
 	throw std::runtime_error("Invalid UTF-8 sequence");
 	return '\0';
 }
+
+void text_utilities::append_vec3(std::u32string& append_to, const glm::vec3& to_append)
+{
+	char tmp[128];
+
+	// Use a safe format — choose precision and format that suits you.
+	// "%.4f" is predictable and locale neutral (C locale), produces ASCII digits and '.' for decimal.
+	int written = std::snprintf(tmp, sizeof(tmp),
+		"(%.4f, %.4f, %.4f)",
+		static_cast<double>(to_append.x),
+		static_cast<double>(to_append.y),
+		static_cast<double>(to_append.z));
+	const size_t add = static_cast<size_t>(written);
+	const size_t start = append_to.size();
+	append_to.resize(start + add); // may allocate once if capacity insufficient
+
+	// copy bytes -> char32_t codepoints
+	for (size_t i = 0; i < add; ++i)
+	{
+		append_to[start + i] = static_cast<char32_t>(static_cast<unsigned char>(tmp[i]));
+	}
+}

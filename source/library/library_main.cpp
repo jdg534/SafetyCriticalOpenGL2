@@ -6,6 +6,7 @@
 #include "assets/font.h"
 #include "assets/3d/model.h"
 #include "render/3d/camera.h"
+#include "utilities/text_utilities.h"
 
 #include <filesystem>
 #include <fstream>
@@ -22,10 +23,15 @@ using namespace std;
 
 library_main* library_main::s_instance_ptr = nullptr;
 
+constexpr glm::vec4 text_changing_tint = {1.0f, 0.0f, 0.0f, 1.0f};
+constexpr glm::vec4 text_normal_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 // public
 /////////
 
 library_main::library_main()
+	: m_camera_movement_speed(0.0f,0.0f,0.0f)
+	, m_camera_look_at_point_movement_speed(0.0f, 0.0f, 0.0f)
 {
 	s_instance_ptr = this;
 }
@@ -74,7 +80,9 @@ void library_main::initialise()
 
 	m_renderer = make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50, m_camera);
 	m_renderer->initialise();
+
 	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
+	glfwSetKeyCallback(m_window, library_main::s_on_key_callback);
 
 	m_asset_manager = std::make_shared<asset_manager>();
 	m_asset_manager->initialise("assets/assets_list.json");
@@ -166,15 +174,13 @@ void library_main::initialise_test_data()
 	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
 
 	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
-	m_cube_position_text = make_shared<text_block>(U"Cube position: X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 50, line_spaceing::RELATIVE_1_2);
+	m_cube_position_text = make_shared<text_block>(U"Cube position: X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
 	m_cube_position_text->initialise();
-	m_camera_position_text = make_shared<text_block>(U"Camera position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 50, line_spaceing::RELATIVE_1_2);
+	m_camera_position_text = make_shared<text_block>(U"Camera position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
 	m_camera_position_text->initialise();
-	m_camera_look_at_position_text = make_shared<text_block>(U"Camera look at position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 50, line_spaceing::RELATIVE_1_2);
+	m_camera_look_at_position_text = make_shared<text_block>(U"Camera look at position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
 	m_camera_look_at_position_text->initialise();
 
-	m_camera_position_text->set_tint({ 1.0f, 0.0f, 0.0f, 1.0f });
-	m_camera_look_at_position_text->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
 	m_camera_position_text->set_parent(m_cube_position_text);
 	m_camera_look_at_position_text->set_parent(m_camera_position_text);
 	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text })
@@ -230,9 +236,195 @@ void library_main::on_framebuffer_resize(GLFWwindow* window, int width, int heig
 	m_camera->set_view_port_height(flt_height);
 }
 
+void library_main::s_on_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	s_instance_ptr->on_key_callback(window, key, scancode, action, mods);
+}
+
+void library_main::on_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	const bool is_press_event = action == GLFW_PRESS;
+	const bool is_release_event = action == GLFW_RELEASE;
+	if (is_press_event == false
+	&& is_release_event == false)
+	{
+		return;
+	}
+
+	if (is_press_event)
+	{
+		switch (key)
+		{
+			case GLFW_KEY_LEFT:      on_left_pressed();      break;
+			case GLFW_KEY_RIGHT:     on_right_pressed();     break;
+			case GLFW_KEY_UP:        on_up_pressed();        break;
+			case GLFW_KEY_DOWN:      on_down_pressed();      break;
+			case GLFW_KEY_PAGE_UP:   on_page_up_pressed();   break;
+			case GLFW_KEY_PAGE_DOWN: on_page_down_pressed(); break;
+			case GLFW_KEY_W:         on_w_pressed();         break;
+			case GLFW_KEY_A:         on_a_pressed();         break;
+			case GLFW_KEY_S:         on_s_pressed();         break;
+			case GLFW_KEY_D:         on_d_pressed();         break;
+			case GLFW_KEY_Q:         on_q_pressed();         break;
+			case GLFW_KEY_E:         on_e_pressed();         break;
+			case GLFW_KEY_R:         on_r_pressed();         break;
+			default: break;
+		}
+	}
+	else if (is_release_event)
+	{
+		switch (key)
+		{
+			case GLFW_KEY_LEFT:      on_left_released();      break;
+			case GLFW_KEY_RIGHT:     on_right_released();     break;
+			case GLFW_KEY_UP:        on_up_released();        break;
+			case GLFW_KEY_DOWN:      on_down_released();      break;
+			case GLFW_KEY_PAGE_UP:   on_page_up_released();   break;
+			case GLFW_KEY_PAGE_DOWN: on_page_down_released(); break;
+			case GLFW_KEY_W:         on_w_released();         break;
+			case GLFW_KEY_A:         on_a_released();         break;
+			case GLFW_KEY_S:         on_s_released();         break;
+			case GLFW_KEY_D:         on_d_released();         break;
+			case GLFW_KEY_Q:         on_q_released();         break;
+			case GLFW_KEY_E:         on_e_released();         break;
+			default: break;
+		}
+		
+	}
+	update_text_tints();
+}
+
+void library_main::on_left_pressed()
+{
+	m_camera_look_at_point_movement_speed.x = -1.0f;
+}
+
+void library_main::on_right_pressed()
+{
+	m_camera_look_at_point_movement_speed.x = 1.0f;
+}
+
+void library_main::on_up_pressed()
+{
+	m_camera_look_at_point_movement_speed.x = 1.0f;
+}
+
+void library_main::on_down_pressed()
+{
+	m_camera_look_at_point_movement_speed.z = -1.0f;
+}
+
+void library_main::on_page_up_pressed()
+{
+	m_camera_look_at_point_movement_speed.y = 1.0f;
+}
+
+void library_main::on_page_down_pressed()
+{
+	m_camera_look_at_point_movement_speed.y = -1.0f;
+}
+
+void library_main::on_left_released()
+{
+	m_camera_look_at_point_movement_speed.x = 0.0f;
+}
+
+void library_main::on_right_released()
+{
+	m_camera_look_at_point_movement_speed.x = 0.0f;
+}
+
+void library_main::on_up_released()
+{
+	m_camera_look_at_point_movement_speed.z = 0.0f;
+}
+
+void library_main::on_down_released()
+{
+	m_camera_look_at_point_movement_speed.z = 0.0f;
+}
+
+void library_main::on_page_up_released()
+{
+	m_camera_look_at_point_movement_speed.y = 0.0f;
+}
+
+void library_main::on_page_down_released()
+{
+	m_camera_look_at_point_movement_speed.y = 0.0f;
+}
+
+void library_main::on_w_pressed()
+{
+	m_camera_movement_speed.z = 1.0f;
+}
+
+void library_main::on_a_pressed()
+{
+	m_camera_movement_speed.x = -1.0f;
+}
+
+void library_main::on_s_pressed()
+{
+	m_camera_movement_speed.z = -1.0f;
+}
+
+void library_main::on_d_pressed()
+{
+	m_camera_movement_speed.x = 1.0f;
+}
+
+void library_main::on_q_pressed()
+{
+	m_camera_movement_speed.y = 1.0f;
+}
+
+void library_main::on_e_pressed()
+{
+	m_camera_movement_speed.y = -1.0f;
+}
+
+void library_main::on_r_pressed()
+{
+	m_camera_movement_speed = m_camera_look_at_point_movement_speed = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_camera->set_look_at_position({ 0.0f, 0.0f, 0.0f });
+	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
+}
+
+void library_main::on_w_released()
+{
+	m_camera_movement_speed.z = 0.0f;
+}
+
+void library_main::on_a_released()
+{
+	m_camera_movement_speed.x = 0.0f;
+}
+
+void library_main::on_s_released()
+{
+	m_camera_movement_speed.z = 0.0f;
+}
+
+void library_main::on_d_released()
+{
+	m_camera_movement_speed.x = 0.0f;
+}
+
+void library_main::on_q_released()
+{
+	m_camera_movement_speed.y = 0.0f;
+}
+
+void library_main::on_e_released()
+{
+	m_camera_movement_speed.y = 0.0f;
+}
+
 void library_main::tick(float delta_time)
 {
 	using namespace glm;
+	using namespace std;
 
 	static constexpr float delta_time_cap = 0.25f;
 	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
@@ -242,11 +434,35 @@ void library_main::tick(float delta_time)
 	int frame_buffer_width = 0, frame_buffer_height = 0;
 	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
 	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
-	
-
 	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
-	m_camera->set_look_at_position({0.0f, 0.0f, 0.0f});
 
-	// set the text
+	vec3 camera_position = m_camera->get_position();
+	vec3 camera_look_at_position = m_camera->get_look_at_position();
+	camera_position += m_camera_movement_speed * delta_time_to_use;
+	camera_look_at_position += m_camera_look_at_point_movement_speed * delta_time_to_use;
+	m_camera->set_position(camera_position);
+	m_camera->set_look_at_position(camera_look_at_position);
 
+	// this is post initialisation, we'll want a different heap that has fixed size.
+	const vec3 cube_position = m_test_cube->get_net_transform()[3];
+	u32string text_to_set = U"Cube position: ";
+	text_utilities::append_vec3(text_to_set, cube_position);
+	m_cube_position_text->set_text(text_to_set);
+	text_to_set = U"Camera position: ";
+	text_utilities::append_vec3(text_to_set, camera_position);
+	m_camera_position_text->set_text(text_to_set);
+	text_to_set = U"Camera look at position: ";
+	text_utilities::append_vec3(text_to_set, camera_look_at_position);
+	m_camera_look_at_position_text->set_text(text_to_set);
+}
+
+void library_main::update_text_tints()
+{
+	update_text_tint(m_camera_position_text, length(m_camera_movement_speed) > 0.0f);
+	update_text_tint(m_camera_look_at_position_text, length(m_camera_look_at_point_movement_speed) > 0.0f);
+}
+
+void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool use_change_colour)
+{
+	to_update->set_tint(use_change_colour ? text_changing_tint : text_normal_tint);
 }
