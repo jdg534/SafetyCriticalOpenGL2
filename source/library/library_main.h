@@ -43,15 +43,10 @@ private:
 
 	// temp assets, for testing.
 	std::shared_ptr<static_model> m_test_cube;
-	std::shared_ptr<text_block> m_test_text;
-	std::shared_ptr<quad> m_test_quad;
-	std::shared_ptr<quad> m_red_test_quad;
-	std::shared_ptr<quad> m_green_test_quad;
-	std::shared_ptr<quad> m_blue_test_quad;
-	std::shared_ptr<quad> m_magenta_test_quad;
-	std::shared_ptr<quad> m_test_smiley_quad;
-	
 	std::shared_ptr<camera> m_camera;
+	std::shared_ptr<text_block> m_cube_position_text;
+	std::shared_ptr<text_block> m_camera_position_text;
+	std::shared_ptr<text_block> m_camera_look_at_position_text;
 
 	static library_main* s_instance_ptr;
 };

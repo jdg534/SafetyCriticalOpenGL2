@@ -81,14 +81,11 @@ void library_main::initialise()
 
 	initialise_test_data();
 
-	m_renderer->add_to_render_list(m_test_quad);
-	m_renderer->add_to_render_list(m_red_test_quad);
-	m_renderer->add_to_render_list(m_green_test_quad);
-	m_renderer->add_to_render_list(m_blue_test_quad);
-	m_renderer->add_to_render_list(m_magenta_test_quad);
-	m_renderer->add_to_render_list(m_test_smiley_quad);
-
-	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text })
+	{
+		m_renderer->add_to_render_list(text_block);
+	}
+	// remember the painters algorithm for 2d stuff!
 
 	// 3d stuff will be z buffered. (order doesn't matter.
 	m_renderer->add_to_render_list(m_test_cube);
@@ -165,35 +162,26 @@ void library_main::initialise_test_data()
 {
 	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
 
+	m_test_cube = make_shared<static_model>(dynamic_pointer_cast<model>(m_asset_manager->get_asset_on_name("grass_cube").lock()));
 	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
-	u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ¡…Õ”⁄\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 +-=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¶·ÈÌÛ˙";
 
 	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
-	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200, line_spaceing::RELATIVE_1_2);
-	m_test_text->initialise();
+	m_cube_position_text = make_shared<text_block>(U"Cube position: X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 50, line_spaceing::RELATIVE_1_2);
+	m_cube_position_text->initialise();
+	m_camera_position_text = make_shared<text_block>(U"Camera position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 50, line_spaceing::RELATIVE_1_2);
+	m_camera_position_text->initialise();
+	m_camera_look_at_position_text = make_shared<text_block>(U"Camera look at position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 50, line_spaceing::RELATIVE_1_2);
+	m_camera_look_at_position_text->initialise();
 
-	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
-	weak_ptr<texture> test_quad_texture = dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
-	m_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_test_quad->initialise();
-	m_test_quad->set_tint({ 1.0f, 1.0f, 0.0f, 1.0f });
-	m_red_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_red_test_quad->initialise();
-	m_red_test_quad->set_tint({ 1.0f, 0.0f, 0.0f, 1.0f });
-	m_green_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_green_test_quad->initialise();
-	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
-	m_blue_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_blue_test_quad->initialise();
-	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
-	m_magenta_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_magenta_test_quad->initialise();
-	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
-
-	m_test_smiley_quad = make_shared<quad>(dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("smiley").lock()),
-		test_quad_size);
-
-	m_test_cube = make_shared<static_model>(dynamic_pointer_cast<model>(m_asset_manager->get_asset_on_name("grass_cube").lock()));
+	m_camera_position_text->set_tint({ 1.0f, 0.0f, 0.0f, 1.0f });
+	m_camera_look_at_position_text->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
+	m_camera_position_text->set_parent(m_cube_position_text);
+	m_camera_look_at_position_text->set_parent(m_camera_position_text);
+	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text })
+	{
+		using namespace glm;
+		camera_text_block->set_transform(glm::translate(identity<mat4x4>(), { 0.0f, 25.0f, 0.0f }));
+	}
 }
 
 void library_main::shutdown()
@@ -219,18 +207,13 @@ void library_main::shutdown()
 
 void library_main::shutdown_test_data()
 {
-	for (auto test_quad : { m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad, m_test_smiley_quad })
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text})
 	{
-		test_quad->shutdown();
-		test_quad.reset();
+		text_block->shutdown();
+		text_block.reset();
 	}
 	m_test_cube->shutdown();
 	m_test_cube.reset();
-	if (m_test_text)
-	{
-		m_test_text->shutdown();
-		m_test_text.reset();
-	}
 }
 
 void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int height)
@@ -260,23 +243,10 @@ void library_main::tick(float delta_time)
 	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
 	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
 	
-	mat4x4 translate_matrix = identity<mat4x4>();
-	vec3 translate_to_middle_of_screen = { flt_fbw * 0.5f, frame_buffer_height * 0.5f, 0.0f };
-	translate_matrix = translate(translate_matrix, translate_to_middle_of_screen);
-	mat4x4 rotate_matrix = identity<mat4x4>();
-	rotate_matrix = rotate(rotate_matrix, angle, { 0.0f, 0.0f, 1.0f });
-	mat4x4 transform = identity<mat4x4>();
-	transform = translate_matrix * rotate_matrix;
-	m_test_quad->set_transform(transform);
-
-	m_red_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, 0.0f, 0.0f })); // should be top left
-	m_green_test_quad->set_transform(translate(identity<mat4x4>(), {flt_fbw, 0.0f, 0.0f})); // should be top right
-	m_blue_test_quad->set_transform(translate(identity<mat4x4>(), { flt_fbw, flt_fbh, 0.0f }));  // should be bottom right
-	m_magenta_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, flt_fbh, 0.0f }));  // should be bottom left
-	m_test_smiley_quad->set_transform(translate(identity<mat4x4>(), { 50.0f, 50.0f, 0.0f }));
-
-	m_test_text->set_transform(translate(identity<mat4x4>(), {200.0f, 200.0f, 0.0f}));
 
 	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
 	m_camera->set_look_at_position({0.0f, 0.0f, 0.0f});
+
+	// set the text
+
 }
