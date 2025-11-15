@@ -70,6 +70,7 @@ void library_main::initialise()
 	m_camera = make_shared<camera>();
 	m_camera->set_view_port_width(flt_framebuffer_width);
 	m_camera->set_view_port_height(flt_framebuffer_height);
+	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
 
 	m_renderer = make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50, m_camera);
 	m_renderer->initialise();
@@ -277,4 +278,5 @@ void library_main::tick(float delta_time)
 	m_test_text->set_transform(translate(identity<mat4x4>(), {200.0f, 200.0f, 0.0f}));
 
 	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
+	m_camera->set_look_at_position({0.0f, 0.0f, 0.0f});
 }

@@ -142,31 +142,34 @@ void renderer::shutdown_shaders()
 
 void renderer::switch_to_3d_static_mesh_shader()
 {
+	using namespace gl;
 	if (m_current_shader_program == m_static_geometry_program_id) return;
-	gl::glUseProgram(m_static_geometry_program_id);
+	glUseProgram(m_static_geometry_program_id);
 	m_current_shader_program = m_static_geometry_program_id;
-	gl::glEnable(gl::GL_DEPTH_TEST);
-	// TODO: code this!
-	/* uniforms to set:
-	uniform mat4 u_view; // TODO, refactor to be u_view_projection matrix. once once got it working.
-	uniform mat4 u_projection; // set it in render_frame() add a camera class first.
-	*/
+	glEnable(GL_DEPTH_TEST);
+
+	const GLint u_view_loc = glGetUniformLocation(m_static_geometry_program_id, "u_view");
+	const GLint u_projection_loc = glGetUniformLocation(m_static_geometry_program_id, "u_projection");
+
+	glUniformMatrix4fv(u_view_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_view_matrix()));
+	glUniformMatrix4fv(u_projection_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_projection_matrix()));
 }
 
 void renderer::switch_to_2d_shader()
 {
+	using namespace gl;
 	if (m_current_shader_program == m_textured_quad_geometry_program_id) return;
-	gl::glUseProgram(m_textured_quad_geometry_program_id);
+	glUseProgram(m_textured_quad_geometry_program_id);
 	m_current_shader_program = m_textured_quad_geometry_program_id;
 
 	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/textured_quad_shader.h
 	// other uniforms are to be set by the renderable object.
-	const gl::GLint u_resolution_location = gl::glGetUniformLocation(m_textured_quad_geometry_program_id, "u_resolution");
+	const GLint u_resolution_location = glGetUniformLocation(m_textured_quad_geometry_program_id, "u_resolution");
 	if (u_resolution_location != -1)
 	{
-		gl::glUniform2fv(u_resolution_location, 1, glm::value_ptr(m_framebuffer_size));
+		glUniform2fv(u_resolution_location, 1, glm::value_ptr(m_framebuffer_size));
 	}
-	gl::glEnable(gl::GL_BLEND);
-	gl::glBlendFunc(gl::GL_SRC_ALPHA, gl::GL_ONE_MINUS_SRC_ALPHA);
-	gl::glDisable(gl::GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_DEPTH_TEST);
 }
