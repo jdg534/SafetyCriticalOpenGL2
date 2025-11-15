@@ -29,14 +29,11 @@ void static_model::shutdown()
 
 void static_model::draw()
 {
+	using namespace gl;
+
 	/* uniforms to set:
 	uniform mat4 u_model;
 	uniform sampler2D u_diffuse_map;
-	
-	uniform vec3      u_camera_position;     // in world-space
-	uniform vec3      u_light_direction;     // unit vectors only
-	uniform vec3      u_light_colour;
-	uniform vec3      u_ambient_light_colour; // light colour
 	uniform vec4      u_surface_tint;        // colour multiplier
 	*/
 

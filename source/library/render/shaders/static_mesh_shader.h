@@ -35,7 +35,6 @@ in vec2 vs_out_uv;
 in vec3 vs_out_normal;
 
 uniform sampler2D u_diffuse_map;
-uniform vec3      u_camera_position;     // in world-space
 uniform vec3      u_light_direction;     // unit vectors only
 uniform vec3      u_light_colour;
 uniform vec3      u_ambient_light_colour; // light colour

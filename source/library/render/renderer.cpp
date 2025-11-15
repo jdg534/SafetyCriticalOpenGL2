@@ -148,11 +148,22 @@ void renderer::switch_to_3d_static_mesh_shader()
 	m_current_shader_program = m_static_geometry_program_id;
 	glEnable(GL_DEPTH_TEST);
 
+	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/static_mesh_shader.h
+	// other uniforms are to be set by the renderable object.
 	const GLint u_view_loc = glGetUniformLocation(m_static_geometry_program_id, "u_view");
 	const GLint u_projection_loc = glGetUniformLocation(m_static_geometry_program_id, "u_projection");
+	const GLint u_light_direction_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_direction");
+	const GLint u_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_colour");
+	const GLint u_ambient_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_ambient_light_colour");
 
 	glUniformMatrix4fv(u_view_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_view_matrix()));
 	glUniformMatrix4fv(u_projection_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_projection_matrix()));
+	// if doing specular light update it to pass in the camera position in world space.
+
+	// just hard code the light: direction & color, also the ambient light. Add in the control later if needed.
+	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(glm::vec3{0.0f, -1.0f, 0.0f}));
+	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 1.0f, 1.0f, 1.0f }));
+	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 0.1f, 0.1f, 0.1f }));
 }
 
 void renderer::switch_to_2d_shader()

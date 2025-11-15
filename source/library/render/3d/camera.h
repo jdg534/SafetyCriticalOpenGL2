@@ -16,6 +16,7 @@ public:
 
 	const glm::vec3& get_position() const;
 	void set_position(const glm::vec3& position);
+	virtual const glm::vec3& get_world_position() const;
 	const glm::vec3& get_look_at_position() const;
 	void set_look_at_position(const glm::vec3& look_at_position);
 	void set_look_at_position_from_direction(const glm::vec3& look_at_direction);

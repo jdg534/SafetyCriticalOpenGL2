@@ -26,6 +26,7 @@ glm::mat4x4 camera::get_projection_matrix() const
 
 const glm::vec3& camera::get_position() const { return m_position; }
 void camera::set_position(const glm::vec3& position) { m_position = position; }
+const glm::vec3& camera::get_world_position() const { return get_position(); } // override if doing a mounted camera.
 const glm::vec3& camera::get_look_at_position() const { return m_look_at_position; }
 void camera::set_look_at_position(const glm::vec3& look_at_position) { m_look_at_position = look_at_position; }
 void camera::set_look_at_position_from_direction(const glm::vec3& look_at_direction) { m_look_at_position = get_position() + look_at_direction; }
