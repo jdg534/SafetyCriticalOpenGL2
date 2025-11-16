@@ -306,7 +306,7 @@ void library_main::on_right_pressed()
 
 void library_main::on_up_pressed()
 {
-	m_camera_look_at_point_movement_speed.x = 1.0f;
+	m_camera_look_at_point_movement_speed.z = 1.0f;
 }
 
 void library_main::on_down_pressed()
