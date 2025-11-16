@@ -19,7 +19,7 @@ glm::mat4x4 camera::get_view_matrix() const
 
 glm::mat4x4 camera::get_projection_matrix() const
 {
-	const float aspect_ratio = get_view_port_width() / get_view_port_height();
+	const float aspect_ratio = get_view_port_width() / std::max(get_view_port_height(), 1.0f);
 	return glm::perspectiveLH_NO(get_field_of_view_angle_radians(), aspect_ratio, get_near_clipping_distance(), get_far_clipping_distance());
 }
 

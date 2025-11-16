@@ -42,7 +42,7 @@ material::material(const string& name, const string& path, weak_ptr<const asset_
 
 material::~material()
 {
-	// TODO: CODE ME!
+	// placeholder, this material objects don't put stuff on the head, so nothing to do.
 }
 
 void material::initialise()

@@ -147,7 +147,6 @@ void renderer::switch_to_3d_static_mesh_shader()
 	glUseProgram(m_static_geometry_program_id);
 	m_current_shader_program = m_static_geometry_program_id;
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
 	glFrontFace(GL_CW);   // LH system requires clockwise winding, CW = Clock Wise winding order.
 
 	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/static_mesh_shader.h

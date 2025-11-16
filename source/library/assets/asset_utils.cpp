@@ -22,7 +22,7 @@ std::string asset_utils::resolve_file_path(std::string to_resolve, const std::fi
 
     if (!to_resolve.empty() && to_resolve[0] == '*') { throw std::runtime_error("Unsupported wild card reference: " + to_resolve); }
     if (to_resolve.compare(0, 5, "data:") == 0) { throw std::runtime_error("Unsupported base64-encoded data URI: " + to_resolve.substr(0, 16) + "..."); }
-    if (to_resolve.compare(0, 7, "http://") == 0 || to_resolve.compare(0, 8, "https://") == 0) { throw std::runtime_error("Unsupported network texture URL: " + to_resolve); }
+    if (to_resolve.compare(0, 7, "http://") == 0 || to_resolve.compare(0, 8, "https://") == 0) { throw std::runtime_error("Unsupported network URLs: " + to_resolve); }
 
     // --- Normalize path separators ---
     replace(to_resolve.begin(), to_resolve.end(), '\\', '/');

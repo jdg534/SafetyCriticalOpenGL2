@@ -18,7 +18,7 @@ model::model(const std::string& name, const std::string& path, std::weak_ptr<con
 
 model::~model()
 {
-	// TODO: CODE ME!
+	// nothing needed, only smart pointers are needed.
 }
 
 void model::initialise()

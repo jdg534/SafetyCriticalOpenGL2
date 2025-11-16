@@ -35,7 +35,6 @@ void asset_manager::initialise(std::string_view assets_list_file_path)
 	{
 		throw std::exception("asset_manager::initialise now assets");
 	}
-	// windows style file paths aren't considered.
 	const std::string_view assets_relative_to = asset_utils::get_directory_path(assets_list_file_path);
 	const auto assets_entries = doc["assets"].GetArray();
 	const int num_assets = assets_entries.Size();
@@ -113,7 +112,7 @@ std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::str
 	return nullptr;
 }
 
-// break this up into asset_loader.
+// TODO: break this up into asset_loader. which knows about the manager.
 std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::string_view path)
 {
 	std::shared_ptr<texture> result = std::make_shared<texture>(name.data(), path.data(), weak_from_this());

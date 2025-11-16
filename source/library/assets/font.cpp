@@ -31,18 +31,12 @@ font::~font()
 void font::initialise()
 {
 	std::ifstream assets_list_file(get_path().data());
-	if (!assets_list_file.good())
-	{
-		throw std::exception("asset_manager::initialise failed to open file");
-	}
+	if (!assets_list_file.good()) { throw std::exception("asset_manager::initialise failed to open file"); }
 	std::stringstream buffer;
 	buffer << assets_list_file.rdbuf();
 
 	Document font_info;
-	if (font_info.Parse(buffer.str().c_str()).HasParseError())
-	{
-		throw std::exception("asset_manager::initialise failed to parse the json");
-	}
+	if (font_info.Parse(buffer.str().c_str()).HasParseError()) { throw std::exception("asset_manager::initialise failed to parse the json"); }
 	assets_list_file.close();
 	buffer.clear();
 
@@ -51,10 +45,7 @@ void font::initialise()
 	initialise_glyph_info(font_info);
 	initialise_kerning_info(font_info);
 
-	if (!does_contain_white_space_character())
-	{
-		throw runtime_error("font does not contain a white space character.");
-	}
+	if (!does_contain_white_space_character()) { throw runtime_error("font does not contain a white space character."); }
 }
 
 void font::shutdown()

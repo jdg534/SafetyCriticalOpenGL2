@@ -1,11 +1,10 @@
 #include "library_main.h"
 
-#include "render/renderer.h"
-#include "render/include_opengl.h"
-
 #include "assets/font.h"
 #include "assets/3d/model.h"
 #include "render/3d/camera.h"
+#include "render/include_opengl.h"
+#include "render/renderer.h"
 #include "utilities/text_utilities.h"
 
 #include <filesystem>
@@ -23,8 +22,8 @@ using namespace std;
 
 library_main* library_main::s_instance_ptr = nullptr;
 
-constexpr glm::vec4 text_changing_tint = {1.0f, 0.0f, 0.0f, 1.0f};
-constexpr glm::vec4 text_normal_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+constexpr glm::vec4 text_changing_tint = { 1.0f, 0.0f, 0.0f, 1.0f };
+constexpr glm::vec4 text_normal_tint   = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 // public
 /////////
@@ -95,7 +94,7 @@ void library_main::initialise()
 	}
 	// remember the painters algorithm for 2d stuff!
 
-	// 3d stuff will be z buffered. (order doesn't matter.
+	// 3d stuff will be z buffered. (order doesn't matter).
 	m_renderer->add_to_render_list(m_test_cube);
 
 	m_renderer->sort_render_list();
@@ -104,6 +103,8 @@ void library_main::initialise()
 	/*
 	after this line add flag to not permit allocations to deallocations.
 	allocations and deallocation should only be tolerated in initialisation and shutdown.
+
+	A custom heap is to be addressed in a different pull request once terrain rendering is in.
 	*/
 }
 
