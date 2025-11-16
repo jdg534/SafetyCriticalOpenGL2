@@ -118,7 +118,7 @@ void mesh::shutdown()
     GLuint buffer_ids[2]{ m_vertex_buffer_id, m_index_buffer_id };
     glDeleteBuffers(2, buffer_ids);
     glDeleteVertexArrays(1, &m_vertex_array_id);
-    m_vertex_array_id = m_vertex_buffer_id = m_index_buffer_id = m_index_buffer_id = 0;
+    m_vertex_array_id = m_vertex_buffer_id = m_index_buffer_id = m_index_element_count = 0;
 }
 
 asset_type mesh::get_type() const
@@ -129,7 +129,7 @@ asset_type mesh::get_type() const
 gl::GLuint mesh::get_vertex_array_id() const { return m_vertex_array_id; }
 gl::GLuint mesh::get_vertex_buffer_id() const { return m_vertex_buffer_id; }
 gl::GLuint mesh::get_index_buffer_id() const { return m_index_buffer_id; }
-gl::GLuint mesh::get_index_element_count() const { return m_index_buffer_id; }
+gl::GLuint mesh::get_index_element_count() const { return m_index_element_count; }
 gl::GLint  mesh::get_material_index() const { return m_material_index; }
 
 // private

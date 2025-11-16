@@ -35,7 +35,6 @@ void static_model::draw()
 	using namespace gl;
 
 	const GLuint shader_id = get_shader_program();
-
 	const GLint u_model_location = glGetUniformLocation(shader_id, "u_model");
 	const GLint u_diffuse_map_location = glGetUniformLocation(shader_id, "u_diffuse_map");
 	const GLint u_surface_tint_location = glGetUniformLocation(shader_id, "u_surface_tint"); // use the diffuse colour from the material.
@@ -78,6 +77,6 @@ void static_model::draw()
 
 		// draw
 		glDrawElements(GL_TRIANGLES, index_element_count, GL_UNSIGNED_SHORT, 0);
-		glBindVertexArray(0); // clear the vertex array.
 	}
+	glBindVertexArray(0); // clear the vertex array.
 }
