@@ -2,7 +2,10 @@
 
 #include <glm/gtc/type_ptr.inl>
 
+#include "../../assets/3d/material.h"
+#include "../../assets/3d/mesh.h"
 #include "../../assets/3d/model.h"
+
 #include "../../assets/texture.h"
 
 // public

@@ -1,5 +1,8 @@
 #include "model.h"
 
+#include "material.h"
+#include "mesh.h"
+
 #include <string_view>
 #include <filesystem>
 

@@ -9,8 +9,8 @@
 #include <assimp/scene.h>
 
 #include "../asset.h"
-#include "material.h" // refactor the fwd decl
-#include "mesh.h" // refactor the fwd decl
+#include "material.decl.h"
+#include "mesh.decl.h"
 
 class model : public asset
 {
