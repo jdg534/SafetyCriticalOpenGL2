@@ -19,9 +19,8 @@ glm::mat4x4 camera::get_view_matrix() const
 
 glm::mat4x4 camera::get_projection_matrix() const
 {
-	return glm::perspectiveFovLH(get_field_of_view_angle_radians(),
-		get_view_port_width(), get_view_port_height(),
-		get_near_clipping_distance(), get_far_clipping_distance());
+	const float aspect_ratio = get_view_port_width() / get_view_port_height();
+	return glm::perspectiveLH_NO(get_field_of_view_angle_radians(), aspect_ratio, get_near_clipping_distance(), get_far_clipping_distance());
 }
 
 const glm::vec3& camera::get_position() const { return m_position; }

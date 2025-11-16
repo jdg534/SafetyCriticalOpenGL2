@@ -72,12 +72,12 @@ void static_model::draw()
 		glUniform4fv(u_surface_tint_location, 1, glm::value_ptr(material->get_diffuse_colour()));
 
 		// buffers
-		glBindBuffer(GL_ARRAY_BUFFER, mesh->get_vertex_buffer_id());
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->get_index_buffer_id());
-		glBindVertexArray(mesh->get_vertex_array_id());
+		glBindVertexArray(vertex_array_id);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
 
 		// draw
-		glDrawElements(GL_TRIANGLES, mesh->get_index_element_count(), GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, index_element_count, GL_UNSIGNED_SHORT, 0);
 		glBindVertexArray(0); // clear the vertex array.
 	}
 }

@@ -20,7 +20,7 @@ void main()
 {
     vec4 world_position = u_model * vec4(vs_in_position, 1.0);
     vs_out_world_position = world_position.xyz;
-    vs_out_normal = mat3(u_model) * vs_in_normal;
+    vs_out_normal = mat3(transpose(inverse(u_model))) * vs_in_normal;
     vs_out_uv = vs_in_uv;
 
     gl_Position = u_projection * u_view * world_position;
