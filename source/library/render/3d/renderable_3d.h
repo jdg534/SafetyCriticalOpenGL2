@@ -8,6 +8,8 @@ class renderable_3d : public renderable
 
 public:
 
+	renderable_3d();
+	virtual ~renderable_3d();
 
 
 private:

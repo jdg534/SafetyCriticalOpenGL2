@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-// Note this DOES NOT own the buffers, child classes may own them 
+// Note this DOES NOT own the buffers, child classes MAY own them, see the header.
 
 // note this is used to sort the render list in the renderer
 enum class renderable_type : uint8_t

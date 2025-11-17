@@ -20,7 +20,7 @@ void main()
 {
     vec4 world_position = u_model * vec4(vs_in_position, 1.0);
     vs_out_world_position = world_position.xyz;
-    vs_out_normal = mat3(u_model) * vs_in_normal;
+    vs_out_normal = mat3(transpose(inverse(u_model))) * vs_in_normal;
     vs_out_uv = vs_in_uv;
 
     gl_Position = u_projection * u_view * world_position;
@@ -35,7 +35,6 @@ in vec2 vs_out_uv;
 in vec3 vs_out_normal;
 
 uniform sampler2D u_diffuse_map;
-uniform vec3      u_camera_position;     // in world-space
 uniform vec3      u_light_direction;     // unit vectors only
 uniform vec3      u_light_colour;
 uniform vec3      u_ambient_light_colour; // light colour

@@ -17,8 +17,8 @@ using namespace std;
 // public
 /////////
 
-font::font(const std::string& name, std::weak_ptr<const asset_manager> asset_manager)
-	: asset(name, asset_manager)
+font::font(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager)
+	: asset(name, path, asset_manager)
 {
 
 }
@@ -28,21 +28,15 @@ font::~font()
 
 }
 
-void font::initialise(std::string_view file_path)
+void font::initialise()
 {
-	std::ifstream assets_list_file(file_path.data());
-	if (!assets_list_file.good())
-	{
-		throw std::exception("asset_manager::initialise failed to open file");
-	}
+	std::ifstream assets_list_file(get_path().data());
+	if (!assets_list_file.good()) { throw std::exception("asset_manager::initialise failed to open file"); }
 	std::stringstream buffer;
 	buffer << assets_list_file.rdbuf();
 
 	Document font_info;
-	if (font_info.Parse(buffer.str().c_str()).HasParseError())
-	{
-		throw std::exception("asset_manager::initialise failed to parse the json");
-	}
+	if (font_info.Parse(buffer.str().c_str()).HasParseError()) { throw std::exception("asset_manager::initialise failed to parse the json"); }
 	assets_list_file.close();
 	buffer.clear();
 
@@ -51,10 +45,7 @@ void font::initialise(std::string_view file_path)
 	initialise_glyph_info(font_info);
 	initialise_kerning_info(font_info);
 
-	if (!does_contain_white_space_character())
-	{
-		throw runtime_error("font does not contain a white space character.");
-	}
+	if (!does_contain_white_space_character()) { throw runtime_error("font does not contain a white space character."); }
 }
 
 void font::shutdown()
@@ -135,9 +126,10 @@ source_rect font::get_texture_coordinates_for_glyph(char32_t glyph) const
 	return result;
 }
 
-weak_ptr<texture> font::get_texture() const
+weak_ptr<const texture> font::get_texture() const
 {
-	return dynamic_pointer_cast<texture>(get_asset_manager().lock()->get_asset_on_name(m_atlas_asset_name).lock());
+	weak_ptr<const asset> result = get_asset_manager().lock()->get_asset_on_name(m_atlas_asset_name);
+	return dynamic_pointer_cast<const texture>(result.lock());
 }
 
 // private

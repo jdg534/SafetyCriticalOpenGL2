@@ -6,6 +6,7 @@
 #include "shaders/shaders_compilation.h"
 
 #include "renderable.h"
+#include "3d/camera.h"
 
 #include <glbinding/gl/types.h>
 #include <glm/glm.hpp>
@@ -18,9 +19,10 @@
 // public
 /////////
 
-renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap)
+renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap, std::weak_ptr<const camera> camera)
 	: m_framebuffer_size(framebuffer_size)
 	, m_render_list_cap(render_list_cap)
+	, m_camera(camera)
 {
 
 }
@@ -107,6 +109,11 @@ void renderer::set_framebuffer_size(glm::vec2 framebuffer_size)
 	m_framebuffer_size = framebuffer_size;
 }
 
+void renderer::set_camera(std::weak_ptr<const camera> camera)
+{
+	m_camera = camera;
+}
+
 // private
 //////////
 
@@ -135,28 +142,46 @@ void renderer::shutdown_shaders()
 
 void renderer::switch_to_3d_static_mesh_shader()
 {
+	using namespace gl;
 	if (m_current_shader_program == m_static_geometry_program_id) return;
-	gl::glUseProgram(m_static_geometry_program_id);
+	glUseProgram(m_static_geometry_program_id);
 	m_current_shader_program = m_static_geometry_program_id;
-	gl::glEnable(gl::GL_DEPTH_TEST);
-	// TODO: code this!
-	// set the uniforms. as they appear in: source/library/render/shaders/static_mesh_shader.h
+	glEnable(GL_DEPTH_TEST);
+	glFrontFace(GL_CW);   // LH system requires clockwise winding, CW = Clock Wise winding order.
+
+	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/static_mesh_shader.h
+	// other uniforms are to be set by the renderable object.
+	const GLint u_view_loc = glGetUniformLocation(m_static_geometry_program_id, "u_view");
+	const GLint u_projection_loc = glGetUniformLocation(m_static_geometry_program_id, "u_projection");
+	const GLint u_light_direction_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_direction");
+	const GLint u_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_colour");
+	const GLint u_ambient_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_ambient_light_colour");
+
+	glUniformMatrix4fv(u_view_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_view_matrix()));
+	glUniformMatrix4fv(u_projection_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_projection_matrix()));
+	// if doing specular light update it to pass in the camera position in world space.
+
+	// just hard code the light: direction & color, also the ambient light. Add in the control later if needed.
+	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(glm::vec3{0.0f, -1.0f, 0.0f}));
+	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 1.0f, 1.0f, 1.0f }));
+	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 0.1f, 0.1f, 0.1f }));
 }
 
 void renderer::switch_to_2d_shader()
 {
+	using namespace gl;
 	if (m_current_shader_program == m_textured_quad_geometry_program_id) return;
-	gl::glUseProgram(m_textured_quad_geometry_program_id);
+	glUseProgram(m_textured_quad_geometry_program_id);
 	m_current_shader_program = m_textured_quad_geometry_program_id;
 
 	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/textured_quad_shader.h
 	// other uniforms are to be set by the renderable object.
-	const gl::GLint u_resolution_location = gl::glGetUniformLocation(m_textured_quad_geometry_program_id, "u_resolution");
+	const GLint u_resolution_location = glGetUniformLocation(m_textured_quad_geometry_program_id, "u_resolution");
 	if (u_resolution_location != -1)
 	{
-		gl::glUniform2fv(u_resolution_location, 1, glm::value_ptr(m_framebuffer_size));
+		glUniform2fv(u_resolution_location, 1, glm::value_ptr(m_framebuffer_size));
 	}
-	gl::glEnable(gl::GL_BLEND);
-	gl::glBlendFunc(gl::GL_SRC_ALPHA, gl::GL_ONE_MINUS_SRC_ALPHA);
-	gl::glDisable(gl::GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_DEPTH_TEST);
 }

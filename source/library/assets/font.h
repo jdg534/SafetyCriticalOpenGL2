@@ -39,10 +39,10 @@ class font : public asset
 public:
 
 	font() = delete;
-	font(const std::string& name, std::weak_ptr<const asset_manager> asset_manager);
+	font(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
 	virtual ~font();
 
-	void initialise(std::string_view file_path) override;
+	void initialise() override;
 	void shutdown() override;
 	asset_type get_type() const override;
 
@@ -51,7 +51,7 @@ public:
 	glyph_info get_glyph_info(char32_t glyph) const;
 	kerning_info get_kerning_info(char32_t previous_glyph, char32_t current_glyph) const;
 	source_rect get_texture_coordinates_for_glyph(char32_t glyph) const;
-	std::weak_ptr<texture> get_texture() const;
+	std::weak_ptr<const texture> get_texture() const;
 
 private:
 

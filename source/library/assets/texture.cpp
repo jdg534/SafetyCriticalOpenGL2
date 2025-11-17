@@ -7,8 +7,8 @@
 /////////
 
 
-texture::texture(const std::string& name, std::weak_ptr<const asset_manager> asset_manager)
-	: asset(name, asset_manager)
+texture::texture(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager)
+	: asset(name, path,asset_manager)
 	, m_texture_id(-1)
 	, m_width(-1)
 	, m_height(-1)
@@ -19,8 +19,9 @@ texture::~texture()
 	// delete stuff
 }
 
-void texture::initialise(std::string_view file_path)
+void texture::initialise()
 {
+	const std::string_view file_path = get_path();
 	if (file_path.find(".png") == std::string::npos)
 	{
 		throw std::exception("load texture called with non png texture.");

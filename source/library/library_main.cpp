@@ -1,9 +1,11 @@
 #include "library_main.h"
 
-#include "render/renderer.h"
-#include "render/include_opengl.h"
-
 #include "assets/font.h"
+#include "assets/3d/model.h"
+#include "render/3d/camera.h"
+#include "render/include_opengl.h"
+#include "render/renderer.h"
+#include "utilities/text_utilities.h"
 
 #include <filesystem>
 #include <fstream>
@@ -18,14 +20,17 @@
 
 using namespace std;
 
-// temp test drawable values.
-
 library_main* library_main::s_instance_ptr = nullptr;
+
+constexpr glm::vec4 text_changing_tint = { 1.0f, 0.0f, 0.0f, 1.0f };
+constexpr glm::vec4 text_normal_tint   = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 // public
 /////////
 
 library_main::library_main()
+	: m_camera_movement_speed(0.0f,0.0f,0.0f)
+	, m_camera_look_at_point_movement_speed(0.0f, 0.0f, 0.0f)
 {
 	s_instance_ptr = this;
 }
@@ -66,25 +71,41 @@ void library_main::initialise()
 	int framebuffer_width = 0, framebuffer_height = 0;
 	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
 	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
-	m_renderer = std::make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50);
+
+	m_camera = make_shared<camera>();
+	m_camera->set_view_port_width(flt_framebuffer_width);
+	m_camera->set_view_port_height(flt_framebuffer_height);
+	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
+
+	m_renderer = make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50, m_camera);
 	m_renderer->initialise();
+
 	glfwSetFramebufferSizeCallback(m_window, library_main::s_on_framebuffer_resize);
+	glfwSetKeyCallback(m_window, library_main::s_on_key_callback);
+
+	m_asset_manager = std::make_shared<asset_manager>();
+	m_asset_manager->initialise("assets/assets_list.json");
 
 	initialise_test_data();
 
-	m_renderer->add_to_render_list(m_test_quad);
-	m_renderer->add_to_render_list(m_red_test_quad);
-	m_renderer->add_to_render_list(m_green_test_quad);
-	m_renderer->add_to_render_list(m_blue_test_quad);
-	m_renderer->add_to_render_list(m_magenta_test_quad);
-	m_renderer->add_to_render_list(m_test_smiley_quad);
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text })
+	{
+		m_renderer->add_to_render_list(text_block);
+	}
+	m_renderer->add_to_render_list(m_textured_quad);
+	// remember the painters algorithm for 2d stuff!
 
-	m_renderer->add_to_render_list(m_test_text); // remember the painters algorithm! want the text on top.
+	// 3d stuff will be z buffered. (order doesn't matter).
+	m_renderer->add_to_render_list(m_test_cube);
+
 	m_renderer->sort_render_list();
+
 
 	/*
 	after this line add flag to not permit allocations to deallocations.
 	allocations and deallocation should only be tolerated in initialisation and shutdown.
+
+	A custom heap is to be addressed in a different pull request once terrain rendering is in.
 	*/
 }
 
@@ -149,38 +170,30 @@ GLFWwindow* library_main::initialise_window()
 
 void library_main::initialise_test_data()
 {
-	m_asset_manager = std::make_shared<asset_manager>();
-	m_asset_manager->initialise("assets/assets_list.json");
+	using namespace glm;
+	weak_ptr<const asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
 
-	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
-
-	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
-	u32string text_to_display = U"abcdefghijkilmn\nopqrstuvwxyz ¡…Õ”⁄\nABCDEFGHIJKLKMN\nOPQRSTYVWXYZ\n0123456789 +-=/*\n<>{}()[].,;?~#'@:\\\n`!\"£$%^&*|¶·ÈÌÛ˙";
+	m_test_cube = make_shared<static_model>(dynamic_pointer_cast<const model>(m_asset_manager->get_asset_on_name("grass_cube").lock()));
+	weak_ptr<const font> font_ptr = dynamic_pointer_cast<const font>(font_asset_ptr.lock());
 
 	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
-	m_test_text = make_shared<text_block>(text_to_display, font_ptr, 200, line_spaceing::RELATIVE_1_2);
-	m_test_text->initialise();
+	m_cube_position_text = make_shared<text_block>(U"Cube position: X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
+	m_cube_position_text->initialise();
+	m_camera_position_text = make_shared<text_block>(U"Camera position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
+	m_camera_position_text->initialise();
+	m_camera_look_at_position_text = make_shared<text_block>(U"Camera look at position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
+	m_camera_look_at_position_text->initialise();
 
-	const glm::vec2 test_quad_size{ 100.0f, 100.0f };
-	weak_ptr<texture> test_quad_texture = dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("plain_white").lock());
-	m_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_test_quad->initialise();
-	m_test_quad->set_tint({ 1.0f, 1.0f, 0.0f, 1.0f });
-	m_red_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_red_test_quad->initialise();
-	m_red_test_quad->set_tint({ 1.0f, 0.0f, 0.0f, 1.0f });
-	m_green_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_green_test_quad->initialise();
-	m_green_test_quad->set_tint({ 0.0f, 1.0f, 0.0f, 1.0f });
-	m_blue_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_blue_test_quad->initialise();
-	m_blue_test_quad->set_tint({ 0.0f, 0.0f, 1.0f, 1.0f });
-	m_magenta_test_quad = make_shared<quad>(test_quad_texture, test_quad_size);
-	m_magenta_test_quad->initialise();
-	m_magenta_test_quad->set_tint({ 1.0f, 0.0f, 1.0f, 1.0f });
+	m_camera_position_text->set_parent(m_cube_position_text);
+	m_camera_look_at_position_text->set_parent(m_camera_position_text);
+	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text })
+	{
+		camera_text_block->set_transform(glm::translate(identity<mat4x4>(), { 0.0f, 25.0f, 0.0f }));
+	}
 
-	m_test_smiley_quad = make_shared<quad>(dynamic_pointer_cast<texture>(m_asset_manager->get_asset_on_name("smiley").lock()),
-		test_quad_size);
+	weak_ptr<const texture> smiley_texture = dynamic_pointer_cast<const texture>(m_asset_manager->get_asset_on_name("smiley").lock());
+	m_textured_quad = make_shared<quad>(smiley_texture, vec2{50.0f, 50.0f});
+	m_textured_quad->set_transform(glm::translate(identity<mat4x4>(), {45.0f, 175.0f, 0.0f}));
 }
 
 void library_main::shutdown()
@@ -206,16 +219,14 @@ void library_main::shutdown()
 
 void library_main::shutdown_test_data()
 {
-	for (auto test_quad : { m_test_quad,m_red_test_quad, m_green_test_quad, m_blue_test_quad, m_magenta_test_quad, m_test_smiley_quad })
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text})
 	{
-		test_quad->shutdown();
-		test_quad.reset();
+		text_block->shutdown();
+		text_block.reset();
 	}
-	if (m_test_text)
-	{
-		m_test_text->shutdown();
-		m_test_text.reset();
-	}
+	m_textured_quad->shutdown();
+	m_test_cube->shutdown();
+	m_test_cube.reset();
 }
 
 void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int height)
@@ -225,12 +236,108 @@ void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int he
 
 void library_main::on_framebuffer_resize(GLFWwindow* window, int width, int height)
 {
-	m_renderer->set_framebuffer_size(glm::vec2(static_cast<float>(width), static_cast<float>(height)));
+	const float flt_width = static_cast<float>(width);
+	const float flt_height = static_cast<float>(height);
+	m_renderer->set_framebuffer_size(glm::vec2(flt_width, flt_height));
+	m_camera->set_view_port_width(flt_width);
+	m_camera->set_view_port_height(flt_height);
 }
+
+void library_main::s_on_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	s_instance_ptr->on_key_callback(window, key, scancode, action, mods);
+}
+
+void library_main::on_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	const bool is_press_event = action == GLFW_PRESS;
+	const bool is_release_event = action == GLFW_RELEASE;
+	if (is_press_event == false
+	&& is_release_event == false)
+	{
+		return;
+	}
+
+	if (is_press_event)
+	{
+		switch (key)
+		{
+			case GLFW_KEY_LEFT:      on_left_pressed();      break;
+			case GLFW_KEY_RIGHT:     on_right_pressed();     break;
+			case GLFW_KEY_UP:        on_up_pressed();        break;
+			case GLFW_KEY_DOWN:      on_down_pressed();      break;
+			case GLFW_KEY_PAGE_UP:   on_page_up_pressed();   break;
+			case GLFW_KEY_PAGE_DOWN: on_page_down_pressed(); break;
+			case GLFW_KEY_W:         on_w_pressed();         break;
+			case GLFW_KEY_A:         on_a_pressed();         break;
+			case GLFW_KEY_S:         on_s_pressed();         break;
+			case GLFW_KEY_D:         on_d_pressed();         break;
+			case GLFW_KEY_Q:         on_q_pressed();         break;
+			case GLFW_KEY_E:         on_e_pressed();         break;
+			case GLFW_KEY_R:         on_r_pressed();         break;
+			default: break;
+		}
+	}
+	else if (is_release_event)
+	{
+		switch (key)
+		{
+			case GLFW_KEY_LEFT:      on_left_released();      break;
+			case GLFW_KEY_RIGHT:     on_right_released();     break;
+			case GLFW_KEY_UP:        on_up_released();        break;
+			case GLFW_KEY_DOWN:      on_down_released();      break;
+			case GLFW_KEY_PAGE_UP:   on_page_up_released();   break;
+			case GLFW_KEY_PAGE_DOWN: on_page_down_released(); break;
+			case GLFW_KEY_W:         on_w_released();         break;
+			case GLFW_KEY_A:         on_a_released();         break;
+			case GLFW_KEY_S:         on_s_released();         break;
+			case GLFW_KEY_D:         on_d_released();         break;
+			case GLFW_KEY_Q:         on_q_released();         break;
+			case GLFW_KEY_E:         on_e_released();         break;
+			default: break;
+		}
+		
+	}
+	update_text_tints();
+}
+
+void library_main::on_left_pressed() { m_camera_look_at_point_movement_speed.x = -1.0f; }
+void library_main::on_right_pressed() { m_camera_look_at_point_movement_speed.x = 1.0f; }
+void library_main::on_up_pressed() { m_camera_look_at_point_movement_speed.z = 1.0f; }
+void library_main::on_down_pressed() { m_camera_look_at_point_movement_speed.z = -1.0f; }
+void library_main::on_page_up_pressed() { m_camera_look_at_point_movement_speed.y = 1.0f; }
+void library_main::on_page_down_pressed() { m_camera_look_at_point_movement_speed.y = -1.0f; }
+void library_main::on_left_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
+void library_main::on_right_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
+void library_main::on_up_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
+void library_main::on_down_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
+void library_main::on_page_up_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
+void library_main::on_page_down_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
+void library_main::on_w_pressed() { m_camera_movement_speed.z = 1.0f; }
+void library_main::on_a_pressed() { m_camera_movement_speed.x = -1.0f; }
+void library_main::on_s_pressed() { m_camera_movement_speed.z = -1.0f; }
+void library_main::on_d_pressed() { m_camera_movement_speed.x = 1.0f; }
+void library_main::on_q_pressed() { m_camera_movement_speed.y = 1.0f; }
+void library_main::on_e_pressed() { m_camera_movement_speed.y = -1.0f; }
+
+void library_main::on_r_pressed()
+{
+	m_camera_movement_speed = m_camera_look_at_point_movement_speed = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_camera->set_look_at_position({ 0.0f, 0.0f, 0.0f });
+	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
+}
+
+void library_main::on_w_released() { m_camera_movement_speed.z = 0.0f; }
+void library_main::on_a_released() { m_camera_movement_speed.x = 0.0f; }
+void library_main::on_s_released() { m_camera_movement_speed.z = 0.0f; }
+void library_main::on_d_released() { m_camera_movement_speed.x = 0.0f; }
+void library_main::on_q_released() { m_camera_movement_speed.y = 0.0f; }
+void library_main::on_e_released() { m_camera_movement_speed.y = 0.0f; }
 
 void library_main::tick(float delta_time)
 {
 	using namespace glm;
+	using namespace std;
 
 	static constexpr float delta_time_cap = 0.25f;
 	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
@@ -240,21 +347,35 @@ void library_main::tick(float delta_time)
 	int frame_buffer_width = 0, frame_buffer_height = 0;
 	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
 	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
-	
-	mat4x4 translate_matrix = identity<mat4x4>();
-	vec3 translate_to_middle_of_screen = { flt_fbw * 0.5f, frame_buffer_height * 0.5f, 0.0f };
-	translate_matrix = translate(translate_matrix, translate_to_middle_of_screen);
-	mat4x4 rotate_matrix = identity<mat4x4>();
-	rotate_matrix = rotate(rotate_matrix, angle, { 0.0f, 0.0f, 1.0f });
-	mat4x4 transform = identity<mat4x4>();
-	transform = translate_matrix * rotate_matrix;
-	m_test_quad->set_transform(transform);
+	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
 
-	m_red_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, 0.0f, 0.0f })); // should be top left
-	m_green_test_quad->set_transform(translate(identity<mat4x4>(), {flt_fbw, 0.0f, 0.0f})); // should be top right
-	m_blue_test_quad->set_transform(translate(identity<mat4x4>(), { flt_fbw, flt_fbh, 0.0f }));  // should be bottom right
-	m_magenta_test_quad->set_transform(translate(identity<mat4x4>(), { 0.0f, flt_fbh, 0.0f }));  // should be bottom left
-	m_test_smiley_quad->set_transform(translate(identity<mat4x4>(), { 50.0f, 50.0f, 0.0f }));
+	vec3 camera_position = m_camera->get_position();
+	vec3 camera_look_at_position = m_camera->get_look_at_position();
+	camera_position += m_camera_movement_speed * delta_time_to_use;
+	camera_look_at_position += m_camera_look_at_point_movement_speed * delta_time_to_use;
+	m_camera->set_position(camera_position);
+	m_camera->set_look_at_position(camera_look_at_position);
 
-	m_test_text->set_transform(translate(identity<mat4x4>(), {200.0f, 200.0f, 0.0f}));
+	// this is post initialisation, we'll want a different heap that has fixed size.
+	const vec3 cube_position = m_test_cube->get_net_transform()[3];
+	u32string text_to_set = U"Cube position: ";
+	text_utilities::append_vec3(text_to_set, cube_position);
+	m_cube_position_text->set_text(text_to_set);
+	text_to_set = U"Camera position: ";
+	text_utilities::append_vec3(text_to_set, camera_position);
+	m_camera_position_text->set_text(text_to_set);
+	text_to_set = U"Camera look at position: ";
+	text_utilities::append_vec3(text_to_set, camera_look_at_position);
+	m_camera_look_at_position_text->set_text(text_to_set);
+}
+
+void library_main::update_text_tints()
+{
+	update_text_tint(m_camera_position_text, length(m_camera_movement_speed) > 0.0f);
+	update_text_tint(m_camera_look_at_position_text, length(m_camera_look_at_point_movement_speed) > 0.0f);
+}
+
+void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool use_change_colour)
+{
+	to_update->set_tint(use_change_colour ? text_changing_tint : text_normal_tint);
 }

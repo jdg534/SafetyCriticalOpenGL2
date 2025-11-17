@@ -10,13 +10,14 @@
 #include <vector>
 
 #include "renderable.decl.h"
+#include "3d/camera.decl.h"
 
 class renderer
 {
 public:
 
 	renderer() = delete;
-	explicit renderer(glm::vec2 framebuffer_size, const size_t render_list_cap);
+	explicit renderer(glm::vec2 framebuffer_size, const size_t render_list_cap, std::weak_ptr<const camera> camera);
 
 	void initialise();
 	void shutdown();
@@ -28,6 +29,7 @@ public:
 	void sort_render_list();
 
 	void set_framebuffer_size(glm::vec2 framebuffer_size);
+	void set_camera(std::weak_ptr<const camera> camera);
 
 private:
 
@@ -50,6 +52,7 @@ private:
 	glm::vec2 m_framebuffer_size;
 
 	std::vector<std::weak_ptr<renderable>> m_render_list;
+	std::weak_ptr<const camera> m_camera;
 	const size_t m_render_list_cap { 0 };
 };
 

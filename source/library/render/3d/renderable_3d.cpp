@@ -1,3 +1,12 @@
 #include "renderable_3d.h"
 
-// placeholder
+renderable_3d::renderable_3d()
+	: renderable()
+{
+
+}
+
+renderable_3d::~renderable_3d()
+{
+	renderable::~renderable();
+}

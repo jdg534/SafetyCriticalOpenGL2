@@ -26,6 +26,16 @@
 			"name": "plain_white_font",
 			"type": "font",
 			"path": "plain_white_quad_font.json"
+		},
+		{
+			"name": "grass_texture",
+			"type": "texture",
+			"path": "textures/grass.png"
+		},
+		{
+			"name": "grass_cube",
+			"type": "model",
+			"path": "models/grass_cube.obj"
 		}
 	]
 }

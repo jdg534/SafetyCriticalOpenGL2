@@ -12,7 +12,7 @@ using namespace vertex_types;
 // public
 /////////
 
-text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit, line_spaceing line_spaceing)
+text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<const font>& font_to_use, size_t character_limit, line_spaceing line_spaceing)
 	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
 	, m_text(starting_text)
 	, m_font_to_use(font_to_use)
@@ -62,9 +62,9 @@ void text_block::draw()
 	const GLint u_transform_loc = glGetUniformLocation(shader_program, "u_transform");
 	const GLint u_texture_loc = glGetUniformLocation(shader_program, "u_texture");
 
-	const glm::mat4x4 net_transform = get_net_transform(); // make it identity if needed.
+	const glm::mat4x4 net_transform = get_net_transform();
 
-	glUniform4f(u_tint_loc, 1.0f, 1.0f, 1.0f, 1.0f);
+	glUniform4fv(u_tint_loc, 1, glm::value_ptr(get_tint()));
 	glUniform1f(u_alphaCut_loc, 0.0f);
 	glUniformMatrix4fv(u_transform_loc, 1, GL_FALSE, glm::value_ptr(net_transform));
 	
