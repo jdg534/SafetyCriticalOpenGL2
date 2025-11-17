@@ -11,7 +11,7 @@
 // public
 /////////
 
-static_model::static_model(std::weak_ptr<model> model)
+static_model::static_model(std::weak_ptr<const model> model)
 	: renderable_3d()
 	, m_model(model)
 {

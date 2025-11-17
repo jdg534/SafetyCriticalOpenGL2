@@ -92,6 +92,7 @@ void library_main::initialise()
 	{
 		m_renderer->add_to_render_list(text_block);
 	}
+	m_renderer->add_to_render_list(m_textured_quad);
 	// remember the painters algorithm for 2d stuff!
 
 	// 3d stuff will be z buffered. (order doesn't matter).
@@ -169,10 +170,11 @@ GLFWwindow* library_main::initialise_window()
 
 void library_main::initialise_test_data()
 {
-	weak_ptr<asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
+	using namespace glm;
+	weak_ptr<const asset> font_asset_ptr = m_asset_manager->get_asset_on_name("font");
 
-	m_test_cube = make_shared<static_model>(dynamic_pointer_cast<model>(m_asset_manager->get_asset_on_name("grass_cube").lock()));
-	weak_ptr<font> font_ptr = dynamic_pointer_cast<font>(font_asset_ptr.lock());
+	m_test_cube = make_shared<static_model>(dynamic_pointer_cast<const model>(m_asset_manager->get_asset_on_name("grass_cube").lock()));
+	weak_ptr<const font> font_ptr = dynamic_pointer_cast<const font>(font_asset_ptr.lock());
 
 	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
 	m_cube_position_text = make_shared<text_block>(U"Cube position: X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
@@ -186,9 +188,12 @@ void library_main::initialise_test_data()
 	m_camera_look_at_position_text->set_parent(m_camera_position_text);
 	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text })
 	{
-		using namespace glm;
 		camera_text_block->set_transform(glm::translate(identity<mat4x4>(), { 0.0f, 25.0f, 0.0f }));
 	}
+
+	weak_ptr<const texture> smiley_texture = dynamic_pointer_cast<const texture>(m_asset_manager->get_asset_on_name("smiley").lock());
+	m_textured_quad = make_shared<quad>(smiley_texture, vec2{50.0f, 50.0f});
+	m_textured_quad->set_transform(glm::translate(identity<mat4x4>(), {45.0f, 175.0f, 0.0f}));
 }
 
 void library_main::shutdown()
@@ -219,6 +224,7 @@ void library_main::shutdown_test_data()
 		text_block->shutdown();
 		text_block.reset();
 	}
+	m_textured_quad->shutdown();
 	m_test_cube->shutdown();
 	m_test_cube.reset();
 }
@@ -295,95 +301,24 @@ void library_main::on_key_callback(GLFWwindow* window, int key, int scancode, in
 	update_text_tints();
 }
 
-void library_main::on_left_pressed()
-{
-	m_camera_look_at_point_movement_speed.x = -1.0f;
-}
-
-void library_main::on_right_pressed()
-{
-	m_camera_look_at_point_movement_speed.x = 1.0f;
-}
-
-void library_main::on_up_pressed()
-{
-	m_camera_look_at_point_movement_speed.z = 1.0f;
-}
-
-void library_main::on_down_pressed()
-{
-	m_camera_look_at_point_movement_speed.z = -1.0f;
-}
-
-void library_main::on_page_up_pressed()
-{
-	m_camera_look_at_point_movement_speed.y = 1.0f;
-}
-
-void library_main::on_page_down_pressed()
-{
-	m_camera_look_at_point_movement_speed.y = -1.0f;
-}
-
-void library_main::on_left_released()
-{
-	m_camera_look_at_point_movement_speed.x = 0.0f;
-}
-
-void library_main::on_right_released()
-{
-	m_camera_look_at_point_movement_speed.x = 0.0f;
-}
-
-void library_main::on_up_released()
-{
-	m_camera_look_at_point_movement_speed.z = 0.0f;
-}
-
-void library_main::on_down_released()
-{
-	m_camera_look_at_point_movement_speed.z = 0.0f;
-}
-
-void library_main::on_page_up_released()
-{
-	m_camera_look_at_point_movement_speed.y = 0.0f;
-}
-
-void library_main::on_page_down_released()
-{
-	m_camera_look_at_point_movement_speed.y = 0.0f;
-}
-
-void library_main::on_w_pressed()
-{
-	m_camera_movement_speed.z = 1.0f;
-}
-
-void library_main::on_a_pressed()
-{
-	m_camera_movement_speed.x = -1.0f;
-}
-
-void library_main::on_s_pressed()
-{
-	m_camera_movement_speed.z = -1.0f;
-}
-
-void library_main::on_d_pressed()
-{
-	m_camera_movement_speed.x = 1.0f;
-}
-
-void library_main::on_q_pressed()
-{
-	m_camera_movement_speed.y = 1.0f;
-}
-
-void library_main::on_e_pressed()
-{
-	m_camera_movement_speed.y = -1.0f;
-}
+void library_main::on_left_pressed() { m_camera_look_at_point_movement_speed.x = -1.0f; }
+void library_main::on_right_pressed() { m_camera_look_at_point_movement_speed.x = 1.0f; }
+void library_main::on_up_pressed() { m_camera_look_at_point_movement_speed.z = 1.0f; }
+void library_main::on_down_pressed() { m_camera_look_at_point_movement_speed.z = -1.0f; }
+void library_main::on_page_up_pressed() { m_camera_look_at_point_movement_speed.y = 1.0f; }
+void library_main::on_page_down_pressed() { m_camera_look_at_point_movement_speed.y = -1.0f; }
+void library_main::on_left_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
+void library_main::on_right_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
+void library_main::on_up_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
+void library_main::on_down_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
+void library_main::on_page_up_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
+void library_main::on_page_down_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
+void library_main::on_w_pressed() { m_camera_movement_speed.z = 1.0f; }
+void library_main::on_a_pressed() { m_camera_movement_speed.x = -1.0f; }
+void library_main::on_s_pressed() { m_camera_movement_speed.z = -1.0f; }
+void library_main::on_d_pressed() { m_camera_movement_speed.x = 1.0f; }
+void library_main::on_q_pressed() { m_camera_movement_speed.y = 1.0f; }
+void library_main::on_e_pressed() { m_camera_movement_speed.y = -1.0f; }
 
 void library_main::on_r_pressed()
 {
@@ -392,35 +327,12 @@ void library_main::on_r_pressed()
 	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
 }
 
-void library_main::on_w_released()
-{
-	m_camera_movement_speed.z = 0.0f;
-}
-
-void library_main::on_a_released()
-{
-	m_camera_movement_speed.x = 0.0f;
-}
-
-void library_main::on_s_released()
-{
-	m_camera_movement_speed.z = 0.0f;
-}
-
-void library_main::on_d_released()
-{
-	m_camera_movement_speed.x = 0.0f;
-}
-
-void library_main::on_q_released()
-{
-	m_camera_movement_speed.y = 0.0f;
-}
-
-void library_main::on_e_released()
-{
-	m_camera_movement_speed.y = 0.0f;
-}
+void library_main::on_w_released() { m_camera_movement_speed.z = 0.0f; }
+void library_main::on_a_released() { m_camera_movement_speed.x = 0.0f; }
+void library_main::on_s_released() { m_camera_movement_speed.z = 0.0f; }
+void library_main::on_d_released() { m_camera_movement_speed.x = 0.0f; }
+void library_main::on_q_released() { m_camera_movement_speed.y = 0.0f; }
+void library_main::on_e_released() { m_camera_movement_speed.y = 0.0f; }
 
 void library_main::tick(float delta_time)
 {

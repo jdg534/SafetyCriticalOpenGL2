@@ -7,7 +7,7 @@ using namespace gl;
 // public
 /////////
 
-quad::quad(const std::weak_ptr<texture>& texture, const glm::vec2& size)
+quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
 	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
 	, m_texture(texture)
 {

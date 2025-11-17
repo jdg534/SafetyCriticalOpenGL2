@@ -14,7 +14,7 @@ class static_model : public renderable_3d
 public:
 
 	static_model() = delete;
-	static_model(std::weak_ptr<model> model); // refactor to weak_ptr<const model>
+	static_model(std::weak_ptr<const model> model);
 	virtual ~static_model();
 
 	void initialise() override;
@@ -23,7 +23,8 @@ public:
 
 private:
 
-	std::weak_ptr<model> m_model; // refactor to weak_ptr<const model>
+
+	std::weak_ptr<const model> m_model;
 };
 
 #endif // _STATIC_MODEL_3D_H_

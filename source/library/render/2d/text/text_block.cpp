@@ -12,7 +12,7 @@ using namespace vertex_types;
 // public
 /////////
 
-text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit, line_spaceing line_spaceing)
+text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<const font>& font_to_use, size_t character_limit, line_spaceing line_spaceing)
 	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
 	, m_text(starting_text)
 	, m_font_to_use(font_to_use)

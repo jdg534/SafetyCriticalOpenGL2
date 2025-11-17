@@ -126,9 +126,10 @@ source_rect font::get_texture_coordinates_for_glyph(char32_t glyph) const
 	return result;
 }
 
-weak_ptr<texture> font::get_texture() const
+weak_ptr<const texture> font::get_texture() const
 {
-	return dynamic_pointer_cast<texture>(get_asset_manager().lock()->get_asset_on_name(m_atlas_asset_name).lock());
+	weak_ptr<const asset> result = get_asset_manager().lock()->get_asset_on_name(m_atlas_asset_name);
+	return dynamic_pointer_cast<const texture>(result.lock());
 }
 
 // private

@@ -12,7 +12,7 @@ class quad : public renderable_2d
 public:
 
 	quad() = delete;
-	explicit quad(const std::weak_ptr<texture>& texture, const glm::vec2& size);
+	explicit quad(std::weak_ptr<const texture> texture, const glm::vec2& size);
 	virtual ~quad();
 
 	void initialise() override;
@@ -21,7 +21,8 @@ public:
 
 private:
 
-	std::weak_ptr<texture> m_texture; // refactor to weak_ptr<const texture>
+
+	std::weak_ptr<const texture> m_texture; // refactor to weak_ptr<const texture>
 };
 
 #endif // _QUAD_H_

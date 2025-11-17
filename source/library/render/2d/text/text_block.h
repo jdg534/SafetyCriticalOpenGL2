@@ -26,7 +26,7 @@ class text_block
 public:
 
 	text_block() = delete;
-	text_block(const std::u32string& starting_text, const std::weak_ptr<font>& font_to_use, size_t character_limit, line_spaceing line_spaceing);
+	text_block(const std::u32string& starting_text, const std::weak_ptr<const font>& font_to_use, size_t character_limit, line_spaceing line_spaceing);
 
 	void set_text(const std::u32string& new_text);
 	void set_line_spacing(line_spaceing line_spacing);
@@ -45,7 +45,7 @@ private:
 
 	const std::uint16_t m_character_limit;
 	std::u32string m_text;
-	std::weak_ptr<font> m_font_to_use; // refactor to: weak_ptr<const font>
+	std::weak_ptr<const font> m_font_to_use; // refactor to: weak_ptr<const font>
 	line_spaceing m_line_spaceing;
 };
 

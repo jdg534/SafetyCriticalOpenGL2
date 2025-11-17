@@ -51,7 +51,7 @@ public:
 	glyph_info get_glyph_info(char32_t glyph) const;
 	kerning_info get_kerning_info(char32_t previous_glyph, char32_t current_glyph) const;
 	source_rect get_texture_coordinates_for_glyph(char32_t glyph) const;
-	std::weak_ptr<texture> get_texture() const;
+	std::weak_ptr<const texture> get_texture() const;
 
 private:
 

@@ -95,7 +95,7 @@ void material::initialise_assimp_struct(const aiMaterial* assimp_material)
                 resolved_path = resolved_path.substr(working_dir.string().size() + 1); // relative to the working dir.
                 replace(resolved_path.begin(), resolved_path.end(), '\\', '/');
                 // note the asset list needs to declare the texture before the model
-                m_textures[purpose] = dynamic_pointer_cast<texture>(l_asset_manager->get_asset_on_path(resolved_path).lock());
+                m_textures[purpose] = dynamic_pointer_cast<const texture>(l_asset_manager->get_asset_on_path(resolved_path).lock());
             }
         }
     }
@@ -131,7 +131,7 @@ float material::get_shininess() const
     return m_shininess;
 }
 
-const std::unordered_map<texture_purpose, std::weak_ptr<texture>>& material::get_textures() const
+const std::unordered_map<texture_purpose, std::weak_ptr<const texture>>& material::get_textures() const
 {
     return m_textures;
 }

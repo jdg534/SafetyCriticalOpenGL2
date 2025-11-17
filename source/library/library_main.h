@@ -81,6 +81,7 @@ private:
 	std::shared_ptr<text_block> m_cube_position_text;
 	std::shared_ptr<text_block> m_camera_position_text;
 	std::shared_ptr<text_block> m_camera_look_at_position_text;
+	std::shared_ptr<quad> m_textured_quad;
 
 	glm::vec3 m_camera_movement_speed;
 	glm::vec3 m_camera_look_at_point_movement_speed;

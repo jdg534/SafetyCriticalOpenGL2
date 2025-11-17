@@ -43,7 +43,7 @@ public:
     const glm::vec4& get_specular_colour() const;
     float get_shininess() const;
 
-    const std::unordered_map<texture_purpose, std::weak_ptr<texture>>& get_textures() const;
+    const std::unordered_map<texture_purpose, std::weak_ptr<const texture>>& get_textures() const;
 
 private:
 
@@ -52,7 +52,7 @@ private:
     glm::vec4 m_specular_colour { 0.0f, 0.0f, 0.0f, 1.0f };
     float m_shininess = 0.0f;
 
-    std::unordered_map<texture_purpose, std::weak_ptr<texture>> m_textures;
+    std::unordered_map<texture_purpose, std::weak_ptr<const texture>> m_textures;
 };
 
 #endif // _MATERIAL_H_

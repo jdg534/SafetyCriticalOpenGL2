@@ -63,7 +63,7 @@ void asset_manager::shutdown()
 	m_assets.clear();
 }
 
-std::weak_ptr<asset> asset_manager::get_asset_on_name(std::string_view asset_name) const
+std::weak_ptr<const asset> asset_manager::get_asset_on_name(std::string_view asset_name) const
 {
 	for (const auto asset : m_assets)
 	{
@@ -75,7 +75,7 @@ std::weak_ptr<asset> asset_manager::get_asset_on_name(std::string_view asset_nam
 	throw std::runtime_error(std::string("Could not find the asset with name: ") + asset_name.data());
 }
 
-std::weak_ptr<asset> asset_manager::get_asset_on_path(std::string_view asset_path) const
+std::weak_ptr<const asset> asset_manager::get_asset_on_path(std::string_view asset_path) const
 {
 	for (const auto asset : m_assets)
 	{
