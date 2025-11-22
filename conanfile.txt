@@ -13,3 +13,4 @@ assimp/6.0.2
 		
 [layout]
 cmake_layout
+

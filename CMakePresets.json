@@ -1,37 +1,26 @@
 {
-  "version": 5,
-  "cmakeMinimumRequired":
-  {
-    "major": 3,
-    "minor": 21
-  },
-  "configurePresets":
-  [
-	{
-		"name": "windows-static",
-		"displayName": "Windows (x64 static)",
-		"description": "Build using vcpkg static triplet on Windows",
-		"generator": "Visual Studio 17 2022",
-		"binaryDir": "${sourceDir}/build",
-		"cacheVariables":
+	"version": 5,
+	"configurePresets":
+	[
 		{
-			"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake",
-			"VCPKG_TARGET_TRIPLET": "x64-windows-static",
-			"CMAKE_BUILD_TYPE": "Debug",
-			"CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug"
-		}
-	},
-	{
-		"name": "linux-static",
-		"displayName": "Linux x64",
-		"description": "Build using vcpkg static triplet on Linux",
-		"generator": "Unix Makefiles",
-		"binaryDir": "${sourceDir}/build",
-		"cacheVariables": 
+			"name": "windows-conan",
+			"generator": "Visual Studio 17 2022",
+			"binaryDir": "${sourceDir}/build",
+			"cacheVariables":
+			{
+				"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/conan_dependencies/build/generators/conan_toolchain.cmake",
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
 		{
-			"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake",
-			"VCPKG_TARGET_TRIPLET": "x64-linux"
+			"name": "linux-conan",
+			"generator": "Unix Makefiles",
+			"binaryDir": "${sourceDir}/build",
+			"cacheVariables":
+			{
+				"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/conan_dependencies/build/generators/conan_toolchain.cmake",
+				"CMAKE_BUILD_TYPE": "Release"
+			}
 		}
-	}
-  ]
+	]
 }

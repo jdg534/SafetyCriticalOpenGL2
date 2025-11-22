@@ -16,9 +16,6 @@ if [[ ! -f "$CONAN_HOME/profiles/default" ]]; then
     conan profile detect --force
 fi
 
-# Force C++17 settings in profile
-#conan profile update settings.compiler.cppstd=17 default
-
 # Detect conanfile
 if [[ -f "conanfile.py" ]]; then
     CONANFILE="conanfile.py"
@@ -36,3 +33,7 @@ conan install . \
     --profile:build=default
 
 echo "Dependencies successfully installed in $DEP_DIR"
+
+# we already have CMakePresets.json remove the conan generated one.
+rm CMakeUserPresets.json
+
