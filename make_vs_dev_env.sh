@@ -1,4 +1,6 @@
 #!/bin/bash
 
-cmake -S ./ --preset=windows-conan
+rm -rf build
 
+cmake -S ./ --preset=windows-conan
+cmake --build ./build/
