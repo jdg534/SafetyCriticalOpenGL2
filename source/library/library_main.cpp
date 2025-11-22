@@ -5,6 +5,9 @@
 #include "render/3d/camera.h"
 #include "render/include_opengl.h"
 #include "render/renderer.h"
+#include "render/2d/text/text_block.h"
+#include "render/2d/quad.h"
+#include "render/3d/static_model.h"
 #include "utilities/text_utilities.h"
 
 #include <filesystem>

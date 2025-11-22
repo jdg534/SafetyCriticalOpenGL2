@@ -11,10 +11,10 @@
 // temp includes. "should" move scene stuff into scene class.
 // also a UI for the root or 2d scenes. note "should" not "must" for "current scope".
 
-#include "render/2d/text/text_block.h"
-#include "render/2d/quad.h"
-#include "render/3d/static_model.h"
-#include "render/3d/camera.h"
+#include "render/2d/text/text_block.decl.h"
+#include "render/2d/quad.decl.h"
+#include "render/3d/static_model.decl.h"
+#include "render/3d/camera.decl.h"
 
 
 class library_main

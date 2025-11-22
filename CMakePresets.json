@@ -8,8 +8,7 @@
 			"binaryDir": "${sourceDir}/build",
 			"cacheVariables":
 			{
-				"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/conan_dependencies/build/generators/conan_toolchain.cmake",
-				"CMAKE_BUILD_TYPE": "Debug"
+				"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/generators/conan_toolchain.cmake"
 			}
 		},
 		{
@@ -18,8 +17,7 @@
 			"binaryDir": "${sourceDir}/build",
 			"cacheVariables":
 			{
-				"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/conan_dependencies/build/generators/conan_toolchain.cmake",
-				"CMAKE_BUILD_TYPE": "Release"
+				"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/generators/conan_toolchain.cmake"
 			}
 		}
 	]
