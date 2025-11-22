@@ -1,2 +1,4 @@
 build/
 build_for_clang_tidy_analysis/
+conan_dependencies/
+.conan2/
