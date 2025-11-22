@@ -6,8 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# find package commands, all packages can be found in the conanfile.txt
+# correct commands for the given library can be found on the conan center package for each library.
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(glm REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(glbinding REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 
