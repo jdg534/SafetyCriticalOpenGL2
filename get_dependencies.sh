@@ -3,6 +3,7 @@
 DEP_DIR="conan_dependencies"
 rm -rf $DEP_DIR
 mkdir -p $DEP_DIR
+rm -rf .conan2/
 
 # Optional: local Conan cache
 export CONAN_HOME="$(pwd)/.conan2"
@@ -16,11 +17,14 @@ if [[ ! -f "$CONAN_HOME/profiles/default" ]]; then
     conan profile detect --force
 fi
 
-conan install . \
+conan install ./ \
     --output-folder="$DEP_DIR" \
     --build=missing \
     --profile:host=default \
-    --profile:build=default
+    --profile:build=default \
+	--settings compiler.cppstd=17 \
+    --generator CMakeDeps \
+    --generator CMakeToolchain
 
 echo "Dependencies successfully installed in $DEP_DIR"
 
