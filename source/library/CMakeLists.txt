@@ -19,6 +19,7 @@ target_link_libraries(artifact_library PUBLIC glbinding::glbinding-aux) # need t
 target_link_libraries(artifact_library PRIVATE assimp::assimp) # need the include directories
 target_link_libraries(artifact_library PUBLIC ZLIB::ZLIB)
 target_link_libraries(artifact_library PRIVATE rapidjson) # need the include directories
+target_link_libraries(artifact_library PRIVATE OpenGL::GL)
 
 # to get where the variables are defined look up the files generated in: SafetyCriticalOpenGL2/conan_dependencies/build/generators/<generated file name>
 # the file name will be similar to the package name.
@@ -30,5 +31,6 @@ target_include_directories(artifact_library
         ${assimp_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/assimp-config.cmake
         ${glbinding_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/glbinding-config.cmake
         ${RapidJSON_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/RapidJSONConfig.cmake
+        ${egl_header_directory} # from: SafetyCriticalOpenGL2/third_party_code/egl_v1_5/CMakeLists.txt
 )
 

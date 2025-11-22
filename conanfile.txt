@@ -10,6 +10,7 @@ glfw/3.4
 glbinding/3.5.0
 rapidjson/cci.20230929
 assimp/6.0.2
+opengl/system
 		
 [layout]
 cmake_layout
