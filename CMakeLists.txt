@@ -16,6 +16,8 @@ find_package(glbinding REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(opengl_system REQUIRED)
+
 
 add_subdirectory(third_party_code)
 add_subdirectory(submodules)
