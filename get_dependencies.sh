@@ -9,10 +9,4 @@ conan install ./ \
     --generator CMakeDeps \
     --generator CMakeToolchain
 
-# cmake -S ./$DEP_DIR/build/generators --preset=conan-default
-# cmake --build ./$DEP_DIR/build --preset=conan-release
-
-
-# we already have CMakePresets.json remove the conan generated one.
-rm CMakeUserPresets.json
 
