@@ -15,14 +15,20 @@ target_include_directories(artifact_library PRIVATE ${open_gl_sc_2_header_direct
 target_link_libraries(artifact_library PUBLIC PNG::PNG)
 target_link_libraries(artifact_library PUBLIC glm::glm) # need the include directories
 target_link_libraries(artifact_library PUBLIC glfw) # need the include directories.
-target_link_libraries(artifact_library PUBLIC glbinding::glbinding-aux) # need the include directories
-target_link_libraries(artifact_library PRIVATE assimp::assimp) # need the include directories
+target_link_libraries(artifact_library PUBLIC glbinding::KHRplatform) # need the include directories
+target_link_libraries(artifact_library PUBLIC glbinding::glbinding) # need the include directories
+target_link_libraries(artifact_library PUBLIC assimp::assimp) # need the include directories
 target_link_libraries(artifact_library PUBLIC ZLIB::ZLIB)
-target_link_libraries(artifact_library PRIVATE rapidjson) # need the include directories
-target_link_libraries(artifact_library PRIVATE OpenGL::GL)
+target_link_libraries(artifact_library PUBLIC rapidjson) # need the include directories
+target_link_libraries(artifact_library PUBLIC OpenGL::GL)
 
 # to get where the variables are defined look up the files generated in: SafetyCriticalOpenGL2/conan_dependencies/build/generators/<generated file name>
 # the file name will be similar to the package name.
+
+
+target_link_libraries(artifact_library PUBLIC ${assimp_LIBRARIES})
+
+target_link_libraries(artifact_library PUBLIC ${glfw3_LIBRARIES})
 
 target_include_directories(artifact_library
     PUBLIC
@@ -30,7 +36,12 @@ target_include_directories(artifact_library
         ${glfw3_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/glfw3-config.cmake
         ${assimp_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/assimp-config.cmake
         ${glbinding_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/glbinding-config.cmake
-        ${RapidJSON_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/RapidJSONConfig.cmake
-        ${egl_header_directory} # from: SafetyCriticalOpenGL2/third_party_code/egl_v1_5/CMakeLists.txt
+        ${RapidJSON_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/RapidJSONConfig.cmake       
+)
+
+target_include_directories(artifact_library
+    PUBLIC
+		${egl_header_directory}
+		${open_gl_sc_2_header_directory}
 )
 
