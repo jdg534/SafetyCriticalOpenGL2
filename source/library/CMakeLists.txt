@@ -13,9 +13,22 @@ target_include_directories(artifact_library PRIVATE ${open_gl_sc_2_header_direct
 
 # conan dependencies
 target_link_libraries(artifact_library PUBLIC PNG::PNG)
-target_link_libraries(artifact_library PUBLIC glm::glm)
-target_link_libraries(artifact_library PUBLIC glfw)
-target_link_libraries(artifact_library PUBLIC glbinding::glbinding-aux)
-target_link_libraries(artifact_library PUBLIC assimp::assimp)
+target_link_libraries(artifact_library PUBLIC glm::glm) # need the include directories
+target_link_libraries(artifact_library PUBLIC glfw) # need the include directories.
+target_link_libraries(artifact_library PUBLIC glbinding::glbinding-aux) # need the include directories
+target_link_libraries(artifact_library PRIVATE assimp::assimp) # need the include directories
 target_link_libraries(artifact_library PUBLIC ZLIB::ZLIB)
-target_link_libraries(artifact_library PUBLIC rapidjson)
+target_link_libraries(artifact_library PRIVATE rapidjson) # need the include directories
+
+# to get where the variables are defined look up the files generated in: SafetyCriticalOpenGL2/conan_dependencies/build/generators/<generated file name>
+# the file name will be similar to the package name.
+
+target_include_directories(artifact_library
+    PUBLIC
+        ${glm_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/glm-config.cmake
+        ${glfw3_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/glfw3-config.cmake
+        ${assimp_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/assimp-config.cmake
+        ${glbinding_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/glbinding-config.cmake
+        ${RapidJSON_INCLUDE_DIRS} # from: SafetyCriticalOpenGL2/conan_dependencies/build/generators/RapidJSONConfig.cmake
+)
+
