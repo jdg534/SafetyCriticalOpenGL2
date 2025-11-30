@@ -5,6 +5,7 @@
     "zlib",
     "libpng",
     "rapidjson",
-    "assimp"
+    "assimp",
+	"libgeotiff"
   ]
 }

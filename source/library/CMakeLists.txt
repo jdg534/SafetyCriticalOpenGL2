@@ -26,3 +26,6 @@ target_link_libraries(artifact_library PRIVATE ZLIB::ZLIB)
 target_link_libraries(artifact_library PUBLIC RapidJSON)
 target_link_libraries(artifact_library PUBLIC assimp::assimp)
 
+
+target_include_directories(artifact_library PRIVATE ${GEOTIFF_INCLUDE_DIR})
+target_link_libraries(artifact_library PRIVATE ${GEOTIFF_LIBRARIES})
