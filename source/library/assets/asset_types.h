@@ -11,6 +11,7 @@ enum class asset_type : std::uint8_t
 	model,
 	mesh, // loaded when loading a model
 	material, // loaded when loading a model
+	terrain
 };
 
 #endif // _ASSET_TYPES_H_

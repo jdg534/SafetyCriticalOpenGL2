@@ -36,6 +36,11 @@
 			"name": "grass_cube",
 			"type": "model",
 			"path": "models/grass_cube.obj"
+		},
+		{
+			"name": "umbra_mount",
+			"type": "terrain",
+			"path": "terrain/umbra_mount_yasur.terrain"
 		}
 	]
 }
