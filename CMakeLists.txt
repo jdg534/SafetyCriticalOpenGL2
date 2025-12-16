@@ -10,6 +10,8 @@ find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+# find_package(GDAL CONFIG REQUIRED) # not using GDAL, it adds too many vcpkg packages.
+find_package(TIFF REQUIRED)
 find_package(GeoTIFF CONFIG REQUIRED)
 
 add_subdirectory(third_party_code)

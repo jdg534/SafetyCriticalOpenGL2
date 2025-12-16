@@ -6,6 +6,7 @@
     "libpng",
     "rapidjson",
     "assimp",
-	"libgeotiff"
+	"libgeotiff",
+	"tiff"
   ]
 }

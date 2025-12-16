@@ -14,6 +14,7 @@
 #include "font.h"
 #include "texture.h"
 #include "3d/model.h"
+#include "3d/terrain/terrain.h"
 
 void asset_manager::initialise(std::string_view assets_list_file_path)
 {
@@ -138,6 +139,7 @@ std::shared_ptr<asset> asset_manager::load_model(std::string_view name, std::str
 
 std::shared_ptr<asset> asset_manager::load_terrain(std::string_view name, std::string_view path)
 {
-	throw std::exception("TODO: code load_terrain()");
-	return nullptr;
+	std::shared_ptr<terrain> result = std::make_shared<terrain>(name.data(), path.data(), weak_from_this());
+	result->initialise();
+	return result;
 }
