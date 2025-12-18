@@ -11,6 +11,10 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <iostream>
+
+// public
+/////////
 
 terrain::terrain(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager)
 	: asset(name, path, asset_manager)
@@ -60,26 +64,40 @@ void terrain::initialise()
 	uint16 samplesPerPixel = 0;
 
 	TIFFGetField(tiff_file, TIFFTAG_BITSPERSAMPLE, &bitsPerSample);
-	TIFFGetField(tiff_file, TIFFTAG_SAMPLEFORMAT, &sampleFormat);
+	TIFFGetFieldDefaulted(tiff_file, TIFFTAG_SAMPLEFORMAT, &sampleFormat);
 	TIFFGetField(tiff_file, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel);
 
-	if (samplesPerPixel != 1)
-		throw std::runtime_error("Expected single-band heightmap");
+	if (samplesPerPixel != 1) { throw std::runtime_error("Expected single-band heightmap"); }
+	if (bitsPerSample != 8) { throw std::runtime_error("Expected 8 bit height data"); }
+	if (sampleFormat == SAMPLEFORMAT_VOID || sampleFormat == SAMPLEFORMAT_IEEEFP) { throw std::runtime_error("unsupported height data format"); }
 
-	if (bitsPerSample != 32 || sampleFormat != SAMPLEFORMAT_IEEEFP) // LLM generated code... Update it to support 8 bit tiff files.
-		throw std::runtime_error("Expected Float32 height data");
-
-	std::vector<float> heights(width * height);
-
-	for (uint32 row = 0; row < height; ++row)
+	m_heights.resize(width * height);
+	if (sampleFormat == SAMPLEFORMAT_UINT)
 	{
-		float* rowPtr = heights.data() + row * width;
-
-		if (TIFFReadScanline(tiff_file, rowPtr, row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		read_heights_uint8(m_heights, tiff_file);
+	}
+	else if (sampleFormat == SAMPLEFORMAT_INT)
+	{
+		read_heights_sint8(m_heights, tiff_file);
 	}
 
+	GTIF* geo_tif = GTIFNew(tiff_file);
+	if (!geo_tif)
+		throw std::runtime_error("GTIFNew failed");
 
 
+	uint16 geo_pixel_scale = 0, geo_tie_points = 0;
+	if (!TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE, &geo_pixel_scale)
+		)
+	{
+		std::cout << "Missing geo tiff pixel scale" << std::endl;
+	}
+	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &geo_tie_points))
+	{
+		std::cout << "Missing geo tiff tie points" << std::endl;
+	}
+
+	GTIFFree(geo_tif);
 	XTIFFClose(tiff_file);
 	tiff_file = nullptr;
 
@@ -88,9 +106,51 @@ void terrain::initialise()
 void terrain::shutdown()
 {
 	// freeup stuff.
+	m_heights.clear();
 }
 
 asset_type terrain::get_type() const
 {
 	return asset_type::terrain;
+}
+
+// private
+//////////
+
+void terrain::read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_file)
+{
+	uint32 width = 0, height = 0;
+	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
+	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
+
+	std::vector<uint8_t> scanline(width);
+	constexpr float INV_255 = 1.0f / 255.0f;
+	for (uint32 row = 0; row < height; ++row)
+	{
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		float* dst = output_buffer.data() + row * width;
+		for (uint32 col = 0; col < width; ++col)
+		{
+			dst[col] = static_cast<float>(scanline[col]) * INV_255;
+		}
+	}
+}
+
+void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_file)
+{
+	uint32 width = 0, height = 0;
+	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
+	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
+
+	std::vector<uint8_t> scanline(width);
+	constexpr float INV_128 = 1.0f / 128.0f;
+	for (uint32 row = 0; row < height; ++row)
+	{
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		float* dst = output_buffer.data() + row * width;
+		for (uint32 col = 0; col < width; ++col)
+		{
+			dst[col] = static_cast<float>(scanline[col]) * INV_128;
+		}
+	}
 }
