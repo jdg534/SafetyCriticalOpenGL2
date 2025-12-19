@@ -2,6 +2,7 @@
 #define _TERRAIN_H_
 
 #include "../../asset.h"
+#include "../../../render/include_opengl.h"
 
 #include <tiffio.h>
 
@@ -27,6 +28,11 @@ public:
 	float get_tiff_meters_per_pixel() const;
 	float get_tiff_height_at(uint16 x, uint16 y) const;
 
+	gl::GLuint get_vertex_array_object_id() const;
+	gl::GLuint get_vertex_buffer_id() const;
+	gl::GLuint get_index_buffer_id() const;
+	gl::GLuint get_num_indices_to_draw() const;
+
 private:
 
 	static void read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_file);
@@ -40,6 +46,11 @@ private:
 	uint16 m_tiff_width = 0;
 	uint16 m_tiff_length = 0;
 	float m_tiff_meters_per_pixel = 1.0f;
+
+	gl::GLuint m_vertex_array_object_id = 0;
+	gl::GLuint m_vertex_buffer_id = 0;
+	gl::GLuint m_index_buffer_id = 0;
+	gl::GLuint m_num_indices_to_draw = 0;
 };
 
 #endif // _TERRAIN_H_

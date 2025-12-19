@@ -127,8 +127,13 @@ void terrain::initialise()
 
 void terrain::shutdown()
 {
-	// freeup stuff.
+	using namespace gl;
 	m_heights.clear();
+
+	glDeleteVertexArrays(1, &m_vertex_array_object_id);
+	GLuint buffer_ids[2] = { m_vertex_buffer_id, m_index_buffer_id };
+	glDeleteBuffers(2, buffer_ids);
+	m_vertex_array_object_id = m_vertex_buffer_id = m_index_buffer_id = m_num_indices_to_draw = 0;
 }
 
 asset_type terrain::get_type() const
@@ -156,6 +161,26 @@ float terrain::get_tiff_height_at(uint16 x, uint16 y) const
 	const size_t index = get_height_index(x, y);
 	assert(index < m_heights.size());
 	return m_heights[index];
+}
+
+gl::GLuint terrain::get_vertex_array_object_id() const
+{
+	return m_vertex_array_object_id;
+}
+
+gl::GLuint terrain::get_vertex_buffer_id() const
+{
+	return m_vertex_buffer_id;
+}
+
+gl::GLuint terrain::get_index_buffer_id() const
+{
+	return m_index_buffer_id;
+}
+
+gl::GLuint terrain::get_num_indices_to_draw() const
+{
+	return m_num_indices_to_draw;
 }
 
 // private
@@ -235,7 +260,7 @@ void terrain::generate_open_gl_buffers()
 {
 	using namespace vertex_types;
 	
-	// TODO later if there's free time. use ROAM to make the 
+	// TODO later if there's free time. use ROAM to make the tri count smaller. think quad tree sub devision until 
 	std::vector<vertex_3d> vertex_buffer_data(m_heights.size());
 
 	// Note we're using uint32 indices, for higher range.
@@ -293,5 +318,29 @@ void terrain::generate_open_gl_buffers()
 		}
 	}
 
+	using namespace gl;
+	glGenVertexArrays(1, &m_vertex_array_object_id);
+	glBindVertexArray(m_vertex_array_object_id);
 
+	glGenBuffers(1, &m_vertex_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
+
+	glGenBuffers(1, &m_index_buffer_id);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_id);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint32_t), index_buffer_data.data(), GL_STATIC_DRAW);
+
+	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, position));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, texture_coordinates));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, normal));
+
+	glBindVertexArray(0);
+	m_num_indices_to_draw = index_buffer_data.size();
+
+	vertex_buffer_data.clear();
+	index_buffer_data.clear();
 }
