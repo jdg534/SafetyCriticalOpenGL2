@@ -24,6 +24,7 @@ public:
 
 	uint16 get_tiff_width() const;
 	uint16 get_tiff_length() const; // the differ from height, for y px in the image
+	float get_tiff_meters_per_pixel() const;
 	float get_tiff_height_at(uint16 x, uint16 y) const;
 
 private:

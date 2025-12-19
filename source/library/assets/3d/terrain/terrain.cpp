@@ -146,6 +146,11 @@ uint16 terrain::get_tiff_length() const
 	return m_tiff_length;
 }
 
+float terrain::get_tiff_meters_per_pixel() const
+{
+	return m_tiff_meters_per_pixel;
+}
+
 float terrain::get_tiff_height_at(uint16 x, uint16 y) const
 {
 	const size_t index = get_height_index(x, y);
