@@ -2,11 +2,15 @@
 
 #include "../../asset_utils.h"
 
+#include "../../../render/vertex_types.h"
+
 #include <tiffio.h>
 #include <geotiff.h>
 #include <geo_normalize.h>
 #include <xtiffio.h>
 #include <rapidjson/document.h>
+
+#include <glm/glm.hpp>
 
 #include <filesystem>
 #include <fstream>
@@ -55,9 +59,12 @@ void terrain::initialise()
 	TIFF* tiff_file = XTIFFOpen(resolved_path.data(), "r");
 	if (!tiff_file) throw exception("Failed to load tiff file");
 
-	uint32 width = 0, height = 0;
-	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
-	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
+	GTIF* geo_tiff = GTIFNew(tiff_file);
+	if (!geo_tiff)
+		throw std::runtime_error("GTIFNew failed");
+
+	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &m_tiff_width);
+	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &m_tiff_length);
 
 	uint16 bitsPerSample = 0;
 	uint16 sampleFormat = 0;
@@ -71,7 +78,35 @@ void terrain::initialise()
 	if (bitsPerSample != 8) { throw std::runtime_error("Expected 8 bit height data"); }
 	if (sampleFormat == SAMPLEFORMAT_VOID || sampleFormat == SAMPLEFORMAT_IEEEFP) { throw std::runtime_error("unsupported height data format"); }
 
-	m_heights.resize(width * height);
+	if (TIFFIsTiled(tiff_file))
+	{
+		throw exception("Titled tiff file.");
+	}
+
+	double* pixelScale = nullptr;
+	double* tiePoints = nullptr;
+	if (!TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE, &pixelScale))
+	{
+		std::cout << "Missing GeoPixelScale\n";
+	}
+
+	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &tiePoints))
+	{
+		std::cout << "Missing GeoTiePoints\n";
+	}
+	
+	/*
+	glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
+	double* modelTransform = nullptr; // add this later if needed.
+	if (TIFFGetField(tiff_file, TIFFTAG_MODELTRANSFORMATIONTAG, &modelTransform)) // if set will be a 4x4 matrix
+	{
+		scale.x = static_cast<float>(modelTransform[0]);
+		scale.y = static_cast<float>(modelTransform[5]);
+		scale.z = static_cast<float>(modelTransform[10]);
+	}
+	*/
+
+	m_heights.resize(m_tiff_width * m_tiff_length);
 	if (sampleFormat == SAMPLEFORMAT_UINT)
 	{
 		read_heights_uint8(m_heights, tiff_file);
@@ -81,26 +116,13 @@ void terrain::initialise()
 		read_heights_sint8(m_heights, tiff_file);
 	}
 
-	GTIF* geo_tif = GTIFNew(tiff_file);
-	if (!geo_tif)
-		throw std::runtime_error("GTIFNew failed");
+	flip_rows(m_heights, m_tiff_width, m_tiff_length);
 
-
-	uint16 geo_pixel_scale = 0, geo_tie_points = 0;
-	if (!TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE, &geo_pixel_scale)
-		)
-	{
-		std::cout << "Missing geo tiff pixel scale" << std::endl;
-	}
-	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &geo_tie_points))
-	{
-		std::cout << "Missing geo tiff tie points" << std::endl;
-	}
-
-	GTIFFree(geo_tif);
+	GTIFFree(geo_tiff);
 	XTIFFClose(tiff_file);
 	tiff_file = nullptr;
 
+	generate_open_gl_buffers();
 }
 
 void terrain::shutdown()
@@ -112,6 +134,23 @@ void terrain::shutdown()
 asset_type terrain::get_type() const
 {
 	return asset_type::terrain;
+}
+
+uint16 terrain::get_tiff_width() const
+{
+	return m_tiff_width;
+}
+
+uint16 terrain::get_tiff_length() const
+{
+	return m_tiff_length;
+}
+
+float terrain::get_tiff_height_at(uint16 x, uint16 y) const
+{
+	const size_t index = get_height_index(x, y);
+	assert(index < m_heights.size());
+	return m_heights[index];
 }
 
 // private
@@ -151,6 +190,57 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 		for (uint32 col = 0; col < width; ++col)
 		{
 			dst[col] = static_cast<float>(scanline[col]) * INV_128;
+		}
+	}
+}
+
+void terrain::flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length)
+{
+	if (width == 0 || length == 0)
+		return;
+
+	if (output_buffer.size() != static_cast<size_t>(width) * length)
+		throw std::runtime_error("Invalid heightmap buffer size");
+
+	const size_t row_elements = width;
+	const size_t row_bytes = row_elements * sizeof(float);
+	const size_t half_height = length / 2;
+
+	std::vector<float> temp(row_elements);
+
+	for (size_t row = 0; row < half_height; ++row)
+	{
+		const size_t opposite = (length - 1) - row;
+
+		float* a = output_buffer.data() + row * row_elements;
+		float* b = output_buffer.data() + opposite * row_elements;
+
+		std::memcpy(temp.data(), a, row_bytes);
+		std::memcpy(a, b, row_bytes);
+		std::memcpy(b, temp.data(), row_bytes);
+	}
+}
+
+size_t terrain::get_height_index(uint16 x, uint16 y) const
+{
+	return (m_tiff_width * y) + x;
+}
+
+void terrain::generate_open_gl_buffers()
+{
+	using namespace vertex_types;
+	
+	// TODO later if there's free time. use ROAM to make the 
+	std::vector<vertex_3d> vertex_buffer_data(m_heights.size());
+
+	// Note we're using uint32 indices, for higher range.
+
+	std::vector<uint32_t> index_buffer_data(m_heights.size() * 6);
+	for (size_t i = 0; i < m_tiff_length; ++i)
+	{
+		for (size_t j = 0; j < m_tiff_width; ++j)
+		{
+			// pich up here.
 		}
 	}
 }

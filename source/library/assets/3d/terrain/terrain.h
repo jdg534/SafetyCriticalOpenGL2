@@ -22,12 +22,23 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
+	uint16 get_tiff_width() const;
+	uint16 get_tiff_length() const; // the differ from height, for y px in the image
+	float get_tiff_height_at(uint16 x, uint16 y) const;
+
 private:
 
 	static void read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_file);
+	static void flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length);
+
+	size_t get_height_index(uint16 x, uint16 y) const;
+	void generate_open_gl_buffers();
 
 	std::vector<float> m_heights;
+	uint16 m_tiff_width = 0;
+	uint16 m_tiff_length = 0;
+	float m_tiff_meters_per_pixel = 1.0f;
 };
 
 #endif // _TERRAIN_H_
