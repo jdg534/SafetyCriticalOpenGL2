@@ -116,7 +116,7 @@ void terrain::initialise()
 		read_heights_sint8(m_heights, tiff_file);
 	}
 
-	flip_rows(m_heights, m_tiff_width, m_tiff_length);
+	// flip_rows(m_heights, m_tiff_width, m_tiff_length); // not needed, uncomment if we need to flip
 
 	GTIFFree(geo_tiff);
 	XTIFFClose(tiff_file);
@@ -235,12 +235,43 @@ void terrain::generate_open_gl_buffers()
 
 	// Note we're using uint32 indices, for higher range.
 
+	const float far_west = -static_cast<float>(m_tiff_width / 2) * m_tiff_meters_per_pixel;
+	const float far_north = -static_cast<float>(m_tiff_length / 2) * m_tiff_meters_per_pixel;
+
+
 	std::vector<uint32_t> index_buffer_data(m_heights.size() * 6);
 	for (size_t i = 0; i < m_tiff_length; ++i)
 	{
 		for (size_t j = 0; j < m_tiff_width; ++j)
 		{
-			// pich up here.
+			const int vertex_buffer_index_offset = 4 * i * j;
+			const int index_buffer_offset = 6 * i * j;
+
+			const size_t left_px = j - 1;
+			const size_t above_px = i - 1;
+			const size_t right_px = j + 1;
+			const size_t below_px = i + 1;
+			const bool got_left_px = left_px >= 0;
+			const bool got_above_px = above_px >= 0;
+			const bool got_right_px = right_px < m_tiff_width;
+			const bool got_below_px = below_px < m_tiff_width;
+
+			const float current_px_height = get_tiff_height_at(j, i);
+			const float above_px_height = got_above_px ? get_tiff_height_at(j, above_px) : 0.0f;
+			const float left_px_height = got_left_px ? get_tiff_height_at(left_px, i) : 0.0f;
+			const float right_px_height = got_right_px ? get_tiff_height_at(right_px, i) : 0.0f;
+			const float below_px_height = got_below_px ? get_tiff_height_at(j, below_px) : 0.0f;
+
+			vertex_buffer_data[vertex_buffer_index_offset].position.x = far_west + (j * m_tiff_meters_per_pixel);
+			vertex_buffer_data[vertex_buffer_index_offset].position.y = current_px_height;
+			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_tiff_meters_per_pixel);
+			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.x = (sinf(static_cast<float>(j)) + 1.0f) / 2.0f;
+			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = (sinf(static_cast<float>(i)) + 1.0f) / 2.0f;
+
+			const glm::vec3 dx = glm::vec3(2.0f * m_tiff_meters_per_pixel, right_px_height - left_px_height, 0.0f);
+			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_tiff_meters_per_pixel);
+			vertex_buffer_data[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
 		}
 	}
+	// now the index buffer!
 }
