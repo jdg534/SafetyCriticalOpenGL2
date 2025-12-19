@@ -238,21 +238,18 @@ void terrain::generate_open_gl_buffers()
 	const float far_west = -static_cast<float>(m_tiff_width / 2) * m_tiff_meters_per_pixel;
 	const float far_north = -static_cast<float>(m_tiff_length / 2) * m_tiff_meters_per_pixel;
 
-
-	std::vector<uint32_t> index_buffer_data(m_heights.size() * 6);
 	for (size_t i = 0; i < m_tiff_length; ++i)
 	{
 		for (size_t j = 0; j < m_tiff_width; ++j)
 		{
-			const int vertex_buffer_index_offset = 4 * i * j;
-			const int index_buffer_offset = 6 * i * j;
+			const int vertex_buffer_index_offset = (i * m_tiff_width) + j;
 
 			const size_t left_px = j - 1;
 			const size_t above_px = i - 1;
 			const size_t right_px = j + 1;
 			const size_t below_px = i + 1;
-			const bool got_left_px = left_px >= 0;
-			const bool got_above_px = above_px >= 0;
+			const bool got_left_px = j > 0;
+			const bool got_above_px = i > 0;
 			const bool got_right_px = right_px < m_tiff_width;
 			const bool got_below_px = below_px < m_tiff_width;
 
@@ -273,5 +270,23 @@ void terrain::generate_open_gl_buffers()
 			vertex_buffer_data[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
 		}
 	}
-	// now the index buffer!
+
+	std::vector<uint32_t> index_buffer_data;
+	index_buffer_data.reserve((m_tiff_width - 1) * (m_tiff_length - 1) * 6);
+	for (int y = 0; y < m_tiff_length - 1; ++y)
+	{
+		for (int x = 0; x < m_tiff_width - 1; ++x)
+		{
+			uint32_t i0 = y * m_tiff_width + x;
+			uint32_t i1 = y * m_tiff_width + (x + 1);
+			uint32_t i2 = (y + 1) * m_tiff_width + x;
+			uint32_t i3 = (y + 1) * m_tiff_width + (x + 1);
+			// tri 1: i0, i2, i1
+			index_buffer_data.push_back(i0); index_buffer_data.push_back(i2); index_buffer_data.push_back(i1);
+			// tri 2: i1, i2, i3
+			index_buffer_data.push_back(i1); index_buffer_data.push_back(i2); index_buffer_data.push_back(i3);
+		}
+	}
+
+
 }
