@@ -37,6 +37,7 @@ private:
 
 	void shutdown_shaders();
 
+	void switch_to_terrain_shader();
 	void switch_to_3d_static_mesh_shader();
 	void switch_to_2d_shader();
 

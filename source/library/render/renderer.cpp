@@ -50,15 +50,11 @@ void renderer::render_frame()
 		auto to_draw = to_draw_iter.lock();
 		switch (to_draw->get_renderable_type())
 		{
-			case renderable_type::STATIC_GEOMETRY:
-				switch_to_3d_static_mesh_shader();
-				break;
-			case renderable_type::_2D_GEOMETRY:
-				switch_to_2d_shader();
-				break;
+			case renderable_type::TERRAIN: switch_to_terrain_shader(); break;
+			case renderable_type::STATIC_GEOMETRY: switch_to_3d_static_mesh_shader(); break;
+			case renderable_type::_2D_GEOMETRY: switch_to_2d_shader(); break;
 			default:
-				throw std::exception("attempted to render unsupported type");
-				break;
+				throw std::exception("attempted to render unsupported type"); break;
 		}
 		to_draw->draw();
 	}
@@ -72,12 +68,9 @@ void renderer::add_to_render_list(std::weak_ptr<renderable> to_add)
 		auto to_add_to_mod = to_add.lock();
 		switch (to_add_to_mod->get_renderable_type())
 		{
-			case renderable_type::STATIC_GEOMETRY:
-				to_add_to_mod->set_shader_program(m_static_geometry_program_id);
-				break;
-			case renderable_type::_2D_GEOMETRY:
-				to_add_to_mod->set_shader_program(m_textured_quad_geometry_program_id);
-				break;
+			case renderable_type::TERRAIN: to_add_to_mod->set_shader_program(m_terrain_program_id); break;
+			case renderable_type::STATIC_GEOMETRY: to_add_to_mod->set_shader_program(m_static_geometry_program_id); break;
+			case renderable_type::_2D_GEOMETRY: to_add_to_mod->set_shader_program(m_textured_quad_geometry_program_id); break;
 			default:
 				throw std::exception("attempted to add unsupported renderable type");
 				break;
@@ -146,6 +139,33 @@ void renderer::shutdown_shaders()
 	{
 		glDeleteProgram(program_id);
 	}
+}
+
+void renderer::switch_to_terrain_shader()
+{
+	using namespace gl;
+	if (m_current_shader_program == m_terrain_program_id) return;
+	glUseProgram(m_terrain_program_id);
+	m_current_shader_program = m_terrain_program_id;
+	glEnable(GL_DEPTH_TEST);
+	glFrontFace(GL_CW);   // LH system requires clockwise winding, CW = Clock Wise winding order.
+
+	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/terrain_shader.h
+	// other uniforms are to be set by the renderable object.
+	const GLint u_view_loc = glGetUniformLocation(m_static_geometry_program_id, "u_view");
+	const GLint u_projection_loc = glGetUniformLocation(m_static_geometry_program_id, "u_projection");
+	const GLint u_light_direction_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_direction");
+	const GLint u_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_colour");
+	const GLint u_ambient_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_ambient_light_colour");
+
+	glUniformMatrix4fv(u_view_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_view_matrix()));
+	glUniformMatrix4fv(u_projection_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_projection_matrix()));
+	// if doing specular light update it to pass in the camera position in world space.
+
+	// just hard code the light: direction & color, also the ambient light. Add in the control later if needed.
+	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(glm::vec3{ 0.0f, -1.0f, 0.0f }));
+	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 1.0f, 1.0f, 1.0f }));
+	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 0.1f, 0.1f, 0.1f }));
 }
 
 void renderer::switch_to_3d_static_mesh_shader()
