@@ -33,9 +33,29 @@
 			"path": "textures/grass.png"
 		},
 		{
+			"name": "soil_texture",
+			"type": "texture",
+			"path": "textures/soil.png"
+		},
+		{
+			"name": "snow_texture",
+			"type": "texture",
+			"path": "textures/snow.png"
+		},
+		{
+			"name": "granite_texture",
+			"type": "texture",
+			"path": "textures/granite.png"
+		},
+		{
 			"name": "grass_cube",
 			"type": "model",
 			"path": "models/grass_cube.obj"
+		},
+		{
+			"name": "umbra_mount_splat_map",
+			"type": "texture",
+			"path": "terrain/umbra_mount_yasur_splatmap.png"
 		},
 		{
 			"name": "umbra_mount",
