@@ -41,6 +41,7 @@ private:
 
 	size_t get_height_index(uint16 x, uint16 y) const;
 	void generate_open_gl_buffers();
+	void check_referenced_textures_are_valid();
 
 	std::vector<float> m_heights;
 	uint16 m_tiff_width = 0;
@@ -51,6 +52,12 @@ private:
 	gl::GLuint m_vertex_buffer_id = 0;
 	gl::GLuint m_index_buffer_id = 0;
 	gl::GLuint m_num_indices_to_draw = 0;
+
+	std::string m_splat_map_asset_name;
+	std::string m_red_channel_mapped_texture_asset_name;
+	std::string m_green_channel_mapped_texture_asset_name;
+	std::string m_blue_channel_mapped_texture_asset_name;
+	std::string m_alpha_channel_mapped_texture_asset_name;
 };
 
 #endif // _TERRAIN_H_

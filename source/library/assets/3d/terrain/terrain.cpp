@@ -3,6 +3,7 @@
 #include "../../asset_utils.h"
 
 #include "../../../render/vertex_types.h"
+#include "../../asset_manager.h"
 
 #include <tiffio.h>
 #include <geotiff.h>
@@ -123,6 +124,13 @@ void terrain::initialise()
 	tiff_file = nullptr;
 
 	generate_open_gl_buffers();
+
+	m_splat_map_asset_name = doc["splat_map_asset_name"].GetString();
+	m_red_channel_mapped_texture_asset_name = doc["red_channel_mapped_texture_asset_name"].GetString();
+	m_green_channel_mapped_texture_asset_name = doc["green_channel_mapped_texture_asset_name"].GetString();
+	m_blue_channel_mapped_texture_asset_name = doc["blue_channel_mapped_texture_asset_name"].GetString();
+	m_alpha_channel_mapped_texture_asset_name = doc["alpha_channel_mapped_texture_asset_name"].GetString();
+	check_referenced_textures_are_valid();
 }
 
 void terrain::shutdown()
@@ -349,4 +357,14 @@ void terrain::generate_open_gl_buffers()
 
 	vertex_buffer_data.clear();
 	index_buffer_data.clear();
+}
+
+void terrain::check_referenced_textures_are_valid()
+{
+	auto asset_manager = get_asset_manager().lock();
+	for (auto asset_name : { m_splat_map_asset_name, m_red_channel_mapped_texture_asset_name,
+		m_green_channel_mapped_texture_asset_name, m_blue_channel_mapped_texture_asset_name,m_alpha_channel_mapped_texture_asset_name})
+	{
+		asset_manager->get_asset_on_name(asset_name); // throws if the asset isn't present.
+	}
 }
