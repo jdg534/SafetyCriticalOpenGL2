@@ -46,6 +46,9 @@ private:
 	gl::GLuint m_textured_quad_geometry_vertex_shader_object_id = 0,
 		m_textured_quad_geometry_fragment_shander_id = 0,
 		m_textured_quad_geometry_program_id = 0;
+	gl::GLuint m_terrain_vertex_shader_object_id = 0,
+		m_terrain_fragment_shander_id = 0,
+		m_terrain_program_id = 0;
 
 	gl::GLuint m_current_shader_program = 0;
 

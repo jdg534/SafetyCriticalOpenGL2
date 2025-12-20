@@ -30,21 +30,24 @@ void main()
 static constexpr char* TERRAIN_FRAGMENT_SHADER = R"(
 #version 330 core
 
-in vec3 vs_out_world_position;
-in vec2 vs_out_uv;
-in vec3 vs_out_normal;
-
 uniform sampler2D u_splat_map;
 uniform sampler2D u_red_channel_diffuse_map;
 uniform sampler2D u_green_channel_diffuse_map;
 uniform sampler2D u_blue_channel_diffuse_map;
 uniform sampler2D u_alpha_channel_diffuse_map;
+uniform vec3      u_light_direction;     // unit vectors only
+uniform vec3      u_light_colour;
+uniform vec3      u_ambient_light_colour; // light colour
+
+in vec3 vs_out_world_position;
+in vec2 vs_out_uv;
+in vec3 vs_out_normal;
 
 out vec4 fs_out_frag_color;
 
 void main()
 {
-    vec4 weights = texture(u_splat_map, vs_out_uv);
+    vec4 weights = texture(u_splat_map, vs_out_uv); // TODO: update this to have different uv for the splat map. vs_out_uv will be for duffuse maps.
 
     vec3 frag_normal = normalize(vs_out_normal); // remember values from the VS are interploated.
     vec3 to_light = normalize(-u_light_direction);
@@ -56,10 +59,10 @@ void main()
     vec3 combined_light_colour = ambient_light_colour + diffuse_light_colour;
 
     vec4 combined_diffuse_colour =
-      u_red_channel_diffuse_map * weights.r +
-      u_green_channel_diffuse_map * weights.g +
-      u_blue_channel_diffuse_map * weights.b +
-      u_alpha_channel_diffuse_map * weights.a;
+      texture(u_red_channel_diffuse_map, vs_out_uv) * weights.r +
+      texture(u_green_channel_diffuse_map, vs_out_uv) * weights.g +
+      texture(u_blue_channel_diffuse_map, vs_out_uv) * weights.b +
+      texture(u_alpha_channel_diffuse_map, vs_out_uv) * weights.a;
 
     vec4 surface_colour = vec4(combined_diffuse_colour.rgb * combined_light_colour, combined_diffuse_colour.a);
     fs_out_frag_color = surface_colour;

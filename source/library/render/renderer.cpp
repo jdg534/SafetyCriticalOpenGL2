@@ -126,18 +126,26 @@ void renderer::initialise_shaders()
 	m_textured_quad_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TEXTURED_QUAD_VERTEX_SHADER);
 	m_textured_quad_geometry_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TEXTURED_QUAD_FRAGMENT_SHADER);
 	m_textured_quad_geometry_program_id = shaders_compilation::link_shaders_to_program(m_textured_quad_geometry_vertex_shader_object_id, m_textured_quad_geometry_fragment_shander_id);
+
+	m_terrain_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TERRAIN_VERTEX_SHADER);
+	m_terrain_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TERRAIN_FRAGMENT_SHADER);
+	m_terrain_program_id = shaders_compilation::link_shaders_to_program(m_terrain_vertex_shader_object_id, m_terrain_fragment_shander_id);
 }
 
 void renderer::shutdown_shaders()
 {
-	// When adding 3d rendering shutdown the shaders here.
+	using namespace gl;
 
-	gl::glDeleteShader(m_static_geometry_vertex_shader_object_id);
-	gl::glDeleteShader(m_static_geometry_fragment_shader_id);
-	gl::glDeleteProgram(m_static_geometry_program_id);
-	gl::glDeleteShader(m_textured_quad_geometry_vertex_shader_object_id);
-	gl::glDeleteShader(m_textured_quad_geometry_fragment_shander_id);
-	gl::glDeleteProgram(m_textured_quad_geometry_program_id);
+	for (GLuint shader_id : {m_static_geometry_vertex_shader_object_id, m_static_geometry_fragment_shader_id,
+		m_textured_quad_geometry_vertex_shader_object_id, m_textured_quad_geometry_fragment_shander_id,
+		m_terrain_vertex_shader_object_id, m_terrain_fragment_shander_id})
+	{
+		glDeleteShader(shader_id);
+	}
+	for (GLuint program_id : {m_textured_quad_geometry_program_id, m_static_geometry_program_id, m_terrain_program_id})
+	{
+		glDeleteProgram(program_id);
+	}
 }
 
 void renderer::switch_to_3d_static_mesh_shader()
