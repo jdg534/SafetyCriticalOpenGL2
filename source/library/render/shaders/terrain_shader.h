@@ -11,10 +11,12 @@ uniform mat4 u_projection;
 layout(location = 0) in vec3 vs_in_position;
 layout(location = 1) in vec2 vs_in_uv;
 layout(location = 2) in vec3 vs_in_normal;
+layout(location = 3) in vec2 vs_in_splat_map_uv;
 
 out vec3 vs_out_world_position;
 out vec2 vs_out_uv;
 out vec3 vs_out_normal;
+out vec2 vs_out_splat_map_uv;
 
 void main()
 {
@@ -22,6 +24,7 @@ void main()
     vs_out_world_position = world_position.xyz;
     vs_out_normal = mat3(transpose(inverse(u_model))) * vs_in_normal;
     vs_out_uv = vs_in_uv;
+    vs_out_splat_map_uv = vs_in_splat_map_uv;
 
     gl_Position = u_projection * u_view * world_position;
 }
@@ -42,12 +45,13 @@ uniform vec3      u_ambient_light_colour; // light colour
 in vec3 vs_out_world_position;
 in vec2 vs_out_uv;
 in vec3 vs_out_normal;
+in vec2 vs_out_splat_map_uv;
 
 out vec4 fs_out_frag_color;
 
 void main()
 {
-    vec4 weights = texture(u_splat_map, vs_out_uv); // TODO: update this to have different uv for the splat map. vs_out_uv will be for duffuse maps.
+    vec4 weights = texture(u_splat_map, vs_out_splat_map_uv);
 
     vec3 frag_normal = normalize(vs_out_normal); // remember values from the VS are interploated.
     vec3 to_light = normalize(-u_light_direction);

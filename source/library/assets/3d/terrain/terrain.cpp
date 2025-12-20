@@ -261,12 +261,15 @@ void terrain::generate_open_gl_buffers()
 	using namespace vertex_types;
 	
 	// TODO later if there's free time. use ROAM to make the tri count smaller. think quad tree sub devision until 
-	std::vector<vertex_3d> vertex_buffer_data(m_heights.size());
+	std::vector<terrain_vertex> vertex_buffer_data(m_heights.size());
 
 	// Note we're using uint32 indices, for higher range.
 
 	const float far_west = -static_cast<float>(m_tiff_width / 2) * m_tiff_meters_per_pixel;
 	const float far_north = -static_cast<float>(m_tiff_length / 2) * m_tiff_meters_per_pixel;
+
+	const float tiff_length_as_float = static_cast<float>(m_tiff_length);
+	const float tiff_width_as_float = static_cast<float>(m_tiff_width);
 
 	for (size_t i = 0; i < m_tiff_length; ++i)
 	{
@@ -294,6 +297,8 @@ void terrain::generate_open_gl_buffers()
 			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_tiff_meters_per_pixel);
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.x = (sinf(static_cast<float>(j)) + 1.0f) / 2.0f;
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = (sinf(static_cast<float>(i)) + 1.0f) / 2.0f;
+			vertex_buffer_data[vertex_buffer_index_offset].splat_map_texture_coordinates.x = static_cast<float>(j) / tiff_width_as_float;
+			vertex_buffer_data[vertex_buffer_index_offset].splat_map_texture_coordinates.y = static_cast<float>(i) / tiff_length_as_float;
 
 			const glm::vec3 dx = glm::vec3(2.0f * m_tiff_meters_per_pixel, right_px_height - left_px_height, 0.0f);
 			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_tiff_meters_per_pixel);
@@ -318,27 +323,28 @@ void terrain::generate_open_gl_buffers()
 		}
 	}
 
-	using namespace gl;
-	glGenVertexArrays(1, &m_vertex_array_object_id);
-	glBindVertexArray(m_vertex_array_object_id);
+	gl::glGenVertexArrays(1, &m_vertex_array_object_id);
+	gl::glBindVertexArray(m_vertex_array_object_id);
 
-	glGenBuffers(1, &m_vertex_buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer_id);
-	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
+	gl::glGenBuffers(1, &m_vertex_buffer_id);
+	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, m_vertex_buffer_id);
+	gl::glBufferData(gl::GL_ARRAY_BUFFER, vertex_buffer_data.size() * terrain_vertex_size, vertex_buffer_data.data(), gl::GL_STATIC_DRAW);
 
-	glGenBuffers(1, &m_index_buffer_id);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_id);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint32_t), index_buffer_data.data(), GL_STATIC_DRAW);
+	gl::glGenBuffers(1, &m_index_buffer_id);
+	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_id);
+	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint32_t), index_buffer_data.data(), gl::GL_STATIC_DRAW);
 
-	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, position));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, texture_coordinates));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, normal));
+	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal, 3 = splat_map_texture_coordinates
+	gl::glEnableVertexAttribArray(0);
+	gl::glVertexAttribPointer(0, 3, gl::GL_FLOAT, gl::GL_FALSE, terrain_vertex_size, (void*)offsetof(terrain_vertex, position));
+	gl::glEnableVertexAttribArray(1);
+	gl::glVertexAttribPointer(1, 2, gl::GL_FLOAT, gl::GL_FALSE, terrain_vertex_size, (void*)offsetof(terrain_vertex, texture_coordinates));
+	gl::glEnableVertexAttribArray(2);
+	gl::glVertexAttribPointer(2, 3, gl::GL_FLOAT, gl::GL_FALSE, terrain_vertex_size, (void*)offsetof(terrain_vertex, normal));
+	gl::glEnableVertexAttribArray(3);
+	gl::glVertexAttribPointer(3, 2, gl::GL_FLOAT, gl::GL_FALSE, terrain_vertex_size, (void*)offsetof(terrain_vertex, splat_map_texture_coordinates));
 
-	glBindVertexArray(0);
+	gl::glBindVertexArray(0);
 	m_num_indices_to_draw = index_buffer_data.size();
 
 	vertex_buffer_data.clear();
