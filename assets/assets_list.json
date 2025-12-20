@@ -18,6 +18,11 @@
 			"path": "textures/plain_white.png"
 		},
 		{
+			"name": "plain_transparent",
+			"type": "texture",
+			"path": "textures/plain_transparent.png"
+		},
+		{
 			"name": "smiley",
 			"type": "texture",
 			"path": "test_smile.png"

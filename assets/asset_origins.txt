@@ -9,6 +9,7 @@ textures/soil.png,?,https://architextures.org/textures/1996
 textures/snow.png,?,https://architextures.org/textures/5530
 textures/granite.png,?,https://patternpanda.org/tex/stone1/stone-granite-4-TEX.png
 textures/plain_white.png,Josh Gibson,made in paint.net
-models/grass_cube.obj&models/grass_cube.mtl,Josh Gibson, made in Blender
+textures/plain_transparent.png,Josh Gibson,made in paint.net
+models/grass_cube.obj,models/grass_cube.mtl,Josh Gibson, made in Blender
 terrain/umbra_mount_yasur.tiff,Geotif's creatores,https://github.com/GeoTIFF/test-data
 terrain/umbra_mount_yasur_splatmap.png,Josh Gibson,made in paint.net
