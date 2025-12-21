@@ -4,6 +4,7 @@
 
 #include "../../../render/vertex_types.h"
 #include "../../asset_manager.h"
+#include "../../texture.h"
 
 #include <tiffio.h>
 #include <geotiff.h>
@@ -191,6 +192,31 @@ gl::GLuint terrain::get_num_indices_to_draw() const
 	return m_num_indices_to_draw;
 }
 
+gl::GLuint terrain::get_splat_map_texture_id() const
+{
+	return get_texture_id(m_splat_map_asset_name);
+}
+
+gl::GLuint terrain::get_red_channel_mapped_texture_texture_id() const
+{
+	return get_texture_id(m_red_channel_mapped_texture_asset_name);
+}
+
+gl::GLuint terrain::get_green_channel_mapped_texture_texture_id() const
+{
+	return get_texture_id(m_green_channel_mapped_texture_asset_name);
+}
+
+gl::GLuint terrain::get_blue_channel_mapped_texture_texture_id() const
+{
+	return get_texture_id(m_blue_channel_mapped_texture_asset_name);
+}
+
+gl::GLuint terrain::get_alpha_channel_mapped_texture_texture_id() const
+{
+	return get_texture_id(m_alpha_channel_mapped_texture_asset_name);
+}
+
 // private
 //////////
 
@@ -268,7 +294,7 @@ void terrain::generate_open_gl_buffers()
 {
 	using namespace vertex_types;
 	
-	// TODO later if there's free time. use ROAM to make the tri count smaller. think quad tree sub devision until 
+	// TODO later if there's free time. use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
 	std::vector<terrain_vertex> vertex_buffer_data(m_heights.size());
 
 	// Note we're using uint32 indices, for higher range.
@@ -367,4 +393,10 @@ void terrain::check_referenced_textures_are_valid()
 	{
 		asset_manager->get_asset_on_name(asset_name); // throws if the asset isn't present.
 	}
+}
+
+gl::GLuint terrain::get_texture_id(std::string_view texture_asset_name) const
+{
+	std::weak_ptr<const asset> result = get_asset_manager().lock()->get_asset_on_name(texture_asset_name);
+	return std::dynamic_pointer_cast<const texture>(result.lock())->get_id();
 }

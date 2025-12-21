@@ -33,6 +33,12 @@ public:
 	gl::GLuint get_index_buffer_id() const;
 	gl::GLuint get_num_indices_to_draw() const;
 
+	gl::GLuint get_splat_map_texture_id() const;
+	gl::GLuint get_red_channel_mapped_texture_texture_id() const;
+	gl::GLuint get_green_channel_mapped_texture_texture_id() const;
+	gl::GLuint get_blue_channel_mapped_texture_texture_id() const;
+	gl::GLuint get_alpha_channel_mapped_texture_texture_id() const;
+
 private:
 
 	static void read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_file);
@@ -42,6 +48,8 @@ private:
 	size_t get_height_index(uint16 x, uint16 y) const;
 	void generate_open_gl_buffers();
 	void check_referenced_textures_are_valid();
+
+	gl::GLuint get_texture_id(std::string_view texture_asset_name) const;
 
 	std::vector<float> m_heights;
 	uint16 m_tiff_width = 0;

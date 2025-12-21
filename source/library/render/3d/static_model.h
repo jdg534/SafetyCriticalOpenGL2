@@ -1,4 +1,4 @@
-#ifndef _STATIC_MODEL_3D_H_
+#ifndef _STATIC_MODEL_3D_H_ // TODO: rename this guard
 #define _STATIC_MODEL_3D_H_
 
 #include <memory>
