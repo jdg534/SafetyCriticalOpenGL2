@@ -13,6 +13,7 @@
 
 #include "render/2d/text/text_block.h"
 #include "render/2d/quad.h"
+#include "render/3d/renderable_terrain.h"
 #include "render/3d/static_model.h"
 #include "render/3d/camera.h"
 
@@ -82,6 +83,7 @@ private:
 	std::shared_ptr<text_block> m_camera_position_text;
 	std::shared_ptr<text_block> m_camera_look_at_position_text;
 	std::shared_ptr<quad> m_textured_quad;
+	std::shared_ptr<renderable_terrain> m_terrain;
 
 	glm::vec3 m_camera_movement_speed;
 	glm::vec3 m_camera_look_at_point_movement_speed;

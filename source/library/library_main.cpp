@@ -97,7 +97,7 @@ void library_main::initialise()
 
 	// 3d stuff will be z buffered. (order doesn't matter).
 	m_renderer->add_to_render_list(m_test_cube);
-
+	m_renderer->add_to_render_list(m_terrain);
 	m_renderer->sort_render_list();
 
 
@@ -193,7 +193,12 @@ void library_main::initialise_test_data()
 
 	weak_ptr<const texture> smiley_texture = dynamic_pointer_cast<const texture>(m_asset_manager->get_asset_on_name("smiley").lock());
 	m_textured_quad = make_shared<quad>(smiley_texture, vec2{50.0f, 50.0f});
+	m_textured_quad->initialise();
 	m_textured_quad->set_transform(glm::translate(identity<mat4x4>(), {45.0f, 175.0f, 0.0f}));
+
+	weak_ptr<const terrain> test_terrain = dynamic_pointer_cast<const terrain>(m_asset_manager->get_asset_on_name("umbra_mount").lock());
+	m_terrain = make_shared<renderable_terrain>(test_terrain);
+	m_terrain->initialise();
 }
 
 void library_main::shutdown()
@@ -225,8 +230,11 @@ void library_main::shutdown_test_data()
 		text_block.reset();
 	}
 	m_textured_quad->shutdown();
+	m_textured_quad.reset();
 	m_test_cube->shutdown();
 	m_test_cube.reset();
+	m_terrain->shutdown();
+	m_terrain.reset();
 }
 
 void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int height)
