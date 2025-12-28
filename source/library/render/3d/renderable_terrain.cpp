@@ -39,11 +39,11 @@ void renderable_terrain::draw()
 
 	const GLuint shader_id = get_shader_program();
 	const GLint u_model_location = glGetUniformLocation(shader_id, "u_model");
-	const GLint u_splat_map_location = glGetUniformLocation(shader_id, "u_splat_map_location");
-	const GLint u_red_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_red_channel_diffuse_map_location");
-	const GLint u_green_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_green_channel_diffuse_map_location");
-	const GLint u_blue_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_blue_channel_diffuse_map_location");
-	const GLint u_alpha_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_alpha_channel_diffuse_map_location");
+	const GLint u_splat_map_location = glGetUniformLocation(shader_id, "u_splat_map");
+	const GLint u_red_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_red_channel_diffuse_map");
+	const GLint u_green_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_green_channel_diffuse_map");
+	const GLint u_blue_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_blue_channel_diffuse_map");
+	const GLint u_alpha_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_alpha_channel_diffuse_map");
 
 
 	const glm::mat4x4 net_transform = get_net_transform();
