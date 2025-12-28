@@ -42,7 +42,8 @@ void renderer::shutdown()
 void renderer::render_frame()
 {
 	using namespace gl;
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	
+	glClearColor(m_clear_colour.r, m_clear_colour.g, m_clear_colour.b, m_clear_colour.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (auto to_draw_iter : m_render_list)
@@ -107,6 +108,46 @@ void renderer::set_camera(std::weak_ptr<const camera> camera)
 	m_camera = camera;
 }
 
+glm::vec4 renderer::get_clear_colour() const
+{
+	return m_clear_colour;
+}
+
+glm::vec3 renderer::get_ambient_light_colour() const
+{
+	return m_ambient_light_colour;
+}
+
+glm::vec3 renderer::get_directional_light_colour() const
+{
+	return m_directional_light_colour;
+}
+
+glm::vec3 renderer::get_directional_light_direction() const
+{
+	return m_directional_light_direction;
+}
+
+void renderer::get_clear_colour(glm::vec4 colour)
+{
+	m_clear_colour = colour;
+}
+
+void renderer::get_ambient_light_colour(glm::vec3 colour)
+{
+	m_ambient_light_colour = colour;
+}
+
+void renderer::get_directional_light_colour(glm::vec3 colour)
+{
+	m_directional_light_colour;
+}
+
+void renderer::get_directional_light_direction(glm::vec3 direction)
+{
+	m_directional_light_direction;
+}
+
 // private
 //////////
 
@@ -162,10 +203,9 @@ void renderer::switch_to_terrain_shader()
 	glUniformMatrix4fv(u_projection_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_projection_matrix()));
 	// if doing specular light update it to pass in the camera position in world space.
 
-	// just hard code the light: direction & color, also the ambient light. Add in the control later if needed.
-	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(glm::vec3{ 0.0f, -1.0f, 0.0f }));
-	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 1.0f, 1.0f, 1.0f }));
-	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 0.1f, 0.1f, 0.1f }));
+	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(m_directional_light_direction));
+	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(m_directional_light_colour));
+	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(m_ambient_light_colour));
 }
 
 void renderer::switch_to_3d_static_mesh_shader()
@@ -190,9 +230,12 @@ void renderer::switch_to_3d_static_mesh_shader()
 	// if doing specular light update it to pass in the camera position in world space.
 
 	// just hard code the light: direction & color, also the ambient light. Add in the control later if needed.
-	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(glm::vec3{0.0f, -1.0f, 0.0f}));
+	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(m_directional_light_direction));
 	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 1.0f, 1.0f, 1.0f }));
 	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 0.1f, 0.1f, 0.1f }));
+
+	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(m_directional_light_colour));
+	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(m_ambient_light_colour));
 }
 
 void renderer::switch_to_2d_shader()

@@ -31,6 +31,17 @@ public:
 	void set_framebuffer_size(glm::vec2 framebuffer_size);
 	void set_camera(std::weak_ptr<const camera> camera);
 
+	glm::vec4 get_clear_colour() const;
+	glm::vec3 get_ambient_light_colour() const;
+	glm::vec3 get_directional_light_colour() const;
+	glm::vec3 get_directional_light_direction() const;
+
+	void get_clear_colour(glm::vec4 colour);
+	void get_ambient_light_colour(glm::vec3 colour);
+	void get_directional_light_colour(glm::vec3 colour);
+	void get_directional_light_direction(glm::vec3 direction);
+
+
 private:
 
 	void initialise_shaders();
@@ -54,6 +65,11 @@ private:
 	gl::GLuint m_current_shader_program = 0;
 
 	glm::vec2 m_framebuffer_size;
+	glm::vec4 m_clear_colour { 0.5f,0.5f,0.5f, 1.0f };
+
+	glm::vec3 m_ambient_light_colour{ 0.2f, 0.2f, 0.2f };
+	glm::vec3 m_directional_light_colour{ 0.8f, 0.8f, 0.8f };
+	glm::vec3 m_directional_light_direction{ 0.0f, -1.0f, 0.0f };
 
 	std::vector<std::weak_ptr<renderable>> m_render_list;
 	std::weak_ptr<const camera> m_camera;
