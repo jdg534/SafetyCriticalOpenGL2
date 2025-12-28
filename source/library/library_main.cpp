@@ -357,6 +357,7 @@ void library_main::tick(float delta_time)
 	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
 	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
 
+	update_ensure_camera_above_terrain();
 	vec3 camera_position = m_camera->get_position();
 	vec3 camera_look_at_position = m_camera->get_look_at_position();
 	camera_position += m_camera_movement_speed * delta_time_to_use;
@@ -386,4 +387,21 @@ void library_main::update_text_tints()
 void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool use_change_colour)
 {
 	to_update->set_tint(use_change_colour ? text_changing_tint : text_normal_tint);
+}
+
+void library_main::update_ensure_camera_above_terrain()
+{
+	using namespace glm;
+	vec3 camera_position = m_camera->get_position();
+	vec3 camera_look_at_position = m_camera->get_look_at_position();
+
+	const float terrain_height_at_camera_location = m_terrain->get_height_at(camera_position.x, camera_position.z);
+	if (terrain_height_at_camera_location > (camera_position.y - m_minimum_camera_height_from_terrain))
+	{
+		const vec3 look_at_direction = camera_look_at_position - camera_position;
+		camera_position.y = terrain_height_at_camera_location + m_minimum_camera_height_from_terrain;
+		camera_look_at_position = camera_position + look_at_direction;
+		m_camera->set_position(camera_position);
+		m_camera->set_look_at_position(camera_look_at_position);
+	}
 }

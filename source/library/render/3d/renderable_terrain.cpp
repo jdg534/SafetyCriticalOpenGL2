@@ -85,3 +85,8 @@ void renderable_terrain::draw()
 	}
 	glBindVertexArray(0); // clear the vertex array.
 }
+
+float renderable_terrain::get_height_at(float x_world_space, float z_world_space) const
+{
+	return m_terrain.lock()->get_height_at(x_world_space, z_world_space);
+}

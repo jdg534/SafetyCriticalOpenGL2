@@ -21,6 +21,8 @@ public:
 	void shutdown() override;
 	void draw() override;
 
+	float get_height_at(float x_world_space, float z_world_space) const;
+
 private:
 
 	std::weak_ptr<const terrain> m_terrain;

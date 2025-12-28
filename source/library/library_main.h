@@ -71,6 +71,7 @@ private:
 
 	void update_text_tints();
 	static void update_text_tint(std::shared_ptr<text_block> to_update,bool use_change_colour);
+	void update_ensure_camera_above_terrain();
 
 	GLFWwindow* m_window { nullptr };
 	std::unique_ptr<renderer> m_renderer;
@@ -87,6 +88,7 @@ private:
 
 	glm::vec3 m_camera_movement_speed;
 	glm::vec3 m_camera_look_at_point_movement_speed;
+	float m_minimum_camera_height_from_terrain = 5.0f;
 
 	static library_main* s_instance_ptr;
 };
