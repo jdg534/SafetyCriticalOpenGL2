@@ -13,6 +13,9 @@
 #include <rapidjson/document.h>
 
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL // done for lerp, otherwise remove this.
+#include <glm/gtx/compatibility.hpp>
+
 
 #include <filesystem>
 #include <fstream>
@@ -172,6 +175,41 @@ float terrain::get_tiff_height_at(uint16 x, uint16 y) const
 	return m_heights[index];
 }
 
+float terrain::get_height_at(float x_world_space, float z_world_space) const
+{
+	// treat x+ as west to east
+	// treat z+ as north to south. this is how it would appear in the tiff file
+	const float tiff_length_as_float = static_cast<float>(m_tiff_length);
+	const float tiff_width_as_float = static_cast<float>(m_tiff_width);
+
+	const float far_west = -(tiff_width_as_float * 0.5f) * m_tiff_meters_per_pixel;
+	const float far_north = -(tiff_length_as_float * 0.5f) * m_tiff_meters_per_pixel;
+	const float far_south = (tiff_length_as_float * 0.5f) * m_tiff_meters_per_pixel;
+	const float far_east = (tiff_width_as_float * 0.5f) * m_tiff_meters_per_pixel;
+
+	const bool too_far_north = z_world_space <= far_north;
+	const bool too_far_south = z_world_space >= far_south;
+	const bool too_far_west = x_world_space <= far_west;
+	const bool too_far_east = x_world_space >= far_east;
+
+	if (too_far_north || too_far_south || too_far_west || too_far_east) return 0.0f;
+
+	// will otherwise bilerp so will 
+	const float position_in_tiff_x = x_world_space - far_west;
+	const float position_in_tiff_z = z_world_space - far_north;
+	const float x_weight = position_in_tiff_x - std::floorf(position_in_tiff_x);
+	const float z_weight = position_in_tiff_z - std::floorf(position_in_tiff_z);
+
+	const uint16 x_cell = static_cast<uint16>(std::floorf(position_in_tiff_x));
+	const uint16 z_cell = static_cast<uint16>(std::floorf(position_in_tiff_z));
+	const uint16 x_cell_east = x_cell + 1;
+	const uint16 z_cell_south = z_cell + 1;
+
+	const float x_north = glm::lerp(get_tiff_height_at(x_cell, z_cell), get_tiff_height_at(x_cell_east, z_cell), x_weight);
+	const float x_south = glm::lerp(get_tiff_height_at(x_cell, z_cell_south), get_tiff_height_at(x_cell_east, z_cell_south), x_weight);
+	return glm::lerp(x_north, x_south, z_weight);
+}
+
 gl::GLuint terrain::get_vertex_array_object_id() const
 {
 	return m_vertex_array_object_id;
@@ -298,12 +336,12 @@ void terrain::generate_open_gl_buffers()
 	std::vector<terrain_vertex> vertex_buffer_data(m_heights.size());
 
 	// Note we're using uint32 indices, for higher range.
-
-	const float far_west = -static_cast<float>(m_tiff_width / 2) * m_tiff_meters_per_pixel;
-	const float far_north = -static_cast<float>(m_tiff_length / 2) * m_tiff_meters_per_pixel;
-
+	
 	const float tiff_length_as_float = static_cast<float>(m_tiff_length);
 	const float tiff_width_as_float = static_cast<float>(m_tiff_width);
+
+	const float far_west = -(tiff_width_as_float * 0.5f) * m_tiff_meters_per_pixel;
+	const float far_north = -(tiff_length_as_float * 0.5f) * m_tiff_meters_per_pixel;
 
 	for (size_t i = 0; i < m_tiff_length; ++i)
 	{

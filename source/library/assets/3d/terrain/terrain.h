@@ -27,6 +27,7 @@ public:
 	uint16 get_tiff_length() const; // the differ from height, for y px in the image
 	float get_tiff_meters_per_pixel() const;
 	float get_tiff_height_at(uint16 x, uint16 y) const;
+	float get_height_at(float x_world_space, float z_world_space) const;
 
 	gl::GLuint get_vertex_array_object_id() const;
 	gl::GLuint get_vertex_buffer_id() const;
