@@ -21,12 +21,6 @@ namespace vertex_types
 	};
 	static constexpr size_t vertex3d_struct_size = sizeof(vertex_3d); // TODO: refactor name.
 
-	struct terrain_vertex : public vertex_3d
-	{
-		glm::vec2 splat_map_texture_coordinates;
-	};
-	static constexpr size_t terrain_vertex_size = sizeof(terrain_vertex);
-	
 	// rigged geomentry later if coming back to the project
 }
 
