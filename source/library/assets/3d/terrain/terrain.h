@@ -9,6 +9,27 @@
 #include <string>
 #include <vector>
 
+struct geo_tiff_height_info
+{
+	uint32 width = 0;
+	uint32 length = 0;
+
+	// Raster format
+	uint16 bits_per_sample = 0;
+	uint16 sample_format = 0;
+
+	// Horizontal scale
+	double meters_per_pixel_x = 1.0;
+	double meters_per_pixel_y = 1.0;
+
+	// Vertical units
+	bool vertical_units_are_meters = true;
+
+	// Elevation mapping (dataset-defined)
+	bool has_explicit_height_range = false;
+	float height_min_meters = 0.0;
+	float height_max_meters = 100.0;
+};
 
 class terrain : public asset
 {
@@ -23,10 +44,10 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
-	uint16 get_tiff_width() const;
-	uint16 get_tiff_length() const; // the differ from height, for y px in the image
-	float get_tiff_meters_per_pixel() const;
+
+	const geo_tiff_height_info& get_height_info() const;
 	float get_tiff_height_at(uint16 x, uint16 y) const;
+	float get_height_range_value_at(uint16 x, uint16 y) const;
 	float get_height_at(float x_world_space, float z_world_space) const;
 
 	gl::GLuint get_vertex_array_object_id() const;
@@ -52,10 +73,9 @@ private:
 
 	gl::GLuint get_texture_id(std::string_view texture_asset_name) const;
 
+	geo_tiff_height_info m_geo_tiff_height_info;
 	std::vector<float> m_heights;
-	uint16 m_tiff_width = 0;
-	uint16 m_tiff_length = 0;
-	float m_tiff_meters_per_pixel = 1.0f;
+	float m_default_tiff_meters_per_pixel = 1.0f;
 
 	gl::GLuint m_vertex_array_object_id = 0;
 	gl::GLuint m_vertex_buffer_id = 0;

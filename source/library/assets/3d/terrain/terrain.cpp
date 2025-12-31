@@ -68,55 +68,46 @@ void terrain::initialise()
 	if (!geo_tiff)
 		throw std::runtime_error("GTIFNew failed");
 
-	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &m_tiff_width);
-	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &m_tiff_length);
+	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &m_geo_tiff_height_info.width);
+	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &m_geo_tiff_height_info.length);
 
-	uint16 bitsPerSample = 0;
-	uint16 sampleFormat = 0;
-	uint16 samplesPerPixel = 0;
+	// --- Raster size ---
+	TIFFGetField(tiff_file, TIFFTAG_BITSPERSAMPLE, &m_geo_tiff_height_info.bits_per_sample);
+	TIFFGetFieldDefaulted(tiff_file, TIFFTAG_SAMPLEFORMAT, &m_geo_tiff_height_info.sample_format);
 
-	TIFFGetField(tiff_file, TIFFTAG_BITSPERSAMPLE, &bitsPerSample);
-	TIFFGetFieldDefaulted(tiff_file, TIFFTAG_SAMPLEFORMAT, &sampleFormat);
-	TIFFGetField(tiff_file, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel);
+	// --- Pixel scale ---
+	double* pixelScale = nullptr;
+	if (TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE, &pixelScale))
+	{
+		m_geo_tiff_height_info.meters_per_pixel_x = pixelScale[0];
+		m_geo_tiff_height_info.meters_per_pixel_y = pixelScale[1];
+		// pixelScale[2] is *not* reliable for height
+	}
 
-	if (samplesPerPixel != 1) { throw std::runtime_error("Expected single-band heightmap"); }
-	if (bitsPerSample != 8) { throw std::runtime_error("Expected 8 bit height data"); }
-	if (sampleFormat == SAMPLEFORMAT_VOID || sampleFormat == SAMPLEFORMAT_IEEEFP) { throw std::runtime_error("unsupported height data format"); }
+	// --- Vertical units ---
+	short vertical_units = 0;
+	if (GTIFKeyGet(geo_tiff, VerticalUnitsGeoKey, &vertical_units, 0, 1))
+	{
+		// EPSG codes
+		// 9001 = meters
+		// 9002 = feet
+		m_geo_tiff_height_info.vertical_units_are_meters = (vertical_units == 9001);
+	}
+
+	if (m_geo_tiff_height_info.bits_per_sample != 8) { throw runtime_error("Expected 8 bit height data"); }
+	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_VOID || m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP) { throw runtime_error("unsupported height data format"); }
 
 	if (TIFFIsTiled(tiff_file))
 	{
 		throw exception("Titled tiff file.");
 	}
 
-	double* pixelScale = nullptr;
-	double* tiePoints = nullptr;
-	if (!TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE, &pixelScale))
-	{
-		std::cout << "Missing GeoPixelScale\n";
-	}
-
-	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &tiePoints))
-	{
-		std::cout << "Missing GeoTiePoints\n";
-	}
-	
-	/*
-	glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
-	double* modelTransform = nullptr; // add this later if needed.
-	if (TIFFGetField(tiff_file, TIFFTAG_MODELTRANSFORMATIONTAG, &modelTransform)) // if set will be a 4x4 matrix
-	{
-		scale.x = static_cast<float>(modelTransform[0]);
-		scale.y = static_cast<float>(modelTransform[5]);
-		scale.z = static_cast<float>(modelTransform[10]);
-	}
-	*/
-
-	m_heights.resize(m_tiff_width * m_tiff_length);
-	if (sampleFormat == SAMPLEFORMAT_UINT)
+	m_heights.resize(m_geo_tiff_height_info.width * m_geo_tiff_height_info.length);
+	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_UINT)
 	{
 		read_heights_uint8(m_heights, tiff_file);
 	}
-	else if (sampleFormat == SAMPLEFORMAT_INT)
+	else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_INT)
 	{
 		read_heights_sint8(m_heights, tiff_file);
 	}
@@ -126,6 +117,13 @@ void terrain::initialise()
 	GTIFFree(geo_tiff);
 	XTIFFClose(tiff_file);
 	tiff_file = nullptr;
+
+	if (!doc.HasMember("height_min_meters") || !doc.HasMember("height_max_meters"))
+	{
+		throw runtime_error("terrain needs height_min_meters & height_max_meters defined!");
+	}
+	m_geo_tiff_height_info.height_min_meters = doc["height_min_meters"].GetFloat();
+	m_geo_tiff_height_info.height_max_meters = doc["height_max_meters"].GetFloat();
 
 	generate_open_gl_buffers();
 
@@ -153,19 +151,9 @@ asset_type terrain::get_type() const
 	return asset_type::terrain;
 }
 
-uint16 terrain::get_tiff_width() const
+const geo_tiff_height_info& terrain::get_height_info() const
 {
-	return m_tiff_width;
-}
-
-uint16 terrain::get_tiff_length() const
-{
-	return m_tiff_length;
-}
-
-float terrain::get_tiff_meters_per_pixel() const
-{
-	return m_tiff_meters_per_pixel;
+	return m_geo_tiff_height_info;
 }
 
 float terrain::get_tiff_height_at(uint16 x, uint16 y) const
@@ -175,17 +163,23 @@ float terrain::get_tiff_height_at(uint16 x, uint16 y) const
 	return m_heights[index];
 }
 
+float terrain::get_height_range_value_at(uint16 x, uint16 y) const
+{
+	// because the heights are converted to 0.0 to 1.0f, we can just lerp
+	return glm::lerp(m_geo_tiff_height_info.height_min_meters, m_geo_tiff_height_info.height_max_meters, get_tiff_height_at(x, y));
+}
+
 float terrain::get_height_at(float x_world_space, float z_world_space) const
 {
 	// treat x+ as west to east
 	// treat z+ as north to south. this is how it would appear in the tiff file
-	const float tiff_length_as_float = static_cast<float>(m_tiff_length);
-	const float tiff_width_as_float = static_cast<float>(m_tiff_width);
+	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length);
+	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width);
 
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_tiff_meters_per_pixel;
-	const float far_north = -(tiff_length_as_float * 0.5f) * m_tiff_meters_per_pixel;
-	const float far_south = (tiff_length_as_float * 0.5f) * m_tiff_meters_per_pixel;
-	const float far_east = (tiff_width_as_float * 0.5f) * m_tiff_meters_per_pixel;
+	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_y;
+	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_y;
+	const float far_east = (tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
 
 	const bool too_far_north = z_world_space <= far_north;
 	const bool too_far_south = z_world_space >= far_south;
@@ -205,8 +199,8 @@ float terrain::get_height_at(float x_world_space, float z_world_space) const
 	const uint16 x_cell_east = x_cell + 1;
 	const uint16 z_cell_south = z_cell + 1;
 
-	const float x_north = glm::lerp(get_tiff_height_at(x_cell, z_cell), get_tiff_height_at(x_cell_east, z_cell), x_weight);
-	const float x_south = glm::lerp(get_tiff_height_at(x_cell, z_cell_south), get_tiff_height_at(x_cell_east, z_cell_south), x_weight);
+	const float x_north = glm::lerp(get_height_range_value_at(x_cell, z_cell), get_height_range_value_at(x_cell_east, z_cell), x_weight);
+	const float x_south = glm::lerp(get_height_range_value_at(x_cell, z_cell_south), get_height_range_value_at(x_cell_east, z_cell_south), x_weight);
 	return glm::lerp(x_north, x_south, z_weight);
 }
 
@@ -288,7 +282,6 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	const tsize_t scanline_size = TIFFScanlineSize(tiff_file);
 	std::vector<int8_t> scanline(scanline_size);
 
-	std::vector<int8_t> scanline(width);
 	constexpr float INV_128 = 1.0f / 128.0f;
 	for (uint32 row = 0; row < height; ++row)
 	{
@@ -331,7 +324,7 @@ void terrain::flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 
 
 size_t terrain::get_height_index(uint16 x, uint16 y) const
 {
-	return (m_tiff_width * y) + x;
+	return (m_geo_tiff_height_info.width * y) + x;
 }
 
 void terrain::generate_open_gl_buffers()
@@ -343,17 +336,20 @@ void terrain::generate_open_gl_buffers()
 
 	// Note we're using uint32 indices, for higher range.
 	
-	const float tiff_length_as_float = static_cast<float>(m_tiff_length);
-	const float tiff_width_as_float = static_cast<float>(m_tiff_width);
+	const uint32 tiff_width = m_geo_tiff_height_info.width;
+	const uint32 tiff_length = m_geo_tiff_height_info.length;
 
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_tiff_meters_per_pixel;
-	const float far_north = -(tiff_length_as_float * 0.5f) * m_tiff_meters_per_pixel;
+	const float tiff_length_as_float = static_cast<float>(tiff_length);
+	const float tiff_width_as_float = static_cast<float>(tiff_width);
 
-	for (size_t i = 0; i < m_tiff_length; ++i)
+	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_y; // should be Z.
+
+	for (size_t i = 0; i < m_geo_tiff_height_info.length; ++i)
 	{
-		for (size_t j = 0; j < m_tiff_width; ++j)
+		for (size_t j = 0; j < m_geo_tiff_height_info.width; ++j)
 		{
-			const int vertex_buffer_index_offset = (i * m_tiff_width) + j;
+			const int vertex_buffer_index_offset = (i * m_geo_tiff_height_info.width) + j;
 
 			const size_t left_px = j - 1;
 			const size_t above_px = i - 1;
@@ -361,37 +357,37 @@ void terrain::generate_open_gl_buffers()
 			const size_t below_px = i + 1;
 			const bool got_left_px = j > 0;
 			const bool got_above_px = i > 0;
-			const bool got_right_px = right_px < m_tiff_width;
-			const bool got_below_px = below_px < m_tiff_width;
+			const bool got_right_px = right_px < m_geo_tiff_height_info.width;
+			const bool got_below_px = below_px < m_geo_tiff_height_info.width;
 
-			const float current_px_height = get_tiff_height_at(j, i);
-			const float above_px_height = got_above_px ? get_tiff_height_at(j, above_px) : 0.0f;
-			const float left_px_height = got_left_px ? get_tiff_height_at(left_px, i) : 0.0f;
-			const float right_px_height = got_right_px ? get_tiff_height_at(right_px, i) : 0.0f;
-			const float below_px_height = got_below_px ? get_tiff_height_at(j, below_px) : 0.0f;
+			const float current_px_height = get_height_range_value_at(j, i);
+			const float above_px_height = got_above_px ? get_height_range_value_at(j, above_px) : 0.0f;
+			const float left_px_height = got_left_px ? get_height_range_value_at(left_px, i) : 0.0f;
+			const float right_px_height = got_right_px ? get_height_range_value_at(right_px, i) : 0.0f;
+			const float below_px_height = got_below_px ? get_height_range_value_at(j, below_px) : 0.0f;
 
-			vertex_buffer_data[vertex_buffer_index_offset].position.x = far_west + (j * m_tiff_meters_per_pixel);
+			vertex_buffer_data[vertex_buffer_index_offset].position.x = far_west + (j * m_geo_tiff_height_info.meters_per_pixel_x);
 			vertex_buffer_data[vertex_buffer_index_offset].position.y = current_px_height;
-			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_tiff_meters_per_pixel);
+			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_geo_tiff_height_info.meters_per_pixel_y); // Y should be Z in this context.
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(j) / tiff_width_as_float;
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = static_cast<float>(i) / tiff_length_as_float;;
 
-			const glm::vec3 dx = glm::vec3(2.0f * m_tiff_meters_per_pixel, right_px_height - left_px_height, 0.0f);
-			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_tiff_meters_per_pixel);
+			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
+			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_y);
 			vertex_buffer_data[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
 		}
 	}
 
 	std::vector<uint32_t> index_buffer_data;
-	index_buffer_data.reserve((m_tiff_width - 1) * (m_tiff_length - 1) * 6);
-	for (int y = 0; y < m_tiff_length - 1; ++y)
+	index_buffer_data.reserve((m_geo_tiff_height_info.width - 1) * (m_geo_tiff_height_info.length - 1) * 6);
+	for (int y = 0; y < m_geo_tiff_height_info.length - 1; ++y)
 	{
-		for (int x = 0; x < m_tiff_width - 1; ++x)
+		for (int x = 0; x < m_geo_tiff_height_info.width - 1; ++x)
 		{
-			uint32_t i0 = y * m_tiff_width + x;
-			uint32_t i1 = y * m_tiff_width + (x + 1);
-			uint32_t i2 = (y + 1) * m_tiff_width + x;
-			uint32_t i3 = (y + 1) * m_tiff_width + (x + 1);
+			uint32_t i0 = y * tiff_width + x;
+			uint32_t i1 = y * tiff_width + (x + 1);
+			uint32_t i2 = (y + 1) * tiff_width + x;
+			uint32_t i3 = (y + 1) * tiff_width + (x + 1);
 			// tri 1: i0, i2, i1
 			index_buffer_data.push_back(i0); index_buffer_data.push_back(i2); index_buffer_data.push_back(i1);
 			// tri 2: i1, i2, i3
@@ -437,6 +433,7 @@ void terrain::check_referenced_textures_are_valid()
 
 gl::GLuint terrain::get_texture_id(std::string_view texture_asset_name) const
 {
+	// TODO: cache the texture ids.
 	std::weak_ptr<const asset> result = get_asset_manager().lock()->get_asset_on_name(texture_asset_name);
 	return std::dynamic_pointer_cast<const texture>(result.lock())->get_id();
 }
