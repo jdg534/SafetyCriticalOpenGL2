@@ -193,11 +193,11 @@ void renderer::switch_to_terrain_shader()
 
 	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/terrain_shader.h
 	// other uniforms are to be set by the renderable object.
-	const GLint u_view_loc = glGetUniformLocation(m_static_geometry_program_id, "u_view");
-	const GLint u_projection_loc = glGetUniformLocation(m_static_geometry_program_id, "u_projection");
-	const GLint u_light_direction_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_direction");
-	const GLint u_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_light_colour");
-	const GLint u_ambient_light_colour_loc = glGetUniformLocation(m_static_geometry_program_id, "u_ambient_light_colour");
+	const GLint u_view_loc = glGetUniformLocation(m_terrain_program_id, "u_view");
+	const GLint u_projection_loc = glGetUniformLocation(m_terrain_program_id, "u_projection");
+	const GLint u_light_direction_loc = glGetUniformLocation(m_terrain_program_id, "u_light_direction");
+	const GLint u_light_colour_loc = glGetUniformLocation(m_terrain_program_id, "u_light_colour");
+	const GLint u_ambient_light_colour_loc = glGetUniformLocation(m_terrain_program_id, "u_ambient_light_colour");
 
 	glUniformMatrix4fv(u_view_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_view_matrix()));
 	glUniformMatrix4fv(u_projection_loc, 1, GL_FALSE, glm::value_ptr(m_camera.lock()->get_projection_matrix()));
