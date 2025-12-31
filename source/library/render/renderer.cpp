@@ -140,12 +140,12 @@ void renderer::get_ambient_light_colour(glm::vec3 colour)
 
 void renderer::get_directional_light_colour(glm::vec3 colour)
 {
-	m_directional_light_colour;
+	m_directional_light_colour = colour;
 }
 
 void renderer::get_directional_light_direction(glm::vec3 direction)
 {
-	m_directional_light_direction;
+	m_directional_light_direction = direction;
 }
 
 // private
