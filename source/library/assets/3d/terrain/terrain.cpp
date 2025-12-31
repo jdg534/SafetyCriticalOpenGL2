@@ -264,7 +264,9 @@ void terrain::read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
 
-	std::vector<uint8_t> scanline(width);
+	const tsize_t scanline_size = TIFFScanlineSize(tiff_file);
+	std::vector<uint8_t> scanline(scanline_size);
+
 	constexpr float INV_255 = 1.0f / 255.0f;
 	for (uint32 row = 0; row < height; ++row)
 	{
@@ -283,7 +285,10 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
 
-	std::vector<uint8_t> scanline(width);
+	const tsize_t scanline_size = TIFFScanlineSize(tiff_file);
+	std::vector<int8_t> scanline(scanline_size);
+
+	std::vector<int8_t> scanline(width);
 	constexpr float INV_128 = 1.0f / 128.0f;
 	for (uint32 row = 0; row < height; ++row)
 	{
@@ -292,6 +297,7 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 		for (uint32 col = 0; col < width; ++col)
 		{
 			dst[col] = static_cast<float>(scanline[col]) * INV_128;
+			dst[col] = (dst[col] + 1.0f) / 2.0f;
 		}
 	}
 }
