@@ -196,7 +196,7 @@ void library_main::initialise_test_data()
 	m_textured_quad->initialise();
 	m_textured_quad->set_transform(glm::translate(identity<mat4x4>(), {45.0f, 175.0f, 0.0f}));
 
-	weak_ptr<const terrain> test_terrain = dynamic_pointer_cast<const terrain>(m_asset_manager->get_asset_on_name("umbra_mount").lock());
+	weak_ptr<const terrain> test_terrain = dynamic_pointer_cast<const terrain>(m_asset_manager->get_asset_on_name("isle_of_man").lock());
 	m_terrain = make_shared<renderable_terrain>(test_terrain);
 	m_terrain->initialise();
 }

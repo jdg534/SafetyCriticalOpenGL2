@@ -58,14 +58,14 @@
 			"path": "models/grass_cube.obj"
 		},
 		{
-			"name": "umbra_mount_splat_map",
+			"name": "isle_of_man_splat_map",
 			"type": "texture",
-			"path": "terrain/umbra_mount_yasur_splatmap.png"
+			"path": "terrain/isle_of_man_splatmap.png"
 		},
 		{
-			"name": "umbra_mount",
+			"name": "isle_of_man",
 			"type": "terrain",
-			"path": "terrain/umbra_mount_yasur.terrain"
+			"path": "terrain/isle_of_man.terrain"
 		}
 	]
 }

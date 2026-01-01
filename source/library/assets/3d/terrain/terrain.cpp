@@ -76,13 +76,17 @@ void terrain::initialise()
 	TIFFGetFieldDefaulted(tiff_file, TIFFTAG_SAMPLEFORMAT, &m_geo_tiff_height_info.sample_format);
 
 	// --- Pixel scale ---
-	double* pixelScale = nullptr;
-	if (TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE, &pixelScale))
+	// skipping for now. need to code the number range. defaulting to units being in meters.
+	/*
+	unsigned short num_pixel_scale_count = 0;
+	double* pixel_scale = nullptr;
+	if (TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE,&num_pixel_scale_count, &pixel_scale))
 	{
-		m_geo_tiff_height_info.meters_per_pixel_x = pixelScale[0];
-		m_geo_tiff_height_info.meters_per_pixel_y = pixelScale[1];
-		// pixelScale[2] is *not* reliable for height
+		assert(pixel_scale != nullptr);
+		m_geo_tiff_height_info.meters_per_pixel_x = pixel_scale[0];
+		m_geo_tiff_height_info.meters_per_pixel_y = pixel_scale[1];
 	}
+	*/
 
 	// --- Vertical units ---
 	short vertical_units = 0;
@@ -94,24 +98,42 @@ void terrain::initialise()
 		m_geo_tiff_height_info.vertical_units_are_meters = (vertical_units == 9001);
 	}
 
-	if (m_geo_tiff_height_info.bits_per_sample != 8) { throw runtime_error("Expected 8 bit height data"); }
-	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_VOID || m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP) { throw runtime_error("unsupported height data format"); }
+	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_VOID) { throw runtime_error("unsupported height data format"); }
 
-	if (TIFFIsTiled(tiff_file))
-	{
-		throw exception("Titled tiff file.");
-	}
+	const bool is_tiled = TIFFIsTiled(tiff_file);
 
 	m_heights.resize(m_geo_tiff_height_info.width * m_geo_tiff_height_info.length);
-	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_UINT)
-	{
-		read_heights_uint8(m_heights, tiff_file);
-	}
-	else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_INT)
-	{
-		read_heights_sint8(m_heights, tiff_file);
-	}
 
+	if (is_tiled)
+	{
+		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
+		{
+			read_heights_f32_tiled(m_heights, tiff_file);
+		}
+		else
+		{
+			throw runtime_error("Unsupported tiled tiff file format encountered.");
+		}
+	}
+	else
+	{
+		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_UINT && m_geo_tiff_height_info.bits_per_sample == 8)
+		{
+			read_heights_uint8(m_heights, tiff_file);
+		}
+		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_INT && m_geo_tiff_height_info.bits_per_sample == 8)
+		{
+			read_heights_sint8(m_heights, tiff_file);
+		}
+		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
+		{
+			read_heights_f32(m_heights, tiff_file);
+		}
+		else
+		{
+			throw runtime_error("Unsupported tiff file format encountered.");
+		}
+	}
 	// flip_rows(m_heights, m_tiff_width, m_tiff_length); // not needed, uncomment if we need to flip
 
 	GTIFFree(geo_tiff);
@@ -295,6 +317,82 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	}
 }
 
+void terrain::read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_file)
+{
+	uint32 width = 0, height = 0;
+	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
+	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
+	const tsize_t scanline_size_bytes = TIFFScanlineSize(tiff_file);
+	std::vector<float> scanline(scanline_size_bytes / sizeof(float));
+
+	for (uint32 row = 0; row < height; ++row)
+	{
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+
+		float* dst = output_buffer.data() + row * width;
+		std::memcpy(dst, scanline.data(), width * sizeof(float));
+	}
+	// normalise the heights
+	float max_height_encountered = 0.0f;
+	for (float f : output_buffer)
+	{
+		max_height_encountered = std::max(f, max_height_encountered);
+	}
+	const float scale_height_by = 1.0f / max_height_encountered;
+	for (float& f : output_buffer)
+	{
+		f *= scale_height_by;
+	}
+}
+
+void terrain::read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* tiff_file)
+{
+	uint32 image_width = 0, image_height = 0;
+	uint32 tile_width = 0, tile_height = 0;
+
+	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &image_width);
+	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &image_height);
+	TIFFGetField(tiff_file, TIFFTAG_TILEWIDTH, &tile_width);
+	TIFFGetField(tiff_file, TIFFTAG_TILELENGTH, &tile_height);
+
+	const tsize_t tile_size_bytes = TIFFTileSize(tiff_file);
+	std::vector<float> tile(tile_size_bytes / sizeof(float));
+
+	for (uint32 tile_y = 0; tile_y < image_height; tile_y += tile_height)
+	{
+		for (uint32 tile_x = 0; tile_x < image_width; tile_x += tile_width)
+		{
+			if (TIFFReadTile(tiff_file, tile.data(), tile_x, tile_y, 0, 0) == -1)
+				throw std::runtime_error("TIFFReadTile failed");
+
+			const uint32 max_y = std::min(tile_height, image_height - tile_y);
+			const uint32 max_x = std::min(tile_width, image_width - tile_x);
+
+			for (uint32 y = 0; y < max_y; ++y)
+			{
+				float* dst = output_buffer.data()
+					+ (tile_y + y) * image_width
+					+ tile_x;
+
+				const float* src = tile.data() + y * tile_width;
+
+				std::memcpy(dst, src, max_x * sizeof(float));
+			}
+		}
+	}
+	// normalise the heights
+	float max_height_encountered = 0.0f;
+	for (float f : output_buffer)
+	{
+		max_height_encountered = std::max(f, max_height_encountered);
+	}
+	const float scale_height_by = 1.0f / max_height_encountered;
+	for (float& f : output_buffer)
+	{
+		f *= scale_height_by;
+	}
+}
+
 void terrain::flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length)
 {
 	if (width == 0 || length == 0)
@@ -358,7 +456,7 @@ void terrain::generate_open_gl_buffers()
 			const bool got_left_px = j > 0;
 			const bool got_above_px = i > 0;
 			const bool got_right_px = right_px < m_geo_tiff_height_info.width;
-			const bool got_below_px = below_px < m_geo_tiff_height_info.width;
+			const bool got_below_px = below_px < m_geo_tiff_height_info.length;
 
 			const float current_px_height = get_height_range_value_at(j, i);
 			const float above_px_height = got_above_px ? get_height_range_value_at(j, above_px) : 0.0f;
@@ -370,7 +468,7 @@ void terrain::generate_open_gl_buffers()
 			vertex_buffer_data[vertex_buffer_index_offset].position.y = current_px_height;
 			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_geo_tiff_height_info.meters_per_pixel_y); // Y should be Z in this context.
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(j) / tiff_width_as_float;
-			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = static_cast<float>(i) / tiff_length_as_float;;
+			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = static_cast<float>(i) / tiff_length_as_float;
 
 			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
 			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_y);
