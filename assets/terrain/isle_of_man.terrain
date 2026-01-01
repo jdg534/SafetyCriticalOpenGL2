@@ -1,0 +1,10 @@
+{
+	"height_map": "isle_of_man.tif",
+	"height_min_meters":0.0,
+	"height_max_meters":621.0,
+	"splat_map_asset_name": "isle_of_man_splat_map",
+	"red_channel_mapped_texture_asset_name":"granite_texture",
+	"green_channel_mapped_texture_asset_name":"grass_texture",
+	"blue_channel_mapped_texture_asset_name":"soil_texture",
+	"alpha_channel_mapped_texture_asset_name":"plain_transparent"
+}
