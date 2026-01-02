@@ -29,8 +29,6 @@ constexpr glm::vec4 text_normal_tint   = { 1.0f, 1.0f, 1.0f, 1.0f };
 /////////
 
 library_main::library_main()
-	: m_camera_movement_speed(0.0f,0.0f,0.0f)
-	, m_camera_look_at_point_movement_speed(0.0f, 0.0f, 0.0f)
 {
 	s_instance_ptr = this;
 }
@@ -72,7 +70,7 @@ void library_main::initialise()
 	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
 	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
 
-	m_camera = make_shared<camera>();
+	m_camera = make_shared<flying_camera>(m_window);
 	m_camera->set_view_port_width(flt_framebuffer_width);
 	m_camera->set_view_port_height(flt_framebuffer_height);
 	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
@@ -100,6 +98,7 @@ void library_main::initialise()
 	m_renderer->add_to_render_list(m_terrain);
 	m_renderer->sort_render_list();
 
+	m_tick_group.push_back(m_camera);
 
 	/*
 	after this line add flag to not permit allocations to deallocations.
@@ -258,89 +257,8 @@ void library_main::s_on_key_callback(GLFWwindow* window, int key, int scancode, 
 
 void library_main::on_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	const bool is_press_event = action == GLFW_PRESS;
-	const bool is_release_event = action == GLFW_RELEASE;
-	if (is_press_event == false
-	&& is_release_event == false)
-	{
-		return;
-	}
-
-	if (is_press_event)
-	{
-		switch (key)
-		{
-			case GLFW_KEY_LEFT:      on_left_pressed();      break;
-			case GLFW_KEY_RIGHT:     on_right_pressed();     break;
-			case GLFW_KEY_UP:        on_up_pressed();        break;
-			case GLFW_KEY_DOWN:      on_down_pressed();      break;
-			case GLFW_KEY_PAGE_UP:   on_page_up_pressed();   break;
-			case GLFW_KEY_PAGE_DOWN: on_page_down_pressed(); break;
-			case GLFW_KEY_W:         on_w_pressed();         break;
-			case GLFW_KEY_A:         on_a_pressed();         break;
-			case GLFW_KEY_S:         on_s_pressed();         break;
-			case GLFW_KEY_D:         on_d_pressed();         break;
-			case GLFW_KEY_Q:         on_q_pressed();         break;
-			case GLFW_KEY_E:         on_e_pressed();         break;
-			case GLFW_KEY_R:         on_r_pressed();         break;
-			default: break;
-		}
-	}
-	else if (is_release_event)
-	{
-		switch (key)
-		{
-			case GLFW_KEY_LEFT:      on_left_released();      break;
-			case GLFW_KEY_RIGHT:     on_right_released();     break;
-			case GLFW_KEY_UP:        on_up_released();        break;
-			case GLFW_KEY_DOWN:      on_down_released();      break;
-			case GLFW_KEY_PAGE_UP:   on_page_up_released();   break;
-			case GLFW_KEY_PAGE_DOWN: on_page_down_released(); break;
-			case GLFW_KEY_W:         on_w_released();         break;
-			case GLFW_KEY_A:         on_a_released();         break;
-			case GLFW_KEY_S:         on_s_released();         break;
-			case GLFW_KEY_D:         on_d_released();         break;
-			case GLFW_KEY_Q:         on_q_released();         break;
-			case GLFW_KEY_E:         on_e_released();         break;
-			default: break;
-		}
-		
-	}
 	update_text_tints();
 }
-
-void library_main::on_left_pressed() { m_camera_look_at_point_movement_speed.x = -1.0f; }
-void library_main::on_right_pressed() { m_camera_look_at_point_movement_speed.x = 1.0f; }
-void library_main::on_up_pressed() { m_camera_look_at_point_movement_speed.z = 1.0f; }
-void library_main::on_down_pressed() { m_camera_look_at_point_movement_speed.z = -1.0f; }
-void library_main::on_page_up_pressed() { m_camera_look_at_point_movement_speed.y = 1.0f; }
-void library_main::on_page_down_pressed() { m_camera_look_at_point_movement_speed.y = -1.0f; }
-void library_main::on_left_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
-void library_main::on_right_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
-void library_main::on_up_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
-void library_main::on_down_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
-void library_main::on_page_up_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
-void library_main::on_page_down_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
-void library_main::on_w_pressed() { m_camera_movement_speed.z = 1.0f; }
-void library_main::on_a_pressed() { m_camera_movement_speed.x = -1.0f; }
-void library_main::on_s_pressed() { m_camera_movement_speed.z = -1.0f; }
-void library_main::on_d_pressed() { m_camera_movement_speed.x = 1.0f; }
-void library_main::on_q_pressed() { m_camera_movement_speed.y = 1.0f; }
-void library_main::on_e_pressed() { m_camera_movement_speed.y = -1.0f; }
-
-void library_main::on_r_pressed()
-{
-	m_camera_movement_speed = m_camera_look_at_point_movement_speed = glm::vec3(0.0f, 0.0f, 0.0f);
-	m_camera->set_look_at_position({ 0.0f, 0.0f, 0.0f });
-	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
-}
-
-void library_main::on_w_released() { m_camera_movement_speed.z = 0.0f; }
-void library_main::on_a_released() { m_camera_movement_speed.x = 0.0f; }
-void library_main::on_s_released() { m_camera_movement_speed.z = 0.0f; }
-void library_main::on_d_released() { m_camera_movement_speed.x = 0.0f; }
-void library_main::on_q_released() { m_camera_movement_speed.y = 0.0f; }
-void library_main::on_e_released() { m_camera_movement_speed.y = 0.0f; }
 
 void library_main::tick(float delta_time)
 {
@@ -349,21 +267,12 @@ void library_main::tick(float delta_time)
 
 	static constexpr float delta_time_cap = 0.25f;
 	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
-	static float angle = 0.0f, turn_speed_degrees = 1.0f;
-	angle += turn_speed_degrees * delta_time_to_use;
+	update_test_cube(delta_time_to_use);
 
-	int frame_buffer_width = 0, frame_buffer_height = 0;
-	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
-	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
-	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
-
-	update_ensure_camera_above_terrain();
-	vec3 camera_position = m_camera->get_position();
-	vec3 camera_look_at_position = m_camera->get_look_at_position();
-	camera_position += m_camera_movement_speed * delta_time_to_use;
-	camera_look_at_position += m_camera_look_at_point_movement_speed * delta_time_to_use;
-	m_camera->set_position(camera_position);
-	m_camera->set_look_at_position(camera_look_at_position);
+	for (auto tickable_instance : m_tick_group)
+	{
+		tickable_instance.lock()->tick(delta_time_to_use);
+	}
 
 	// this is post initialisation, we'll want a different heap that has fixed size.
 	const vec3 cube_position = m_test_cube->get_net_transform()[3];
@@ -371,17 +280,17 @@ void library_main::tick(float delta_time)
 	text_utilities::append_vec3(text_to_set, cube_position);
 	m_cube_position_text->set_text(text_to_set);
 	text_to_set = U"Camera position: ";
-	text_utilities::append_vec3(text_to_set, camera_position);
+	text_utilities::append_vec3(text_to_set, m_camera->get_position());
 	m_camera_position_text->set_text(text_to_set);
 	text_to_set = U"Camera look at position: ";
-	text_utilities::append_vec3(text_to_set, camera_look_at_position);
+	text_utilities::append_vec3(text_to_set, m_camera->get_look_at_position());
 	m_camera_look_at_position_text->set_text(text_to_set);
 }
 
 void library_main::update_text_tints()
 {
-	update_text_tint(m_camera_position_text, length(m_camera_movement_speed) > 0.0f);
-	update_text_tint(m_camera_look_at_position_text, length(m_camera_look_at_point_movement_speed) > 0.0f);
+	update_text_tint(m_camera_position_text, m_camera->is_moving());
+	update_text_tint(m_camera_look_at_position_text, m_camera->is_moving());
 }
 
 void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool use_change_colour)
@@ -389,19 +298,14 @@ void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool 
 	to_update->set_tint(use_change_colour ? text_changing_tint : text_normal_tint);
 }
 
-void library_main::update_ensure_camera_above_terrain()
+
+void library_main::update_test_cube(float delta_time)
 {
 	using namespace glm;
-	vec3 camera_position = m_camera->get_position();
-	vec3 camera_look_at_position = m_camera->get_look_at_position();
+	static float angle = 0.0f, turn_speed_degrees = 1.0f;
+	angle += turn_speed_degrees * delta_time;
 
-	const float terrain_height_at_camera_location = m_terrain->get_height_at(camera_position.x, camera_position.z);
-	if (terrain_height_at_camera_location > (camera_position.y - m_minimum_camera_height_from_terrain))
-	{
-		const vec3 look_at_direction = camera_look_at_position - camera_position;
-		camera_position.y = terrain_height_at_camera_location + m_minimum_camera_height_from_terrain;
-		camera_look_at_position = camera_position + look_at_direction;
-		m_camera->set_position(camera_position);
-		m_camera->set_look_at_position(camera_look_at_position);
-	}
+	// TODO: refactor this to also make the cube be above the terrain.
+
+	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
 }
