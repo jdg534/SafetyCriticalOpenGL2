@@ -19,6 +19,8 @@ public:
 
 	bool is_moving() const;
 
+	float get_move_speed() const;
+
 private:
 
 	void handle_rotation(float delta_time);

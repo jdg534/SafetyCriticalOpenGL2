@@ -58,12 +58,11 @@ private:
 	std::shared_ptr<text_block> m_cube_position_text;
 	std::shared_ptr<text_block> m_camera_position_text;
 	std::shared_ptr<text_block> m_camera_look_at_position_text;
+	std::shared_ptr<text_block> m_camera_move_speed_text;
 	std::shared_ptr<quad> m_textured_quad;
 	std::shared_ptr<renderable_terrain> m_terrain;
 
 	std::vector<std::weak_ptr<i_tickable>> m_tick_group;
-
-	float m_minimum_camera_height_from_terrain = 5.0f;
 
 	static library_main* s_instance_ptr;
 };

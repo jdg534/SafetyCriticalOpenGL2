@@ -73,7 +73,6 @@ void library_main::initialise()
 	m_camera = make_shared<flying_camera>(m_window);
 	m_camera->set_view_port_width(flt_framebuffer_width);
 	m_camera->set_view_port_height(flt_framebuffer_height);
-	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
 
 	m_renderer = make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50, m_camera);
 	m_renderer->initialise();
@@ -86,7 +85,7 @@ void library_main::initialise()
 
 	initialise_test_data();
 
-	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text })
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text, m_camera_move_speed_text })
 	{
 		m_renderer->add_to_render_list(text_block);
 	}
@@ -177,15 +176,19 @@ void library_main::initialise_test_data()
 
 	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
 	m_cube_position_text = make_shared<text_block>(U"Cube position: X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
-	m_cube_position_text->initialise();
 	m_camera_position_text = make_shared<text_block>(U"Camera position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
-	m_camera_position_text->initialise();
 	m_camera_look_at_position_text = make_shared<text_block>(U"Camera look at position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
-	m_camera_look_at_position_text->initialise();
+	m_camera_move_speed_text = make_shared<text_block>(U"Camera speed (when moving): : X.XXXX", font_ptr, 64, line_spaceing::RELATIVE_1_2);
+	for (auto text_to_init : {m_cube_position_text,m_camera_position_text,m_camera_look_at_position_text,m_camera_move_speed_text })
+	{
+		text_to_init->initialise();
+	}
 
 	m_camera_position_text->set_parent(m_cube_position_text);
 	m_camera_look_at_position_text->set_parent(m_camera_position_text);
-	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text })
+	m_camera_move_speed_text->set_parent(m_camera_look_at_position_text);
+
+	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text, m_camera_move_speed_text })
 	{
 		camera_text_block->set_transform(glm::translate(identity<mat4x4>(), { 0.0f, 25.0f, 0.0f }));
 	}
@@ -223,7 +226,7 @@ void library_main::shutdown()
 
 void library_main::shutdown_test_data()
 {
-	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text})
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text, m_camera_move_speed_text })
 	{
 		text_block->shutdown();
 		text_block.reset();
@@ -285,6 +288,9 @@ void library_main::tick(float delta_time)
 	text_to_set = U"Camera look at position: ";
 	text_utilities::append_vec3(text_to_set, m_camera->get_look_at_position());
 	m_camera_look_at_position_text->set_text(text_to_set);
+	text_to_set = U"Camera movement speed: ";
+	text_utilities::append_vec3(text_to_set, { m_camera->get_move_speed(), 0.0f, 0.0f });
+	m_camera_move_speed_text->set_text(text_to_set);
 }
 
 void library_main::update_text_tints()
@@ -298,14 +304,10 @@ void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool 
 	to_update->set_tint(use_change_colour ? text_changing_tint : text_normal_tint);
 }
 
-
 void library_main::update_test_cube(float delta_time)
 {
 	using namespace glm;
 	static float angle = 0.0f, turn_speed_degrees = 1.0f;
 	angle += turn_speed_degrees * delta_time;
-
-	// TODO: refactor this to also make the cube be above the terrain.
-
-	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
+	m_test_cube->set_transform(translate(identity<mat4x4>(), {0.0f, 700.0f, 0.0f}) * rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
 }

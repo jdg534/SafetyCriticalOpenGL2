@@ -47,6 +47,11 @@ bool flying_camera::is_moving() const
 	return m_is_moving;
 }
 
+float flying_camera::get_move_speed() const
+{
+	return m_move_speed;
+}
+
 // private
 //////////
 
@@ -97,6 +102,6 @@ void flying_camera::handle_movement(float delta_time)
 
 void flying_camera::handle_speed_change(float delta_time)
 {
-	if (glfwGetKey(m_window, m_increase_move_speed_key) == GLFW_PRESS) m_move_speed += delta_time * 1.0f;
-	if (glfwGetKey(m_window, m_decrease_move_speed_key) == GLFW_PRESS) m_move_speed -= delta_time * 1.0f;
+	if (glfwGetKey(m_window, m_increase_move_speed_key) == GLFW_PRESS) m_move_speed += delta_time * 10.0f;
+	if (glfwGetKey(m_window, m_decrease_move_speed_key) == GLFW_PRESS) m_move_speed -= delta_time * 10.0f;
 }
