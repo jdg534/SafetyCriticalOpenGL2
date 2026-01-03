@@ -62,8 +62,6 @@ void terrain::initialise()
 		throw std::exception("terrain doesn't have a height map!");
 	}
 	const string resolved_path = asset_utils::resolve_file_path(doc["height_map"].GetString(), asset_utils::get_directory_path(get_path())); // ensure an absolute path.
-	
-	
 
 	TIFF* tiff_file = XTIFFOpen(resolved_path.data(), "r");
 	if (!tiff_file) throw exception("Failed to load tiff file");
@@ -83,7 +81,6 @@ void terrain::initialise()
 	// we're going to assume the tiff is using angular values (degees) for the X & Y in tiff, not linear (meters)
 	// keys are in: geokeys.inc
 
-
 	// --- Pixel scale ---
 	unsigned short num_pixel_scale_count = 0;
 	double* pixel_scale = nullptr;
@@ -95,7 +92,7 @@ void terrain::initialise()
 		const float pixel_latitude_scale_in_degrees = pixel_scale[1];
 
 		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0f;
-		const float centre_latitude_degrees = 54.23f; // TODO: have this be read in via the JSON.
+		const float centre_latitude_degrees = calculate_centre_latitude_from_tiepoints(tiff_file, m_geo_tiff_height_info.length, pixel_latitude_scale_in_degrees);
 
 		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0f;
 		const float meters_per_degree_longitude = METERS_PER_DEGREE_LATITUDE * std::cos(centre_latitude_radians);
@@ -441,6 +438,23 @@ void terrain::flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 
 		std::memcpy(a, b, row_bytes);
 		std::memcpy(b, temp.data(), row_bytes);
 	}
+}
+
+float terrain::calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 image_height, float pixel_latitude_scale_degrees)
+{
+	double* tiepoints = nullptr;
+	uint16 tiepoint_count = 0;
+
+	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &tiepoint_count, &tiepoints))
+		throw std::runtime_error("GeoTIFF has no tiepoints");
+
+	if (tiepoint_count < 6)
+		throw std::runtime_error("Invalid GeoTIFF tiepoint data");
+
+	// First tiepoint (usually top-left)
+	const double tie_latitude = tiepoints[4]; // Y
+
+	return tie_latitude - (image_height * 0.5 * pixel_latitude_scale_degrees);
 }
 
 size_t terrain::get_height_index(uint16 x, uint16 y) const

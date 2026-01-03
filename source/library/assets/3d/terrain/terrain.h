@@ -76,6 +76,7 @@ private:
 	static void read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void override_nan_values(std::vector<float>& output_buffer);
 	static void flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length);
+	static float calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 image_height, float pixel_latitude_scale_degrees);
 
 	size_t get_height_index(uint16 x, uint16 y) const;
 	void generate_open_gl_buffers();
