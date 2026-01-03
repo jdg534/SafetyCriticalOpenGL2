@@ -137,7 +137,7 @@ void terrain::initialise()
 		}
 	}
 	// flip_rows(m_heights, m_tiff_width, m_tiff_length); // not needed, uncomment if we need to flip
-	override_nan_values(m_heights, 0.0f);
+	override_nan_values(m_heights);
 	GTIFFree(geo_tiff);
 	XTIFFClose(tiff_file);
 	tiff_file = nullptr;
@@ -371,12 +371,21 @@ void terrain::read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* ti
 	}
 }
 
-void terrain::override_nan_values(std::vector<float>& output_buffer, const float override_with)
+void terrain::override_nan_values(std::vector<float>& output_buffer)
 {
 	const size_t n_elements = output_buffer.size();
+	assert(n_elements > 0);
+	float last_good_value = output_buffer[0];
 	for (size_t i = 0; i < n_elements; ++i)
 	{
-		output_buffer[i] = std::isnan(output_buffer[i]) ? override_with : output_buffer[i];
+		if (!std::isnan(output_buffer[i]))
+		{
+			last_good_value = output_buffer[i];
+		}
+		else
+		{
+			output_buffer[i] = last_good_value;
+		}
 	}
 }
 

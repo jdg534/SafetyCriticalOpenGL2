@@ -67,7 +67,7 @@ private:
 	static void read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* tiff_file);
-	static void override_nan_values(std::vector<float>& output_buffer, const float override_with);
+	static void override_nan_values(std::vector<float>& output_buffer);
 	static void flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length);
 
 	size_t get_height_index(uint16 x, uint16 y) const;
