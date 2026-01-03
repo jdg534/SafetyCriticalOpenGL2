@@ -136,7 +136,7 @@ void terrain::initialise()
 			throw runtime_error("Unsupported tiff file format encountered.");
 		}
 	}
-	// flip_rows(m_heights, m_tiff_width, m_tiff_length); // not needed, uncomment if we need to flip
+	flip_rows(m_heights, m_geo_tiff_height_info.width, m_geo_tiff_height_info.length);
 	override_nan_values(m_heights);
 	GTIFFree(geo_tiff);
 	XTIFFClose(tiff_file);
@@ -464,7 +464,7 @@ void terrain::generate_open_gl_buffers()
 			vertex_buffer_data[vertex_buffer_index_offset].position.y = current_px_height;
 			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_geo_tiff_height_info.meters_per_pixel_y); // Y should be Z in this context.
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(j) / tiff_width_as_float;
-			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = static_cast<float>(i) / tiff_length_as_float;
+			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (static_cast<float>(i) / tiff_length_as_float);
 
 			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
 			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_y);
