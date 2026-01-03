@@ -20,7 +20,8 @@ struct geo_tiff_height_info
 
 	// Horizontal scale
 	double meters_per_pixel_x = 1.0;
-	double meters_per_pixel_y = 1.0;
+	double meters_per_pixel_z = 1.0; // length, positive Z points North.
+
 
 	// Vertical units
 	bool vertical_units_are_meters = true;

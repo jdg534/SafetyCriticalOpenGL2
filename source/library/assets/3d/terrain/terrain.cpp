@@ -204,8 +204,8 @@ float terrain::get_height_at(float x_world_space, float z_world_space) const
 	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width);
 
 	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_y;
-	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_y;
+	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
+	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
 	const float far_east = (tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
 
 	const bool too_far_north = z_world_space <= far_north;
@@ -437,7 +437,7 @@ void terrain::generate_open_gl_buffers()
 	const float tiff_width_as_float = static_cast<float>(tiff_width);
 
 	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_y; // should be Z.
+	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
 
 	for (size_t i = 0; i < m_geo_tiff_height_info.length; ++i)
 	{
@@ -455,19 +455,19 @@ void terrain::generate_open_gl_buffers()
 			const bool got_below_px = below_px < m_geo_tiff_height_info.length;
 
 			const float current_px_height = get_height_range_value_at(j, i);
-			const float above_px_height = got_above_px ? get_height_range_value_at(j, above_px) : 0.0f;
-			const float left_px_height = got_left_px ? get_height_range_value_at(left_px, i) : 0.0f;
-			const float right_px_height = got_right_px ? get_height_range_value_at(right_px, i) : 0.0f;
-			const float below_px_height = got_below_px ? get_height_range_value_at(j, below_px) : 0.0f;
+			const float above_px_height = got_above_px ? get_height_range_value_at(j, above_px) : current_px_height;
+			const float left_px_height = got_left_px ? get_height_range_value_at(left_px, i) : current_px_height;
+			const float right_px_height = got_right_px ? get_height_range_value_at(right_px, i) : current_px_height;
+			const float below_px_height = got_below_px ? get_height_range_value_at(j, below_px) : current_px_height;
 
 			vertex_buffer_data[vertex_buffer_index_offset].position.x = far_west + (j * m_geo_tiff_height_info.meters_per_pixel_x);
 			vertex_buffer_data[vertex_buffer_index_offset].position.y = current_px_height;
-			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_geo_tiff_height_info.meters_per_pixel_y); // Y should be Z in this context.
+			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_geo_tiff_height_info.meters_per_pixel_z);
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(j) / tiff_width_as_float;
 			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (static_cast<float>(i) / tiff_length_as_float);
 
 			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
-			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_y);
+			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
 			vertex_buffer_data[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
 		}
 	}
