@@ -16,7 +16,7 @@
 #define GLM_ENABLE_EXPERIMENTAL // done for lerp, otherwise remove this.
 #include <glm/gtx/compatibility.hpp>
 
-
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -109,6 +109,7 @@ void terrain::initialise()
 		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
 		{
 			read_heights_f32_tiled(m_heights, tiff_file);
+			m_geo_tiff_height_info.use_raw_height_value = true;
 		}
 		else
 		{
@@ -128,6 +129,7 @@ void terrain::initialise()
 		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
 		{
 			read_heights_f32(m_heights, tiff_file);
+			m_geo_tiff_height_info.use_raw_height_value = true;
 		}
 		else
 		{
@@ -135,17 +137,16 @@ void terrain::initialise()
 		}
 	}
 	// flip_rows(m_heights, m_tiff_width, m_tiff_length); // not needed, uncomment if we need to flip
-
+	override_nan_values(m_heights, 0.0f);
 	GTIFFree(geo_tiff);
 	XTIFFClose(tiff_file);
 	tiff_file = nullptr;
 
-	if (!doc.HasMember("height_min_meters") || !doc.HasMember("height_max_meters"))
+	if ((doc.HasMember("height_min_meters") && doc.HasMember("height_max_meters")) && false == m_geo_tiff_height_info.use_raw_height_value)
 	{
-		throw runtime_error("terrain needs height_min_meters & height_max_meters defined!");
+		m_geo_tiff_height_info.height_min_meters = doc["height_min_meters"].GetFloat();
+		m_geo_tiff_height_info.height_max_meters = doc["height_max_meters"].GetFloat();
 	}
-	m_geo_tiff_height_info.height_min_meters = doc["height_min_meters"].GetFloat();
-	m_geo_tiff_height_info.height_max_meters = doc["height_max_meters"].GetFloat();
 
 	generate_open_gl_buffers();
 
@@ -187,6 +188,10 @@ float terrain::get_tiff_height_at(uint16 x, uint16 y) const
 
 float terrain::get_height_range_value_at(uint16 x, uint16 y) const
 {
+	if (m_geo_tiff_height_info.use_raw_height_value) // if this flag is set, then values aren't normalised and aren't in range 0.0f to 1.0f (not meant to be lerped)
+	{
+		return get_tiff_height_at(x, y);
+	}
 	// because the heights are converted to 0.0 to 1.0f, we can just lerp
 	return glm::lerp(m_geo_tiff_height_info.height_min_meters, m_geo_tiff_height_info.height_max_meters, get_tiff_height_at(x, y));
 }
@@ -332,17 +337,6 @@ void terrain::read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_fil
 		float* dst = output_buffer.data() + row * width;
 		std::memcpy(dst, scanline.data(), width * sizeof(float));
 	}
-	// normalise the heights
-	float max_height_encountered = 0.0f;
-	for (float f : output_buffer)
-	{
-		max_height_encountered = std::max(f, max_height_encountered);
-	}
-	const float scale_height_by = 1.0f / max_height_encountered;
-	for (float& f : output_buffer)
-	{
-		f *= scale_height_by;
-	}
 }
 
 void terrain::read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* tiff_file)
@@ -362,34 +356,27 @@ void terrain::read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* ti
 	{
 		for (uint32 tile_x = 0; tile_x < image_width; tile_x += tile_width)
 		{
-			if (TIFFReadTile(tiff_file, tile.data(), tile_x, tile_y, 0, 0) == -1)
-				throw std::runtime_error("TIFFReadTile failed");
-
+			if (TIFFReadTile(tiff_file, tile.data(), tile_x, tile_y, 0, 0) == -1) throw std::runtime_error("TIFFReadTile failed");
 			const uint32 max_y = std::min(tile_height, image_height - tile_y);
 			const uint32 max_x = std::min(tile_width, image_width - tile_x);
-
 			for (uint32 y = 0; y < max_y; ++y)
 			{
 				float* dst = output_buffer.data()
 					+ (tile_y + y) * image_width
 					+ tile_x;
-
 				const float* src = tile.data() + y * tile_width;
-
 				std::memcpy(dst, src, max_x * sizeof(float));
 			}
 		}
 	}
-	// normalise the heights
-	float max_height_encountered = 0.0f;
-	for (float f : output_buffer)
+}
+
+void terrain::override_nan_values(std::vector<float>& output_buffer, const float override_with)
+{
+	const size_t n_elements = output_buffer.size();
+	for (size_t i = 0; i < n_elements; ++i)
 	{
-		max_height_encountered = std::max(f, max_height_encountered);
-	}
-	const float scale_height_by = 1.0f / max_height_encountered;
-	for (float& f : output_buffer)
-	{
-		f *= scale_height_by;
+		output_buffer[i] = std::isnan(output_buffer[i]) ? override_with : output_buffer[i];
 	}
 }
 

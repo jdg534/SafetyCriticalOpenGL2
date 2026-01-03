@@ -26,7 +26,7 @@ struct geo_tiff_height_info
 	bool vertical_units_are_meters = true;
 
 	// Elevation mapping (dataset-defined)
-	bool has_explicit_height_range = false;
+	bool use_raw_height_value = false;
 	float height_min_meters = 0.0;
 	float height_max_meters = 100.0;
 };
@@ -67,6 +67,7 @@ private:
 	static void read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* tiff_file);
+	static void override_nan_values(std::vector<float>& output_buffer, const float override_with);
 	static void flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length);
 
 	size_t get_height_index(uint16 x, uint16 y) const;
