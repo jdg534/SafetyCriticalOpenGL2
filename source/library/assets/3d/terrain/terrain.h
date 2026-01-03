@@ -9,6 +9,13 @@
 #include <string>
 #include <vector>
 
+// full spec: http://geotiff.maptools.org/spec/geotiff6.html just focusing on meters and feet for brevity
+enum class tiff_pixel_units : uint8_t
+{
+	METERS,
+	FEET
+};
+
 struct geo_tiff_height_info
 {
 	uint32 width = 0;
@@ -18,13 +25,12 @@ struct geo_tiff_height_info
 	uint16 bits_per_sample = 0;
 	uint16 sample_format = 0;
 
+	tiff_pixel_units pixel_units = tiff_pixel_units::METERS;
+
 	// Horizontal scale
-	double meters_per_pixel_x = 1.0;
-	double meters_per_pixel_z = 1.0; // length, positive Z points North.
-
-
-	// Vertical units
-	bool vertical_units_are_meters = true;
+	float meters_per_pixel_x = 1.0f;
+	float meters_per_pixel_z = 1.0f; // length, positive Z points North.
+	float pixel_vertical_units_scale = 1.0f;
 
 	// Elevation mapping (dataset-defined)
 	bool use_raw_height_value = false;

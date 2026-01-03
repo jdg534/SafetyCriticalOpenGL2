@@ -8,19 +8,23 @@
 
 #include <tiffio.h>
 #include <geotiff.h>
+#include <geokeys.h>
 #include <geo_normalize.h>
 #include <xtiffio.h>
 #include <rapidjson/document.h>
 
+#define _USE_MATH_DEFINES
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL // done for lerp, otherwise remove this.
 #include <glm/gtx/compatibility.hpp>
 
 #include <cmath>
+#include <math.h>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
 
 // public
 /////////
@@ -75,27 +79,50 @@ void terrain::initialise()
 	TIFFGetField(tiff_file, TIFFTAG_BITSPERSAMPLE, &m_geo_tiff_height_info.bits_per_sample);
 	TIFFGetFieldDefaulted(tiff_file, TIFFTAG_SAMPLEFORMAT, &m_geo_tiff_height_info.sample_format);
 
+
+	// we're going to assume the tiff is using angular values (degees) for the X & Y in tiff, not linear (meters)
+	// keys are in: geokeys.inc
+
+
 	// --- Pixel scale ---
-	// skipping for now. need to code the number range. defaulting to units being in meters.
-	/*
 	unsigned short num_pixel_scale_count = 0;
 	double* pixel_scale = nullptr;
 	if (TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE,&num_pixel_scale_count, &pixel_scale))
 	{
 		assert(pixel_scale != nullptr);
-		m_geo_tiff_height_info.meters_per_pixel_x = pixel_scale[0];
-		m_geo_tiff_height_info.meters_per_pixel_y = pixel_scale[1];
+
+		const float pixel_longitude_scale_in_degrees = pixel_scale[0];
+		const float pixel_latitude_scale_in_degrees = pixel_scale[1];
+
+		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0f;
+		const float centre_latitude_degrees = 54.23f; // TODO: have this be read in via the JSON.
+
+		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0f;
+		const float meters_per_degree_longitude = METERS_PER_DEGREE_LATITUDE * std::cos(centre_latitude_radians);
+
+		m_geo_tiff_height_info.meters_per_pixel_x = pixel_longitude_scale_in_degrees * meters_per_degree_longitude;
+		m_geo_tiff_height_info.meters_per_pixel_z = pixel_latitude_scale_in_degrees * METERS_PER_DEGREE_LATITUDE;
+		m_geo_tiff_height_info.pixel_vertical_units_scale = num_pixel_scale_count > 2 ? pixel_scale[2] : m_geo_tiff_height_info.pixel_vertical_units_scale;
+		m_geo_tiff_height_info.pixel_vertical_units_scale = m_geo_tiff_height_info.pixel_vertical_units_scale == 0.0f ? 1.0f : m_geo_tiff_height_info.pixel_vertical_units_scale;
 	}
-	*/
 
 	// --- Vertical units ---
 	short vertical_units = 0;
 	if (GTIFKeyGet(geo_tiff, VerticalUnitsGeoKey, &vertical_units, 0, 1))
 	{
-		// EPSG codes
-		// 9001 = meters
-		// 9002 = feet
-		m_geo_tiff_height_info.vertical_units_are_meters = (vertical_units == 9001);
+		// values from: http://geotiff.maptools.org/spec/geotiff6.html, focusing on meters and feet.
+		if (vertical_units == 9001)
+		{
+			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::METERS;
+		}
+		else if (vertical_units == 9002)
+		{
+			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::FEET;
+		}
+		else
+		{
+			throw runtime_error("Unsupported vertical unit encountered");
+		}
 	}
 
 	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_VOID) { throw runtime_error("unsupported height data format"); }
