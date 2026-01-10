@@ -27,6 +27,8 @@ public:
 
 private:
 
+	static bool is_renderable_tile_area_in_frustrum(const renderable_tile_area& area, const frustum& frustrum);
+
 	std::weak_ptr<const terrain> m_terrain;
 	std::weak_ptr<const camera> m_active_camera;
 };

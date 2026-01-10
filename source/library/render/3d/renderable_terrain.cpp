@@ -70,21 +70,21 @@ void renderable_terrain::draw()
 	glUniform1i(u_alpha_channel_diffuse_map_location, 4);
 
 
-
+	assert(!m_active_camera.expired());
+	const frustum view_frustrum = m_active_camera.lock()->get_frustrum();
 
 	// buffers
 	for (const auto& terrain_cell : terrain->get_renderable_tiles())
 	{
-		// if it's in the camera's FOV draw it. but now draw all.
+		if (is_renderable_tile_area_in_frustrum(terrain_cell, view_frustrum))
+		{
+			glBindVertexArray(terrain_cell.vertex_array_object_id);
+			glBindBuffer(GL_ARRAY_BUFFER, terrain_cell.vertex_buffer_id);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrain_cell.index_buffer_id);
 
-
-
-		glBindVertexArray(terrain_cell.vertex_array_object_id);
-		glBindBuffer(GL_ARRAY_BUFFER, terrain_cell.vertex_buffer_id);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrain_cell.index_buffer_id);
-
-		// draw
-		glDrawElements(GL_TRIANGLES, terrain_cell.num_indices_to_draw, GL_UNSIGNED_INT, 0);
+			// draw
+			glDrawElements(GL_TRIANGLES, terrain_cell.num_indices_to_draw, GL_UNSIGNED_INT, 0);
+		}
 	}
 
 	// unbind the textures
@@ -105,3 +105,23 @@ void renderable_terrain::set_active_camera(std::weak_ptr<const camera> active_ca
 {
 	m_active_camera = active_camera;
 }
+
+// private
+//////////
+
+bool renderable_terrain::is_renderable_tile_area_in_frustrum(const renderable_tile_area& area, const frustum& frustrum)
+{
+	using namespace glm;
+	for (const auto& plane : frustrum.planes)
+	{
+		vec3 point_to_check = { area.west_edge_in_meters, 0.0f, area.south_edge_in_meters };
+
+		if (plane.x >= 0) point_to_check.x = area.east_edge_in_meters;
+		if (plane.y >= 0) point_to_check.y = area.heighest_point_in_meters;
+		if (plane.z >= 0) point_to_check.z = area.north_edge_in_meters;
+
+		if (glm::dot(glm::vec3(plane), point_to_check) + plane.w < 0) return false;
+	}
+	return true;
+}
+

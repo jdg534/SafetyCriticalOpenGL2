@@ -45,10 +45,11 @@ struct geo_tiff_height_info
 
 struct renderable_tile_area
 {
-	float north_edge_in_meters;
-	float south_edge_in_meters;
-	float west_edge_in_meters;
-	float east_edge_in_meters;
+	float north_edge_in_meters = 0.0f;
+	float south_edge_in_meters = 0.0f;
+	float west_edge_in_meters = 0.0f;
+	float east_edge_in_meters = 0.0f;
+	float heighest_point_in_meters = 0.0f;
 
 	gl::GLuint vertex_buffer_id = 0;
 	gl::GLuint index_buffer_id = 0; // yet it if we want 

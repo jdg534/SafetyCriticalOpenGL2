@@ -553,6 +553,13 @@ void terrain::generate_open_gl_buffers()
 
 			const std::vector<vertex_3d> vertex_buffer_data = generate_vertex_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px);
 
+			to_set.heighest_point_in_meters = 0.0f;
+			for (const auto& vertex : vertex_buffer_data)
+			{
+				to_set.heighest_point_in_meters = std::max(vertex.position.y, to_set.heighest_point_in_meters);
+			}
+
+
 			gl::glGenBuffers(1, &to_set.vertex_buffer_id);
 			gl::glBindBuffer(gl::GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
 			gl::glBufferData(gl::GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), gl::GL_STATIC_DRAW);

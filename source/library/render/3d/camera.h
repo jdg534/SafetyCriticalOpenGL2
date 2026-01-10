@@ -3,6 +3,11 @@
 
 #include <glm/glm.hpp>
 
+struct frustum
+{
+	glm::vec4 planes[6];
+};
+
 class camera
 {
 
@@ -37,6 +42,8 @@ public:
 
 	float get_far_clipping_distance() const;
 	void set_far_clipping_distance(float distance);
+
+	frustum get_frustrum() const;
 
 private:
 
