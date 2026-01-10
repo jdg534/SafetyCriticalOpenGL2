@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "renderable_3d.h"
+#include "camera.h"
 #include "../../assets/3d/terrain/terrain.h"
 
 // note that this doesn't own any data.
@@ -22,10 +23,12 @@ public:
 	void draw() override;
 
 	float get_height_at(float x_world_space, float z_world_space) const;
+	void set_active_camera(std::weak_ptr<const camera> active_camera);
 
 private:
 
 	std::weak_ptr<const terrain> m_terrain;
+	std::weak_ptr<const camera> m_active_camera;
 };
 
 #endif // _RENDERABLE_TERRAIN_H_

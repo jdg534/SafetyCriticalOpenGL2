@@ -69,8 +69,9 @@ void renderable_terrain::draw()
 	glUniform1i(u_blue_channel_diffuse_map_location, 3);
 	glUniform1i(u_alpha_channel_diffuse_map_location, 4);
 
-	// glBindVertexArray(terrain->get_vertex_array_object_id());
-	
+
+
+
 	// buffers
 	for (const auto& terrain_cell : terrain->get_renderable_tiles())
 	{
@@ -98,4 +99,9 @@ void renderable_terrain::draw()
 float renderable_terrain::get_height_at(float x_world_space, float z_world_space) const
 {
 	return m_terrain.lock()->get_height_at(x_world_space, z_world_space);
+}
+
+void renderable_terrain::set_active_camera(std::weak_ptr<const camera> active_camera)
+{
+	m_active_camera = active_camera;
 }

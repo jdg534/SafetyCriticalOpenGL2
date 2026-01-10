@@ -201,6 +201,7 @@ void library_main::initialise_test_data()
 	weak_ptr<const terrain> test_terrain = dynamic_pointer_cast<const terrain>(m_asset_manager->get_asset_on_name("isle_of_man").lock());
 	m_terrain = make_shared<renderable_terrain>(test_terrain);
 	m_terrain->initialise();
+	m_terrain->set_active_camera(m_camera);
 }
 
 void library_main::shutdown()
