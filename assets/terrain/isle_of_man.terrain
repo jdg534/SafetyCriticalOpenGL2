@@ -6,5 +6,6 @@
 	"red_channel_mapped_texture_asset_name":"granite_texture",
 	"green_channel_mapped_texture_asset_name":"grass_texture",
 	"blue_channel_mapped_texture_asset_name":"soil_texture",
-	"alpha_channel_mapped_texture_asset_name":"plain_transparent"
+	"alpha_channel_mapped_texture_asset_name":"plain_transparent",
+	"re_tile_squared_tile_distance_in_meters": 250.0
 }

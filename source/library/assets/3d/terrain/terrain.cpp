@@ -172,6 +172,8 @@ void terrain::initialise()
 		m_geo_tiff_height_info.height_max_meters = doc["height_max_meters"].GetFloat();
 	}
 
+	if (doc.HasMember("re_tile_squared_tile_distance_in_meters")) m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters = doc["re_tile_squared_tile_distance_in_meters"].GetFloat();
+
 	generate_open_gl_buffers();
 
 	m_splat_map_asset_name = doc["splat_map_asset_name"].GetString();
@@ -186,11 +188,16 @@ void terrain::shutdown()
 {
 	using namespace gl;
 	m_heights.clear();
-
-	glDeleteVertexArrays(1, &m_vertex_array_object_id);
-	GLuint buffer_ids[2] = { m_vertex_buffer_id, m_index_buffer_id };
-	glDeleteBuffers(2, buffer_ids);
-	m_vertex_array_object_id = m_vertex_buffer_id = m_index_buffer_id = m_num_indices_to_draw = 0;
+	glDeleteVertexArrays(4, m_vertex_array_object_ids);
+	std::memset(m_vertex_array_object_ids, 0, sizeof(m_vertex_array_object_ids));
+	glDeleteBuffers(4, m_index_buffer_ids);
+	std::memset(m_index_buffer_ids, 0, sizeof(m_index_buffer_ids));
+	// delete the vertex buffers
+	for (auto& tile_area : m_renderable_tiles)
+	{
+		glDeleteBuffers(1, &tile_area.vertex_buffer_id);
+	}
+	m_renderable_tiles.clear();
 }
 
 asset_type terrain::get_type() const
@@ -255,24 +262,9 @@ float terrain::get_height_at(float x_world_space, float z_world_space) const
 	return glm::lerp(x_north, x_south, z_weight);
 }
 
-gl::GLuint terrain::get_vertex_array_object_id() const
+const std::vector<renderable_tile_area>& terrain::get_renderable_tiles() const
 {
-	return m_vertex_array_object_id;
-}
-
-gl::GLuint terrain::get_vertex_buffer_id() const
-{
-	return m_vertex_buffer_id;
-}
-
-gl::GLuint terrain::get_index_buffer_id() const
-{
-	return m_index_buffer_id;
-}
-
-gl::GLuint terrain::get_num_indices_to_draw() const
-{
-	return m_num_indices_to_draw;
+	return m_renderable_tiles;
 }
 
 gl::GLuint terrain::get_splat_map_texture_id() const
@@ -464,96 +456,227 @@ size_t terrain::get_height_index(uint16 x, uint16 y) const
 
 void terrain::generate_open_gl_buffers()
 {
+	using namespace std;
 	using namespace vertex_types;
+
 	
+
 	// TODO later if there's free time. use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
-	std::vector<vertex_3d> vertex_buffer_data(m_heights.size());
+	// To be done per cell.
 
 	// Note we're using uint32 indices, for higher range.
-	
+	// we can use uint16 if it's 100x100 px.but that's to be done in a later refactor.
+
 	const uint32 tiff_width = m_geo_tiff_height_info.width;
 	const uint32 tiff_length = m_geo_tiff_height_info.length;
 
 	const float tiff_length_as_float = static_cast<float>(tiff_length);
 	const float tiff_width_as_float = static_cast<float>(tiff_width);
 
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
 	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
+	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
+	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float far_east = (tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
 
-	for (size_t i = 0; i < m_geo_tiff_height_info.length; ++i)
-	{
-		for (size_t j = 0; j < m_geo_tiff_height_info.width; ++j)
-		{
-			const int vertex_buffer_index_offset = (i * m_geo_tiff_height_info.width) + j;
+	const float net_north_to_south_in_meters = tiff_length_as_float * m_geo_tiff_height_info.meters_per_pixel_z; // ignoring latatude making pix Y axis non uniform for brevity.
+	const float net_west_to_east_in_meters = tiff_width_as_float * m_geo_tiff_height_info.meters_per_pixel_x;
 
-			const size_t left_px = j - 1;
-			const size_t above_px = i - 1;
-			const size_t right_px = j + 1;
-			const size_t below_px = i + 1;
-			const bool got_left_px = j > 0;
-			const bool got_above_px = i > 0;
-			const bool got_right_px = right_px < m_geo_tiff_height_info.width;
-			const bool got_below_px = below_px < m_geo_tiff_height_info.length;
+	// note we're  going to make the right side and bottem row bigger to account for remainders.
+	const uint32 num_north_to_south_cells_needed = net_north_to_south_in_meters / m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters;
+	const uint32 num_west_to_east_cells_needed = net_west_to_east_in_meters / m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters;
 
-			const float current_px_height = get_height_range_value_at(j, i);
-			const float above_px_height = got_above_px ? get_height_range_value_at(j, above_px) : current_px_height;
-			const float left_px_height = got_left_px ? get_height_range_value_at(left_px, i) : current_px_height;
-			const float right_px_height = got_right_px ? get_height_range_value_at(right_px, i) : current_px_height;
-			const float below_px_height = got_below_px ? get_height_range_value_at(j, below_px) : current_px_height;
+	const uint32 north_to_south_cell_length_px = tiff_length / static_cast<uint32>(num_north_to_south_cells_needed);
+	const uint32 west_to_east_cell_width_px = tiff_width / static_cast<uint32>(num_west_to_east_cells_needed);
 
-			vertex_buffer_data[vertex_buffer_index_offset].position.x = far_west + (j * m_geo_tiff_height_info.meters_per_pixel_x);
-			vertex_buffer_data[vertex_buffer_index_offset].position.y = current_px_height;
-			vertex_buffer_data[vertex_buffer_index_offset].position.z = far_north + (i * m_geo_tiff_height_info.meters_per_pixel_z);
-			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(j) / tiff_width_as_float;
-			vertex_buffer_data[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (static_cast<float>(i) / tiff_length_as_float);
+	const size_t n_cells_to_make = num_north_to_south_cells_needed * num_west_to_east_cells_needed;
 
-			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
-			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
-			vertex_buffer_data[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
-		}
-	}
+	const uint32 east_edge_width_px = tiff_width - (west_to_east_cell_width_px * (num_west_to_east_cells_needed - 1));
+	const uint32 south_edge_length_px = tiff_length - (north_to_south_cell_length_px * (num_north_to_south_cells_needed - 1));
 
-	std::vector<uint32_t> index_buffer_data;
-	index_buffer_data.reserve((m_geo_tiff_height_info.width - 1) * (m_geo_tiff_height_info.length - 1) * 6);
-	for (int y = 0; y < m_geo_tiff_height_info.length - 1; ++y)
-	{
-		for (int x = 0; x < m_geo_tiff_height_info.width - 1; ++x)
-		{
-			uint32_t i0 = y * tiff_width + x;
-			uint32_t i1 = y * tiff_width + (x + 1);
-			uint32_t i2 = (y + 1) * tiff_width + x;
-			uint32_t i3 = (y + 1) * tiff_width + (x + 1);
-			// tri 1: i0, i2, i1
-			index_buffer_data.push_back(i0); index_buffer_data.push_back(i2); index_buffer_data.push_back(i1);
-			// tri 2: i1, i2, i3
-			index_buffer_data.push_back(i1); index_buffer_data.push_back(i2); index_buffer_data.push_back(i3);
-		}
-	}
+	gl::glGenVertexArrays(4, m_vertex_array_object_ids);
+	
 
-	gl::glGenVertexArrays(1, &m_vertex_array_object_id);
-	gl::glBindVertexArray(m_vertex_array_object_id);
+	gl::glGenBuffers(4, m_index_buffer_ids);
+	const vector<uint32_t> normal_cell_index_buffer_data = generate_index_buffer_data(west_to_east_cell_width_px + 1,north_to_south_cell_length_px + 1); // note we want a 1 vertex overlap
+	const vector<uint32_t> east_edge_cell_index_buffer_data = generate_index_buffer_data(east_edge_width_px, north_to_south_cell_length_px + 1);
+	const vector<uint32_t> south_edge_cell_index_buffer_data = generate_index_buffer_data(west_to_east_cell_width_px + 1, south_edge_length_px);
+	const vector<uint32_t> south_east_corner_cell_index_buffer_data = generate_index_buffer_data(east_edge_width_px, south_edge_length_px);
+	const gl::GLuint normal_cell_num_indices_to_draw = normal_cell_index_buffer_data.size();
+	const gl::GLuint east_edge_cell_num_indices_to_draw = east_edge_cell_index_buffer_data.size();
+	const gl::GLuint south_edge_cell_num_indices_to_draw = south_edge_cell_index_buffer_data.size();
+	const gl::GLuint south_east_corner_cell_num_indices_to_draw = south_east_corner_cell_index_buffer_data.size();
 
-	gl::glGenBuffers(1, &m_vertex_buffer_id);
-	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, m_vertex_buffer_id);
-	gl::glBufferData(gl::GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), gl::GL_STATIC_DRAW);
-
-	gl::glGenBuffers(1, &m_index_buffer_id);
-	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_id);
-	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint32_t), index_buffer_data.data(), gl::GL_STATIC_DRAW);
-
-	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal, 3 = splat_map_texture_coordinates
+	gl::glBindVertexArray(m_vertex_array_object_ids[0]);
+	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal
 	gl::glEnableVertexAttribArray(0);
 	gl::glVertexAttribPointer(0, 3, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, position));
 	gl::glEnableVertexAttribArray(1);
 	gl::glVertexAttribPointer(1, 2, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, texture_coordinates));
 	gl::glEnableVertexAttribArray(2);
 	gl::glVertexAttribPointer(2, 3, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, normal));
+	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[0]);
+	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, normal_cell_index_buffer_data.size() * sizeof(uint32_t), normal_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
+	setup_vertex_attrib_array(m_vertex_array_object_ids[0]);
+	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[1]);
+	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, east_edge_cell_index_buffer_data.size() * sizeof(uint32_t), east_edge_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
+	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[2]);
+	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, south_edge_cell_index_buffer_data.size() * sizeof(uint32_t), south_edge_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
+	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[3]);
+	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, south_east_corner_cell_index_buffer_data.size() * sizeof(uint32_t), south_east_corner_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
 
+	m_renderable_tiles.resize(n_cells_to_make);
+	for (uint32 i = 0; i < num_north_to_south_cells_needed; ++i)
+	{
+		const float i_flt = static_cast<float>(i);
+		const float i_flt_plus_1 = i_flt + 1.0f;
+		const bool is_south_edge = i == num_north_to_south_cells_needed - 1;
+		for (uint32 j = 0; j < num_west_to_east_cells_needed; ++j)
+		{
+			const float j_flt = static_cast<float>(j);
+			const float j_flt_plus_1 = j_flt + 1.0f;
+			const bool is_east_edge = j == num_west_to_east_cells_needed - 1;
+			const bool is_normal_cell = is_south_edge == false && is_east_edge == false;
+
+			renderable_tile_area& to_set = m_renderable_tiles[j + (num_west_to_east_cells_needed * i)];
+			to_set.north_edge_in_meters = far_north + (i_flt * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
+			to_set.west_edge_in_meters = far_west + (j_flt * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
+			to_set.south_edge_in_meters = is_south_edge ? far_south
+				: far_north + (i_flt_plus_1 * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
+			to_set.east_edge_in_meters = is_east_edge ? far_east
+				: far_west + (j_flt_plus_1 * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
+
+			// determine the north, south, west, east px in the tiff bounds.
+			const uint32 north_tiff_px = north_to_south_cell_length_px * i;
+			const uint32 west_tiff_px = west_to_east_cell_width_px * j;
+			const uint32 south_tiff_px = is_south_edge ? tiff_length: north_to_south_cell_length_px * (i + 1) + 1;
+			const uint32 east_tiff_px = is_east_edge ? tiff_width : west_to_east_cell_width_px * (j + 1) + 1;
+
+			const std::vector<vertex_3d> vertex_buffer_data = generate_vertex_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px);
+
+			gl::glGenBuffers(1, &to_set.vertex_buffer_id);
+			gl::glBindBuffer(gl::GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
+			gl::glBufferData(gl::GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), gl::GL_STATIC_DRAW);
+
+
+			if (is_normal_cell)
+			{
+				// 1. normal cell.
+				to_set.vertex_array_object_id = m_vertex_array_object_ids[0];
+				to_set.index_buffer_id = m_index_buffer_ids[0];
+				to_set.num_indices_to_draw = normal_cell_num_indices_to_draw;
+			}
+			else if (is_east_edge)
+			{
+				// 2. east edge cell.
+				to_set.vertex_array_object_id = m_vertex_array_object_ids[1];
+				to_set.index_buffer_id = m_index_buffer_ids[1];
+				to_set.num_indices_to_draw = east_edge_cell_num_indices_to_draw;
+			}
+			else if (is_south_edge)
+			{
+				// 3. south edge cell
+				to_set.vertex_array_object_id = m_vertex_array_object_ids[2];
+				to_set.index_buffer_id = m_index_buffer_ids[2];
+				to_set.num_indices_to_draw = south_edge_cell_num_indices_to_draw;
+			}
+			else
+			{
+				// 4. south east corner cell.
+				assert(is_east_edge && is_south_edge);
+				to_set.vertex_array_object_id = m_vertex_array_object_ids[3];
+				to_set.index_buffer_id = m_index_buffer_ids[3];
+				to_set.num_indices_to_draw = south_east_corner_cell_num_indices_to_draw;
+			}
+		}
+	}
 	gl::glBindVertexArray(0);
-	m_num_indices_to_draw = index_buffer_data.size();
+}
 
-	vertex_buffer_data.clear();
-	index_buffer_data.clear();
+std::vector<vertex_types::vertex_3d> terrain::generate_vertex_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px) const
+{
+	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
+	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
+
+	// the top north west corner
+	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
+
+	// this would be static but want to read from the tiff
+	const uint32 width = tiff_east_px - tiff_west_px;
+	const uint32 length = tiff_south_px - tiff_north_px;
+	const size_t area = width * length;
+	std::vector<vertex_types::vertex_3d> results(area);
+	for (uint32 i = 0; i < length; ++i)
+	{
+		for (uint32 j = 0; j < width; ++j)
+		{
+			const int vertex_buffer_index_offset = (i * width) + j;
+			assert(vertex_buffer_index_offset < results.size());
+
+			const size_t current_px_j = (tiff_west_px + j);
+			const size_t current_px_i = (tiff_north_px + i);
+
+			const size_t left_px = current_px_j - 1;
+			const size_t above_px = current_px_i - 1;
+			const size_t right_px = current_px_j + 1;
+			const size_t below_px = current_px_i + 1;
+			const bool got_left_px = current_px_j > 0;
+			const bool got_above_px = current_px_i > 0;
+			const bool got_right_px = right_px < m_geo_tiff_height_info.width;
+			const bool got_below_px = below_px < m_geo_tiff_height_info.length;
+
+			const float current_px_height = get_height_range_value_at(current_px_j, current_px_i);
+			const float above_px_height = got_above_px ? get_height_range_value_at(current_px_j, above_px) : current_px_height;
+			const float left_px_height = got_left_px ? get_height_range_value_at(left_px, current_px_i) : current_px_height;
+			const float right_px_height = got_right_px ? get_height_range_value_at(right_px, current_px_i) : current_px_height;
+			const float below_px_height = got_below_px ? get_height_range_value_at(current_px_j, below_px) : current_px_height;
+
+			results[vertex_buffer_index_offset].position.x = far_west + (current_px_j * m_geo_tiff_height_info.meters_per_pixel_x);
+			results[vertex_buffer_index_offset].position.y = current_px_height;
+			results[vertex_buffer_index_offset].position.z = far_north + (current_px_i * m_geo_tiff_height_info.meters_per_pixel_z);
+			results[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(current_px_j) / tiff_width_as_float;
+			results[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (static_cast<float>(current_px_i) / tiff_length_as_float);
+
+			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
+			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
+			results[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
+		}
+	}
+	return results;
+}
+
+std::vector<uint32_t> terrain::generate_index_buffer_data(uint32 width, uint32 length)
+{
+	std::vector<uint32_t> results;
+	results.reserve((width - 1) * (length - 1) * 6);
+	for (int y = 0; y < length - 1; ++y)
+	{
+		for (int x = 0; x < width - 1; ++x)
+		{
+			uint32_t i0 = y * width + x;
+			uint32_t i1 = y * width + (x + 1);
+			uint32_t i2 = (y + 1) * width + x;
+			uint32_t i3 = (y + 1) * width + (x + 1);
+			// tri 1: i0, i2, i1
+			results.push_back(i0); results.push_back(i2); results.push_back(i1);
+			// tri 2: i1, i2, i3
+			results.push_back(i1); results.push_back(i2); results.push_back(i3);
+		}
+	}
+	return results;
+}
+
+void terrain::setup_vertex_attrib_array(gl::GLuint vertex_attrib_array)
+{
+	using namespace vertex_types;
+	gl::glBindVertexArray(vertex_attrib_array);
+	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal
+	gl::glEnableVertexAttribArray(0);
+	gl::glVertexAttribPointer(0, 3, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, position));
+	gl::glEnableVertexAttribArray(1);
+	gl::glVertexAttribPointer(1, 2, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, texture_coordinates));
+	gl::glEnableVertexAttribArray(2);
+	gl::glVertexAttribPointer(2, 3, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, normal));
 }
 
 void terrain::check_referenced_textures_are_valid()

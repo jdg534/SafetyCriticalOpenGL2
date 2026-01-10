@@ -69,13 +69,22 @@ void renderable_terrain::draw()
 	glUniform1i(u_blue_channel_diffuse_map_location, 3);
 	glUniform1i(u_alpha_channel_diffuse_map_location, 4);
 
+	// glBindVertexArray(terrain->get_vertex_array_object_id());
+	
 	// buffers
-	glBindVertexArray(terrain->get_vertex_array_object_id());
-	glBindBuffer(GL_ARRAY_BUFFER, terrain->get_vertex_buffer_id());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrain->get_index_buffer_id());
+	for (const auto& terrain_cell : terrain->get_renderable_tiles())
+	{
+		// if it's in the camera's FOV draw it. but now draw all.
 
-	// draw
-	glDrawElements(GL_TRIANGLES, terrain->get_num_indices_to_draw(), GL_UNSIGNED_INT, 0);
+
+
+		glBindVertexArray(terrain_cell.vertex_array_object_id);
+		glBindBuffer(GL_ARRAY_BUFFER, terrain_cell.vertex_buffer_id);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrain_cell.index_buffer_id);
+
+		// draw
+		glDrawElements(GL_TRIANGLES, terrain_cell.num_indices_to_draw, GL_UNSIGNED_INT, 0);
+	}
 
 	// unbind the textures
 	for (auto texture_slot_index : { GL_TEXTURE0,GL_TEXTURE1,GL_TEXTURE2,GL_TEXTURE3,GL_TEXTURE4 })
