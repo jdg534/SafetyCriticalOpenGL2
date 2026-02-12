@@ -24,6 +24,7 @@ library_main* library_main::s_instance_ptr = nullptr;
 
 constexpr glm::vec4 text_changing_tint = { 1.0f, 0.0f, 0.0f, 1.0f };
 constexpr glm::vec4 text_normal_tint   = { 1.0f, 1.0f, 1.0f, 1.0f };
+constexpr glm::vec3 camera_starting_position = { 0.0f, 705.0f, -10.0f };
 
 // public
 /////////
@@ -73,6 +74,7 @@ void library_main::initialise()
 	m_camera = make_shared<flying_camera>(m_window);
 	m_camera->set_view_port_width(flt_framebuffer_width);
 	m_camera->set_view_port_height(flt_framebuffer_height);
+	m_camera->set_position(camera_starting_position);
 
 	m_renderer = make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50, m_camera);
 	m_renderer->initialise();
