@@ -109,18 +109,37 @@ void renderable_terrain::set_active_camera(std::weak_ptr<const camera> active_ca
 // private
 //////////
 
+volumes::axis_aligned_bounding_box renderable_terrain::tile_area_to_aabb(const renderable_tile_area& area)
+{
+	volumes::axis_aligned_bounding_box result;
+	result.min_x = area.west_edge_in_meters;
+	result.max_x = area.east_edge_in_meters;
+	result.min_y = 0.0f;
+	result.max_y = area.heighest_point_in_meters;
+	result.min_z = area.south_edge_in_meters;
+	result.max_z = area.north_edge_in_meters;
+	return result;
+}
+
 bool renderable_terrain::is_renderable_tile_area_in_frustrum(const renderable_tile_area& area, const frustum& frustrum)
 {
 	using namespace glm;
+	const volumes::axis_aligned_bounding_box aabb = tile_area_to_aabb(area);
 	for (const auto& plane : frustrum.planes)
 	{
-		vec3 point_to_check = { area.west_edge_in_meters, 0.0f, area.south_edge_in_meters };
+		glm::vec3 normal = glm::vec3(plane);
 
-		if (plane.x >= 0) point_to_check.x = area.east_edge_in_meters;
-		if (plane.y >= 0) point_to_check.y = area.heighest_point_in_meters;
-		if (plane.z >= 0) point_to_check.z = area.north_edge_in_meters;
+		// Select positive vertex
+		glm::vec3 positive;
 
-		if (glm::dot(glm::vec3(plane), point_to_check) + plane.w < 0) return false;
+		positive.x = (normal.x >= 0.0f) ? aabb.max_x : aabb.min_x;
+		positive.y = (normal.y >= 0.0f) ? aabb.max_y : aabb.min_y;
+		positive.z = (normal.z >= 0.0f) ? aabb.max_z : aabb.min_z;
+
+		if (glm::dot(normal, positive) + plane.w < 0.0f)
+		{
+			return false; // completely outside
+		}
 	}
 	return true;
 }

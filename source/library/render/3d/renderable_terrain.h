@@ -7,6 +7,8 @@
 #include "camera.h"
 #include "../../assets/3d/terrain/terrain.h"
 
+#include "../../utilities/volumes.h"
+
 // note that this doesn't own any data.
 
 class renderable_terrain : public renderable_3d
@@ -27,6 +29,7 @@ public:
 
 private:
 
+	static volumes::axis_aligned_bounding_box tile_area_to_aabb(const renderable_tile_area& area);
 	static bool is_renderable_tile_area_in_frustrum(const renderable_tile_area& area, const frustum& frustrum);
 
 	std::weak_ptr<const terrain> m_terrain;
