@@ -188,13 +188,12 @@ void terrain::shutdown()
 {
 	using namespace gl;
 	m_heights.clear();
-	glDeleteBuffers(4, m_index_buffer_ids);
-	std::memset(m_index_buffer_ids, 0, sizeof(m_index_buffer_ids));
-	// delete the vertex buffers
+	// delete the buffers and VAOs. TODO: refactor to delete all in 3 calls.
 	for (auto& tile_area : m_renderable_tiles)
 	{
 		glDeleteVertexArrays(1, &tile_area.vertex_array_object_id);
 		glDeleteBuffers(1, &tile_area.vertex_buffer_id);
+		glDeleteBuffers(1, &tile_area.index_buffer_id);
 	}
 	m_renderable_tiles.clear();
 }
@@ -495,25 +494,8 @@ void terrain::generate_open_gl_buffers()
 	glGenVertexArrays(n_tiles_to_make, vao_ids);
 	GLuint* vertex_buffer_ids = new GLuint[n_tiles_to_make];
 	glGenBuffers(n_tiles_to_make, vertex_buffer_ids);
-
-	glGenBuffers(4, m_index_buffer_ids);
-	const vector<uint32_t> normal_cell_index_buffer_data = generate_index_buffer_data(west_to_east_cell_width_px + 1,north_to_south_cell_length_px + 1); // note we want a 1 vertex overlap
-	const vector<uint32_t> east_edge_cell_index_buffer_data = generate_index_buffer_data(east_edge_width_px, north_to_south_cell_length_px + 1);
-	const vector<uint32_t> south_edge_cell_index_buffer_data = generate_index_buffer_data(west_to_east_cell_width_px + 1, south_edge_length_px);
-	const vector<uint32_t> south_east_corner_cell_index_buffer_data = generate_index_buffer_data(east_edge_width_px, south_edge_length_px);
-	const gl::GLuint normal_cell_num_indices_to_draw = normal_cell_index_buffer_data.size();
-	const gl::GLuint east_edge_cell_num_indices_to_draw = east_edge_cell_index_buffer_data.size();
-	const gl::GLuint south_edge_cell_num_indices_to_draw = south_edge_cell_index_buffer_data.size();
-	const gl::GLuint south_east_corner_cell_num_indices_to_draw = south_east_corner_cell_index_buffer_data.size();
-
-	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[0]);
-	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, normal_cell_index_buffer_data.size() * sizeof(uint32_t), normal_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
-	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[1]);
-	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, east_edge_cell_index_buffer_data.size() * sizeof(uint32_t), east_edge_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
-	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[2]);
-	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, south_edge_cell_index_buffer_data.size() * sizeof(uint32_t), south_edge_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
-	gl::glBindBuffer(gl::GL_ELEMENT_ARRAY_BUFFER, m_index_buffer_ids[3]);
-	gl::glBufferData(gl::GL_ELEMENT_ARRAY_BUFFER, south_east_corner_cell_index_buffer_data.size() * sizeof(uint32_t), south_east_corner_cell_index_buffer_data.data(), gl::GL_STATIC_DRAW);
+	GLuint* index_buffer_ids = new GLuint[n_tiles_to_make];
+	glGenBuffers(n_tiles_to_make, index_buffer_ids);
 
 	m_renderable_tiles.resize(n_tiles_to_make);
 	for (uint32 i = 0; i < num_north_to_south_cells_needed; ++i)
@@ -544,6 +526,7 @@ void terrain::generate_open_gl_buffers()
 			const uint32 east_tiff_px = is_east_edge ? tiff_width : west_to_east_cell_width_px * (j + 1) + 1;
 
 			const std::vector<vertex_3d> vertex_buffer_data = generate_vertex_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px);
+			const std::vector<uint32_t> index_buffer_data = generate_index_buffer_data(east_tiff_px - west_tiff_px, south_tiff_px - north_tiff_px);
 
 			to_set.heighest_point_in_meters = 0.0f;
 			for (const auto& vertex : vertex_buffer_data)
@@ -555,42 +538,24 @@ void terrain::generate_open_gl_buffers()
 			to_set.tile_index = tile_index;
 			to_set.vertex_buffer_id = vertex_buffer_ids[to_set.tile_index];
 			to_set.vertex_array_object_id = vao_ids[to_set.tile_index];
+			to_set.index_buffer_id = index_buffer_ids[to_set.tile_index];
+
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, to_set.index_buffer_id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint32_t), index_buffer_data.data(), GL_STATIC_DRAW);
+
 			setup_vertex_attrib_array(to_set.vertex_array_object_id);
 
 			glBindBuffer(GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
 			glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
 
-
-			if (is_normal_cell)
-			{
-				// 1. normal cell.
-				to_set.index_buffer_id = m_index_buffer_ids[0];
-				to_set.num_indices_to_draw = normal_cell_num_indices_to_draw;
-			}
-			else if (is_east_edge)
-			{
-				// 2. east edge cell.
-				to_set.index_buffer_id = m_index_buffer_ids[1];
-				to_set.num_indices_to_draw = east_edge_cell_num_indices_to_draw;
-			}
-			else if (is_south_edge)
-			{
-				// 3. south edge cell
-				to_set.index_buffer_id = m_index_buffer_ids[2];
-				to_set.num_indices_to_draw = south_edge_cell_num_indices_to_draw;
-			}
-			else
-			{
-				// 4. south east corner cell.
-				assert(is_east_edge && is_south_edge);
-				to_set.index_buffer_id = m_index_buffer_ids[3];
-				to_set.num_indices_to_draw = south_east_corner_cell_num_indices_to_draw;
-			}
+			to_set.num_indices_to_draw = index_buffer_data.size();
 		}
 	}
 
 	delete[] vao_ids;
 	delete[] vertex_buffer_ids;
+	delete[] index_buffer_ids;
 
 	gl::glBindVertexArray(0);
 	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, 0);

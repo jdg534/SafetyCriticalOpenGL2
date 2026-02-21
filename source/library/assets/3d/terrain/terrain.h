@@ -113,11 +113,6 @@ private:
 	// split on camera far distance.
 
 	std::vector<renderable_tile_area> m_renderable_tiles;
-	// [0] = normal index buffer ID
-	// [1] = east edge index buffer ID
-	// [2] = south edge index buffer ID
-	// [3] = south east corner edge index buffer ID
-	gl::GLuint m_index_buffer_ids[4];
 
 	// cache the ids! refactor these out later
 	std::string m_splat_map_asset_name;
