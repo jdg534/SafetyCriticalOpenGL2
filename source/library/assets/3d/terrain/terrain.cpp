@@ -188,13 +188,22 @@ void terrain::shutdown()
 {
 	using namespace gl;
 	m_heights.clear();
-	// delete the buffers and VAOs. TODO: refactor to delete all in 3 calls.
-	for (auto& tile_area : m_renderable_tiles)
+	const size_t n_tiles = m_renderable_tiles.size();
+	std::vector<GLuint> vao_ids(n_tiles);
+	std::vector<GLuint> vertex_buffer_ids(n_tiles);
+	std::vector<GLuint> index_buffer_ids(n_tiles);
+	for (size_t i = 0; i < n_tiles; ++i)
 	{
-		glDeleteVertexArrays(1, &tile_area.vertex_array_object_id);
-		glDeleteBuffers(1, &tile_area.vertex_buffer_id);
-		glDeleteBuffers(1, &tile_area.index_buffer_id);
+		vao_ids[i] = m_renderable_tiles[i].vertex_array_object_id;
+		vertex_buffer_ids[i] = m_renderable_tiles[i].vertex_buffer_id;
+		index_buffer_ids[i] = m_renderable_tiles[i].index_buffer_id;
 	}
+	glDeleteVertexArrays(n_tiles, vao_ids.data());
+	glDeleteBuffers(n_tiles, vertex_buffer_ids.data());
+	glDeleteBuffers(n_tiles, index_buffer_ids.data());
+	vao_ids.clear();
+	vertex_buffer_ids.clear();
+	index_buffer_ids.clear();
 	m_renderable_tiles.clear();
 }
 
