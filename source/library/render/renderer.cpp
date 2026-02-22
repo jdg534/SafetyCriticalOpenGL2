@@ -49,8 +49,8 @@ void renderer::render_frame()
 	const render_mode current_render_mode = get_render_mode();
 	switch (current_render_mode)
 	{
-		case render_mode::POINTS: glPolygonMode(GL_FRONT_AND_BACK, GL_POINTS); break;
-		case render_mode::LINES: glPolygonMode(GL_FRONT_AND_BACK, GL_LINES); break;
+		case render_mode::POINTS: glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); break;
+		case render_mode::LINES: glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); break;
 		case render_mode::FILL: glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); break;
 		default: break;
 	}

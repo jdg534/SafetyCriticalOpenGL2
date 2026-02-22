@@ -294,6 +294,19 @@ void library_main::tick(float delta_time)
 	text_to_set = U"Camera movement speed: ";
 	text_utilities::append_vec3(text_to_set, { m_camera->get_move_speed(), 0.0f, 0.0f });
 	m_camera_move_speed_text->set_text(text_to_set);
+
+	if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS)
+	{
+		m_renderer->set_render_mode(render_mode::FILL);
+	}
+	else if (glfwGetKey(m_window, GLFW_KEY_2) == GLFW_PRESS) 
+	{
+		m_renderer->set_render_mode(render_mode::LINES);
+	}
+	else if (glfwGetKey(m_window, GLFW_KEY_3) == GLFW_PRESS) 
+	{
+		m_renderer->set_render_mode(render_mode::POINTS);
+	}
 }
 
 void library_main::update_text_tints()
