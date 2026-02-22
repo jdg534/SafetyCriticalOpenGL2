@@ -27,13 +27,18 @@ public:
 	float get_height_at(float x_world_space, float z_world_space) const;
 	void set_active_camera(std::weak_ptr<const camera> active_camera);
 
+	float get_clip_area_meters_padding() const;
+	void set_clip_area_meters_padding(float padding_in_meters);
+
 private:
 
+	volumes::axis_aligned_bounding_box get_aabb_of_camera_view_area() const;
 	static volumes::axis_aligned_bounding_box tile_area_to_aabb(const renderable_tile_area& area);
-	static bool is_renderable_tile_area_in_frustrum(const renderable_tile_area& area, const frustum& frustrum);
 
 	std::weak_ptr<const terrain> m_terrain;
 	std::weak_ptr<const camera> m_active_camera;
+
+	float m_clip_area_meters_padding = 2000.0f;
 };
 
 #endif // _RENDERABLE_TERRAIN_H_
