@@ -41,7 +41,6 @@ public:
 	void get_directional_light_colour(glm::vec3 colour);
 	void get_directional_light_direction(glm::vec3 direction);
 
-
 private:
 
 	void initialise_shaders();

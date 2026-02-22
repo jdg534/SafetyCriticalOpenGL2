@@ -189,7 +189,9 @@ void renderer::switch_to_terrain_shader()
 	glUseProgram(m_terrain_program_id);
 	m_current_shader_program = m_terrain_program_id;
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);   // LH system requires clockwise winding, CW = Clock Wise winding order.
+	glCullFace(GL_BACK);
 
 	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/terrain_shader.h
 	// other uniforms are to be set by the renderable object.
@@ -215,6 +217,8 @@ void renderer::switch_to_3d_static_mesh_shader()
 	glUseProgram(m_static_geometry_program_id);
 	m_current_shader_program = m_static_geometry_program_id;
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
 	glFrontFace(GL_CW);   // LH system requires clockwise winding, CW = Clock Wise winding order.
 
 	// set the uniforms (renderer level). as they appear in: source/library/render/shaders/static_mesh_shader.h
@@ -255,4 +259,6 @@ void renderer::switch_to_2d_shader()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glCullFace(GL_NONE);
 }
