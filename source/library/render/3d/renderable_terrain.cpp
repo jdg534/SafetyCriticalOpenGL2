@@ -141,7 +141,7 @@ volumes::axis_aligned_bounding_box renderable_terrain::get_aabb_of_camera_view_a
 	const float cos_fov = cos(half_fov_radians);
 	const float sin_fov = sin(half_fov_radians);
 
-	vec2 pos_2d = vec2(camera_position.x, camera_at_position.z);
+	vec2 pos_2d = vec2(camera_position.x, camera_position.z);
 
 	vec2 left_dir(forward_2d.x * cos_fov - forward_2d.y * sin_fov,
 		forward_2d.x * sin_fov + forward_2d.y * cos_fov);
