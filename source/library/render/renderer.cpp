@@ -46,6 +46,15 @@ void renderer::render_frame()
 	glClearColor(m_clear_colour.r, m_clear_colour.g, m_clear_colour.b, m_clear_colour.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	const render_mode current_render_mode = get_render_mode();
+	switch (current_render_mode)
+	{
+		case render_mode::POINTS: glPolygonMode(GL_FRONT_AND_BACK, GL_POINTS); break;
+		case render_mode::LINES: glPolygonMode(GL_FRONT_AND_BACK, GL_LINES); break;
+		case render_mode::FILL: glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); break;
+		default: break;
+	}
+
 	for (auto to_draw_iter : m_render_list)
 	{
 		auto to_draw = to_draw_iter.lock();
@@ -128,24 +137,34 @@ glm::vec3 renderer::get_directional_light_direction() const
 	return m_directional_light_direction;
 }
 
-void renderer::get_clear_colour(glm::vec4 colour)
+render_mode renderer::get_render_mode() const
+{
+	return m_render_mode;
+}
+
+void renderer::set_clear_colour(glm::vec4 colour)
 {
 	m_clear_colour = colour;
 }
 
-void renderer::get_ambient_light_colour(glm::vec3 colour)
+void renderer::set_ambient_light_colour(glm::vec3 colour)
 {
 	m_ambient_light_colour = colour;
 }
 
-void renderer::get_directional_light_colour(glm::vec3 colour)
+void renderer::set_directional_light_colour(glm::vec3 colour)
 {
 	m_directional_light_colour = colour;
 }
 
-void renderer::get_directional_light_direction(glm::vec3 direction)
+void renderer::set_directional_light_direction(glm::vec3 direction)
 {
 	m_directional_light_direction = direction;
+}
+
+void renderer::set_render_mode(render_mode render_mode)
+{
+	m_render_mode = render_mode;
 }
 
 // private

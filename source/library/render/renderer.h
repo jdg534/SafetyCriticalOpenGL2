@@ -12,6 +12,13 @@
 #include "renderable.decl.h"
 #include "3d/camera.decl.h"
 
+enum class render_mode : std::uint8_t
+{
+	FILL,
+	POINTS,
+	LINES
+};
+
 class renderer
 {
 public:
@@ -35,11 +42,13 @@ public:
 	glm::vec3 get_ambient_light_colour() const;
 	glm::vec3 get_directional_light_colour() const;
 	glm::vec3 get_directional_light_direction() const;
+	render_mode get_render_mode() const;
 
-	void get_clear_colour(glm::vec4 colour);
-	void get_ambient_light_colour(glm::vec3 colour);
-	void get_directional_light_colour(glm::vec3 colour);
-	void get_directional_light_direction(glm::vec3 direction);
+	void set_clear_colour(glm::vec4 colour);
+	void set_ambient_light_colour(glm::vec3 colour);
+	void set_directional_light_colour(glm::vec3 colour);
+	void set_directional_light_direction(glm::vec3 direction);
+	void set_render_mode(render_mode render_mode);
 
 private:
 
@@ -73,6 +82,8 @@ private:
 	std::vector<std::weak_ptr<renderable>> m_render_list;
 	std::weak_ptr<const camera> m_camera;
 	const size_t m_render_list_cap { 0 };
+
+	render_mode m_render_mode = render_mode::FILL;
 };
 
 #endif // _RENDERER_H_
