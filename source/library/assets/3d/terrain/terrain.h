@@ -50,6 +50,7 @@ struct renderable_tile_area
 	float west_edge_in_meters = 0.0f;
 	float east_edge_in_meters = 0.0f;
 	float heighest_point_in_meters = 0.0f;
+	float lowest_point_in_meters = 0.0f;
 
 	int32 tile_index = -1;
 	gl::GLuint vertex_buffer_id = 0;
@@ -101,6 +102,7 @@ private:
 	static void calculate_cell_dimensions_needed_for_uint16_index_buffer(uint32 width_px, uint32 length_px, uint32& output_cell_width_px,uint32& output_cell_length_px);
 	std::vector<vertex_types::vertex_3d> generate_vertex_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px) const;
 	static std::vector<uint32_t> generate_index_buffer_data(uint32 width, uint32 length); // todo: see if can change to uint16 later
+	static void set_min_and_max_height(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set);
 
 	static void setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id);
 	void check_referenced_textures_are_valid();
