@@ -479,6 +479,13 @@ void terrain::generate_open_gl_buffers()
 	const float tiff_length_as_float = static_cast<float>(tiff_length);
 	const float tiff_width_as_float = static_cast<float>(tiff_width);
 
+
+	uint32 mutable_cell_width_px = 0, mutable_cell_length_px = 0; // refactor this to be uint16 later.
+	calculate_cell_dimensions_needed_for_uint16_index_buffer(tiff_width, tiff_length, mutable_cell_width_px, mutable_cell_length_px);
+	const uint32 cell_width_px = mutable_cell_width_px;
+	const uint32 cell_length_px = mutable_cell_length_px;
+
+
 	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
 	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
 	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
@@ -568,6 +575,68 @@ void terrain::generate_open_gl_buffers()
 
 	gl::glBindVertexArray(0);
 	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, 0);
+}
+
+void terrain::calculate_cell_dimensions_needed_for_uint16_index_buffer(
+	uint32 width_px,
+	uint32 length_px,
+	uint32& output_cell_width_px,
+	uint32& output_cell_length_px)
+{
+	constexpr uint32 max_vertices_to_support =
+		std::numeric_limits<uint16>::max();
+
+	// Basic validation
+	assert(width_px > 0);
+	assert(length_px > 0);
+
+	// Start with full terrain size
+	output_cell_width_px = width_px;
+	output_cell_length_px = length_px;
+
+	// If already fits, done.
+	if (static_cast<uint64>(width_px) *
+		static_cast<uint64>(length_px) <= max_vertices_to_support)
+	{
+		return;
+	}
+
+	// We want the largest divisors that satisfy the constraint.
+	// Iterate over possible divisors of width and length.
+
+	uint32 best_width = 0;
+	uint32 best_length = 0;
+
+	for (uint32 w = 1; w <= width_px; ++w)
+	{
+		if (width_px % w != 0)
+			continue;
+
+		for (uint32 l = 1; l <= length_px; ++l)
+		{
+			if (length_px % l != 0)
+				continue;
+
+			const uint64 vertex_count =
+				static_cast<uint64>(w) * static_cast<uint64>(l);
+
+			if (vertex_count <= max_vertices_to_support)
+			{
+				// Prefer largest area cell
+				if (vertex_count >
+					static_cast<uint64>(best_width) * best_length)
+				{
+					best_width = w;
+					best_length = l;
+				}
+			}
+		}
+	}
+
+	assert(best_width > 0 && best_length > 0);
+
+	output_cell_width_px = best_width;
+	output_cell_length_px = best_length;
 }
 
 std::vector<vertex_types::vertex_3d> terrain::generate_vertex_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px) const
