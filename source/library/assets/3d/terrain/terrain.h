@@ -39,8 +39,6 @@ struct geo_tiff_height_info
 	float height_max_meters = 100.0;
 };
 
-// use the same buffer 
-
 struct renderable_tile_area
 {
 	float north_edge_in_meters = 0.0f;
@@ -52,7 +50,7 @@ struct renderable_tile_area
 
 	int32 tile_index = -1;
 	gl::GLuint vertex_buffer_id = 0;
-	gl::GLuint index_buffer_id = 0; // yet it if we want 
+	gl::GLuint index_buffer_id = 0;
 	gl::GLuint vertex_array_object_id = 0;
 	gl::GLuint num_indices_to_draw = 0;
 };
@@ -99,7 +97,7 @@ private:
 
 	static std::vector<uint32_t> get_all_whole_denominators_sorted(uint32_t x);
 	static void calculate_tile_dimensions_needed_for_uint16_index_buffer(uint32 width_px, uint32 length_px, uint32& output_tile_width_px,uint32& output_tile_length_px);
-	void generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint32_t>& out_index_buffer) const;
+	void generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint16_t>& out_index_buffer) const;
 	
 	static void set_tile_bounds(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set);
 
@@ -110,9 +108,6 @@ private:
 
 	geo_tiff_height_info m_geo_tiff_height_info;
 	std::vector<float> m_heights;
-
-	// refactor into different buffers. We want a grid of areas so we don't draw all of the terrain in one go.
-	// split on camera far distance.
 
 	std::vector<renderable_tile_area> m_renderable_tiles;
 

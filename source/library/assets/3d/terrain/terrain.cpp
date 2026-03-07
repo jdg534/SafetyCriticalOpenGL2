@@ -496,7 +496,7 @@ void terrain::generate_open_gl_buffers()
 	m_renderable_tiles.resize(n_tiles_to_make);
 
 	vector<vertex_3d> vertex_buffer_data; // declared outside the loop to avoid thrashing the stack.
-	vector<uint32_t> index_buffer_data;
+	vector<uint16_t> index_buffer_data;
 
 	for (uint32 i = 0; i < tiles_north_to_south; ++i)
 	{
@@ -523,7 +523,7 @@ void terrain::generate_open_gl_buffers()
 
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, to_set.index_buffer_id);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint32_t), index_buffer_data.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint16_t), index_buffer_data.data(), GL_STATIC_DRAW);
 			setup_vertex_attrib_array(to_set.vertex_array_object_id);
 			glBindBuffer(GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
 			glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
@@ -599,7 +599,7 @@ void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
 	}
 }
 
-void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint32_t>& out_index_buffer) const
+void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint16_t>& out_index_buffer) const
 {
 	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
 	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px

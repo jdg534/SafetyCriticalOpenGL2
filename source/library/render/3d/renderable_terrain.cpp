@@ -85,7 +85,7 @@ void renderable_terrain::draw()
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrain_cell.index_buffer_id);
 
 			// draw
-			glDrawElements(GL_TRIANGLES, terrain_cell.num_indices_to_draw, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, terrain_cell.num_indices_to_draw, GL_UNSIGNED_SHORT, 0);
 		}
 	}
 
