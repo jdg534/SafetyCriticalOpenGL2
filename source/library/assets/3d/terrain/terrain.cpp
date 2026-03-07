@@ -500,19 +500,18 @@ void terrain::generate_open_gl_buffers()
 
 	for (uint32 i = 0; i < tiles_north_to_south; ++i)
 	{
+		const bool need_overlap_with_south_cell = i < tiles_north_to_south - 1;
 		for (uint32 j = 0; j < tiles_west_to_east; ++j)
 		{
-			const float j_flt = static_cast<float>(j);
-			const float j_flt_plus_1 = j_flt + 1.0f;
-
 			const uint32 tile_index = j + (tiles_west_to_east * i);
 			renderable_tile_area& to_set = m_renderable_tiles[tile_index];
+			const bool need_overlap_with_east_cell = j < tiles_west_to_east - 1;
 
 			// determine the north, south, west, east px in the tiff bounds.
 			const uint32 north_tiff_px = tile_length_px * i;
 			const uint32 west_tiff_px = tile_width_px * j;
-			const uint32 south_tiff_px = tile_length_px * (i + 1);
-			const uint32 east_tiff_px = tile_width_px * (j + 1);
+			const uint32 south_tiff_px = tile_length_px * (i + 1) + (need_overlap_with_south_cell ? 1 : 0);
+			const uint32 east_tiff_px = tile_width_px * (j + 1) + (need_overlap_with_east_cell ? 1 : 0);
 
 			generate_tile_vertex_and_index_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px, vertex_buffer_data, index_buffer_data);
 			set_tile_bounds(vertex_buffer_data, to_set);
@@ -525,12 +524,9 @@ void terrain::generate_open_gl_buffers()
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, to_set.index_buffer_id);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint32_t), index_buffer_data.data(), GL_STATIC_DRAW);
-
 			setup_vertex_attrib_array(to_set.vertex_array_object_id);
-
 			glBindBuffer(GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
 			glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
-
 			to_set.num_indices_to_draw = index_buffer_data.size();
 		}
 	}
@@ -653,20 +649,27 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 			out_vertex_buffer[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
 		}
 	}
-	out_index_buffer.resize(0);
-	out_index_buffer.reserve(area * 6);
-	for (int y = 0; y < length; ++y)
+	out_index_buffer.clear();
+
+	const size_t quad_count = (width - 1) * (length - 1);
+	out_index_buffer.reserve(quad_count * 6);
+
+	for (uint32 y = 0; y < length - 1; ++y)
 	{
-		for (int x = 0; x < width; ++x)
+		for (uint32 x = 0; x < width - 1; ++x)
 		{
-			uint32_t i0 = y * width + x;
-			uint32_t i1 = y * width + (x + 1);
-			uint32_t i2 = (y + 1) * width + x;
-			uint32_t i3 = (y + 1) * width + (x + 1);
-			// tri 1: i0, i2, i1
-			out_index_buffer.push_back(i0); out_index_buffer.push_back(i2); out_index_buffer.push_back(i1);
-			// tri 2: i1, i2, i3
-			out_index_buffer.push_back(i1); out_index_buffer.push_back(i2); out_index_buffer.push_back(i3);
+			uint32 i0 = y * width + x;
+			uint32 i1 = y * width + (x + 1);
+			uint32 i2 = (y + 1) * width + x;
+			uint32 i3 = (y + 1) * width + (x + 1);
+
+			out_index_buffer.push_back(i0);
+			out_index_buffer.push_back(i2);
+			out_index_buffer.push_back(i1);
+
+			out_index_buffer.push_back(i1);
+			out_index_buffer.push_back(i2);
+			out_index_buffer.push_back(i3);
 		}
 	}
 }
