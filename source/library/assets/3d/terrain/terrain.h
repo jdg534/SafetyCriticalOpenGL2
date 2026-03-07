@@ -99,9 +99,9 @@ private:
 
 	static std::vector<uint32_t> all_whole_denominators_sorted(uint32_t x); // todo move this into a utils header.
 	static void calculate_tile_dimensions_needed_for_uint16_index_buffer(uint32 width_px, uint32 length_px, uint32& output_tile_width_px,uint32& output_tile_length_px);
-	std::vector<vertex_types::vertex_3d> generate_vertex_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px) const;
-	static std::vector<uint32_t> generate_index_buffer_data(uint32 width, uint32 length); // todo: see if can change to uint16 later
-	static void set_min_and_max_height(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set);
+	void generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint32_t>& out_index_buffer) const;
+	
+	static void set_tile_bounds(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set);
 
 	static void setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id);
 	void check_referenced_textures_are_valid();

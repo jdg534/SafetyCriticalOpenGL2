@@ -475,32 +475,16 @@ void terrain::generate_open_gl_buffers()
 	const uint32 tiff_width = m_geo_tiff_height_info.width;
 	const uint32 tiff_length = m_geo_tiff_height_info.length;
 
-	const float tiff_length_as_float = static_cast<float>(tiff_length);
-	const float tiff_width_as_float = static_cast<float>(tiff_width);
-
-
 	uint32 mutable_tile_width_px = 0, mutable_tile_length_px = 0; // refactor this to be uint16 later.
 	calculate_tile_dimensions_needed_for_uint16_index_buffer(tiff_width, tiff_length, mutable_tile_width_px, mutable_tile_length_px); // REM want squares not strips.
 	const uint32 tile_width_px = mutable_tile_width_px;
 	const uint32 tile_length_px = mutable_tile_length_px;
-	const float tile_width_meters = static_cast<float>(tile_width_px) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float tile_length_meters = static_cast<float>(tile_length_px) * m_geo_tiff_height_info.meters_per_pixel_z;
-
-	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
-	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float far_east = (tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-
-	const float net_north_to_south_in_meters = tiff_length_as_float * m_geo_tiff_height_info.meters_per_pixel_z; // ignoring latatude making pix Y axis non uniform for brevity.
-	const float net_west_to_east_in_meters = tiff_width_as_float * m_geo_tiff_height_info.meters_per_pixel_x;
 
 	assert(tiff_width % tile_width_px == 0);
 	assert(tiff_length % tile_length_px == 0);
 	const size_t tiles_west_to_east = tiff_width / tile_width_px;
 	const size_t tiles_north_to_south = tiff_length / tile_length_px;
-
 	const size_t n_tiles_to_make = tiles_west_to_east * tiles_north_to_south;
-
 
 	GLuint* vao_ids = new GLuint[n_tiles_to_make];
 	glGenVertexArrays(n_tiles_to_make, vao_ids);
@@ -510,10 +494,12 @@ void terrain::generate_open_gl_buffers()
 	glGenBuffers(n_tiles_to_make, index_buffer_ids);
 
 	m_renderable_tiles.resize(n_tiles_to_make);
+
+	vector<vertex_3d> vertex_buffer_data; // declared outside the loop to avoid thrashing the stack.
+	vector<uint32_t> index_buffer_data;
+
 	for (uint32 i = 0; i < tiles_north_to_south; ++i)
 	{
-		const float i_flt = static_cast<float>(i);
-		const float i_flt_plus_1 = i_flt + 1.0f;
 		for (uint32 j = 0; j < tiles_west_to_east; ++j)
 		{
 			const float j_flt = static_cast<float>(j);
@@ -521,10 +507,6 @@ void terrain::generate_open_gl_buffers()
 
 			const uint32 tile_index = j + (tiles_west_to_east * i);
 			renderable_tile_area& to_set = m_renderable_tiles[tile_index];
-			to_set.north_edge_in_meters = far_north + (i_flt * tile_length_meters);
-			to_set.west_edge_in_meters = far_west + (j_flt * tile_width_meters);
-			to_set.south_edge_in_meters = far_north + (i_flt_plus_1 * tile_length_meters);
-			to_set.east_edge_in_meters = far_west + (j_flt_plus_1 * tile_width_meters);
 
 			// determine the north, south, west, east px in the tiff bounds.
 			const uint32 north_tiff_px = tile_length_px * i;
@@ -532,10 +514,8 @@ void terrain::generate_open_gl_buffers()
 			const uint32 south_tiff_px = tile_length_px * (i + 1);
 			const uint32 east_tiff_px = tile_width_px * (j + 1);
 
-			const std::vector<vertex_3d> vertex_buffer_data = generate_vertex_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px);
-			const std::vector<uint32_t> index_buffer_data = generate_index_buffer_data(east_tiff_px - west_tiff_px, south_tiff_px - north_tiff_px);
-
-			set_min_and_max_height(vertex_buffer_data, to_set);
+			generate_tile_vertex_and_index_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px, vertex_buffer_data, index_buffer_data);
+			set_tile_bounds(vertex_buffer_data, to_set);
 
 			to_set.tile_index = tile_index;
 			to_set.vertex_buffer_id = vertex_buffer_ids[to_set.tile_index];
@@ -623,7 +603,7 @@ void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
 	}
 }
 
-std::vector<vertex_types::vertex_3d> terrain::generate_vertex_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px) const
+void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint32_t>& out_index_buffer) const
 {
 	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
 	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
@@ -636,13 +616,13 @@ std::vector<vertex_types::vertex_3d> terrain::generate_vertex_buffer_data(uint32
 	const uint32 width = tiff_east_px - tiff_west_px;
 	const uint32 length = tiff_south_px - tiff_north_px;
 	const size_t area = width * length;
-	std::vector<vertex_types::vertex_3d> results(area);
+	out_vertex_buffer.resize(area);
 	for (uint32 i = 0; i < length; ++i)
 	{
 		for (uint32 j = 0; j < width; ++j)
 		{
 			const int vertex_buffer_index_offset = (i * width) + j;
-			assert(vertex_buffer_index_offset < results.size());
+			assert(vertex_buffer_index_offset < out_vertex_buffer.size());
 
 			const size_t current_px_j = (tiff_west_px + j);
 			const size_t current_px_i = (tiff_north_px + i);
@@ -662,25 +642,20 @@ std::vector<vertex_types::vertex_3d> terrain::generate_vertex_buffer_data(uint32
 			const float right_px_height = got_right_px ? get_height_range_value_at(right_px, current_px_i) : current_px_height;
 			const float below_px_height = got_below_px ? get_height_range_value_at(current_px_j, below_px) : current_px_height;
 
-			results[vertex_buffer_index_offset].position.x = far_west + (current_px_j * m_geo_tiff_height_info.meters_per_pixel_x);
-			results[vertex_buffer_index_offset].position.y = current_px_height;
-			results[vertex_buffer_index_offset].position.z = far_north + (current_px_i * m_geo_tiff_height_info.meters_per_pixel_z);
-			results[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(current_px_j) / tiff_width_as_float;
-			results[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (static_cast<float>(current_px_i) / tiff_length_as_float);
+			out_vertex_buffer[vertex_buffer_index_offset].position.x = far_west + (current_px_j * m_geo_tiff_height_info.meters_per_pixel_x);
+			out_vertex_buffer[vertex_buffer_index_offset].position.y = current_px_height;
+			out_vertex_buffer[vertex_buffer_index_offset].position.z = far_north + (current_px_i * m_geo_tiff_height_info.meters_per_pixel_z);
+			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(current_px_j) / tiff_width_as_float;
+			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (static_cast<float>(current_px_i) / tiff_length_as_float);
 
 			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
 			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
-			results[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
+			out_vertex_buffer[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
 		}
 	}
-	return results;
-}
-
-std::vector<uint32_t> terrain::generate_index_buffer_data(uint32 width, uint32 length)
-{
-	std::vector<uint32_t> results;
-	results.reserve((width) * (length) * 6);
-	for (int y = 0; y < length ; ++y)
+	out_index_buffer.resize(0);
+	out_index_buffer.reserve(area * 6);
+	for (int y = 0; y < length; ++y)
 	{
 		for (int x = 0; x < width; ++x)
 		{
@@ -689,18 +664,28 @@ std::vector<uint32_t> terrain::generate_index_buffer_data(uint32 width, uint32 l
 			uint32_t i2 = (y + 1) * width + x;
 			uint32_t i3 = (y + 1) * width + (x + 1);
 			// tri 1: i0, i2, i1
-			results.push_back(i0); results.push_back(i2); results.push_back(i1);
+			out_index_buffer.push_back(i0); out_index_buffer.push_back(i2); out_index_buffer.push_back(i1);
 			// tri 2: i1, i2, i3
-			results.push_back(i1); results.push_back(i2); results.push_back(i3);
+			out_index_buffer.push_back(i1); out_index_buffer.push_back(i2); out_index_buffer.push_back(i3);
 		}
 	}
-	return results;
 }
 
-void terrain::set_min_and_max_height(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set)
+void terrain::set_tile_bounds(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set)
 {
+	to_set.north_edge_in_meters = -FLT_MAX;
+	to_set.south_edge_in_meters = FLT_MAX;
+	to_set.west_edge_in_meters = FLT_MAX;
+	to_set.east_edge_in_meters = -FLT_MAX;
+	to_set.heighest_point_in_meters = -FLT_MAX;
+	to_set.lowest_point_in_meters = FLT_MAX;
+
 	for (const auto& vertex : vertices)
 	{
+		to_set.north_edge_in_meters = std::max(to_set.north_edge_in_meters, vertex.position.z);
+		to_set.south_edge_in_meters = std::min(to_set.south_edge_in_meters, vertex.position.z);
+		to_set.west_edge_in_meters = std::min(to_set.west_edge_in_meters, vertex.position.x);
+		to_set.east_edge_in_meters = std::max(to_set.east_edge_in_meters, vertex.position.x);
 		to_set.heighest_point_in_meters = std::max(to_set.heighest_point_in_meters, vertex.position.y);
 		to_set.lowest_point_in_meters = std::min(to_set.lowest_point_in_meters, vertex.position.y);
 	}
