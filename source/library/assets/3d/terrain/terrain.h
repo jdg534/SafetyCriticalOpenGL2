@@ -27,8 +27,6 @@ struct geo_tiff_height_info
 	uint16 sample_format = 0;
 
 	tiff_pixel_units pixel_units = tiff_pixel_units::METERS;
-	float re_tile_squared_tile_distance_in_meters = 500.0f; // we'll want to convert to using a 16 bit index buffer later.
-	// might be worth having a way to auto calculate for bigest cell size at load time. only need 4 index buffers
 
 	// Horizontal scale
 	float meters_per_pixel_x = 1.0f;
@@ -99,7 +97,8 @@ private:
 	size_t get_height_index(uint16 x, uint16 y) const;
 	void generate_open_gl_buffers();
 
-	static void calculate_cell_dimensions_needed_for_uint16_index_buffer(uint32 width_px, uint32 length_px, uint32& output_cell_width_px,uint32& output_cell_length_px);
+	static std::vector<uint32_t> all_whole_denominators_sorted(uint32_t x); // todo move this into a utils header.
+	static void calculate_tile_dimensions_needed_for_uint16_index_buffer(uint32 width_px, uint32 length_px, uint32& output_tile_width_px,uint32& output_tile_length_px);
 	std::vector<vertex_types::vertex_3d> generate_vertex_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px) const;
 	static std::vector<uint32_t> generate_index_buffer_data(uint32 width, uint32 length); // todo: see if can change to uint16 later
 	static void set_min_and_max_height(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set);

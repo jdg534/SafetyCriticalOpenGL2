@@ -172,8 +172,6 @@ void terrain::initialise()
 		m_geo_tiff_height_info.height_max_meters = doc["height_max_meters"].GetFloat();
 	}
 
-	if (doc.HasMember("re_tile_squared_tile_distance_in_meters")) m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters = doc["re_tile_squared_tile_distance_in_meters"].GetFloat();
-
 	generate_open_gl_buffers();
 
 	m_splat_map_asset_name = doc["splat_map_asset_name"].GetString();
@@ -470,8 +468,9 @@ void terrain::generate_open_gl_buffers()
 	// TODO later if there's free time. use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
 	// To be done per cell.
 
-	// Note we're using uint32 indices, for higher range.
-	// we can use uint16 if it's 100x100 px.but that's to be done in a later refactor.
+	// Note we're using uint32 indices, this should be refactored to unit16 once tile rendering 
+
+	// TODO: the length isn't uniform per pixel. we'll need to update to account for that.
 
 	const uint32 tiff_width = m_geo_tiff_height_info.width;
 	const uint32 tiff_length = m_geo_tiff_height_info.length;
@@ -480,10 +479,12 @@ void terrain::generate_open_gl_buffers()
 	const float tiff_width_as_float = static_cast<float>(tiff_width);
 
 
-	uint32 mutable_cell_width_px = 0, mutable_cell_length_px = 0; // refactor this to be uint16 later.
-	calculate_cell_dimensions_needed_for_uint16_index_buffer(tiff_width, tiff_length, mutable_cell_width_px, mutable_cell_length_px); // REM want squares not strips.
-	const uint32 cell_width_px = mutable_cell_width_px;
-	const uint32 cell_length_px = mutable_cell_length_px;
+	uint32 mutable_tile_width_px = 0, mutable_tile_length_px = 0; // refactor this to be uint16 later.
+	calculate_tile_dimensions_needed_for_uint16_index_buffer(tiff_width, tiff_length, mutable_tile_width_px, mutable_tile_length_px); // REM want squares not strips.
+	const uint32 tile_width_px = mutable_tile_width_px;
+	const uint32 tile_length_px = mutable_tile_length_px;
+	const float tile_width_meters = static_cast<float>(tile_width_px) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float tile_length_meters = static_cast<float>(tile_length_px) * m_geo_tiff_height_info.meters_per_pixel_z;
 
 	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
 	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
@@ -493,43 +494,43 @@ void terrain::generate_open_gl_buffers()
 	const float net_north_to_south_in_meters = tiff_length_as_float * m_geo_tiff_height_info.meters_per_pixel_z; // ignoring latatude making pix Y axis non uniform for brevity.
 	const float net_west_to_east_in_meters = tiff_width_as_float * m_geo_tiff_height_info.meters_per_pixel_x;
 
-	assert(tiff_width % cell_width_px == 0);
-	assert(tiff_length % cell_length_px == 0);
-	const size_t cells_west_to_east = tiff_width / cell_width_px;
-	const size_t cells_north_to_south = tiff_length / cell_length_px;
+	assert(tiff_width % tile_width_px == 0);
+	assert(tiff_length % tile_length_px == 0);
+	const size_t tiles_west_to_east = tiff_width / tile_width_px;
+	const size_t tiles_north_to_south = tiff_length / tile_length_px;
 
-	const size_t n_cells_to_make = cells_west_to_east * cells_north_to_south;
+	const size_t n_tiles_to_make = tiles_west_to_east * tiles_north_to_south;
 
 
-	GLuint* vao_ids = new GLuint[n_cells_to_make];
-	glGenVertexArrays(n_cells_to_make, vao_ids);
-	GLuint* vertex_buffer_ids = new GLuint[n_cells_to_make];
-	glGenBuffers(n_cells_to_make, vertex_buffer_ids);
-	GLuint* index_buffer_ids = new GLuint[n_cells_to_make];
-	glGenBuffers(n_cells_to_make, index_buffer_ids);
+	GLuint* vao_ids = new GLuint[n_tiles_to_make];
+	glGenVertexArrays(n_tiles_to_make, vao_ids);
+	GLuint* vertex_buffer_ids = new GLuint[n_tiles_to_make];
+	glGenBuffers(n_tiles_to_make, vertex_buffer_ids);
+	GLuint* index_buffer_ids = new GLuint[n_tiles_to_make];
+	glGenBuffers(n_tiles_to_make, index_buffer_ids);
 
-	m_renderable_tiles.resize(n_cells_to_make);
-	for (uint32 i = 0; i < cells_north_to_south; ++i)
+	m_renderable_tiles.resize(n_tiles_to_make);
+	for (uint32 i = 0; i < tiles_north_to_south; ++i)
 	{
 		const float i_flt = static_cast<float>(i);
 		const float i_flt_plus_1 = i_flt + 1.0f;
-		for (uint32 j = 0; j < cells_west_to_east; ++j)
+		for (uint32 j = 0; j < tiles_west_to_east; ++j)
 		{
 			const float j_flt = static_cast<float>(j);
 			const float j_flt_plus_1 = j_flt + 1.0f;
 
-			const uint32 tile_index = j + (cells_west_to_east * i);
+			const uint32 tile_index = j + (tiles_west_to_east * i);
 			renderable_tile_area& to_set = m_renderable_tiles[tile_index];
-			to_set.north_edge_in_meters = far_north + (i_flt * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
-			to_set.west_edge_in_meters = far_west + (j_flt * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
-			to_set.south_edge_in_meters = far_north + (i_flt_plus_1 * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
-			to_set.east_edge_in_meters = far_west + (j_flt_plus_1 * m_geo_tiff_height_info.re_tile_squared_tile_distance_in_meters);
+			to_set.north_edge_in_meters = far_north + (i_flt * tile_length_meters);
+			to_set.west_edge_in_meters = far_west + (j_flt * tile_width_meters);
+			to_set.south_edge_in_meters = far_north + (i_flt_plus_1 * tile_length_meters);
+			to_set.east_edge_in_meters = far_west + (j_flt_plus_1 * tile_width_meters);
 
 			// determine the north, south, west, east px in the tiff bounds.
-			const uint32 north_tiff_px = cell_length_px * i;
-			const uint32 west_tiff_px = cell_width_px * j;
-			const uint32 south_tiff_px = cell_length_px * (i + 1);
-			const uint32 east_tiff_px = cell_width_px * (j + 1);
+			const uint32 north_tiff_px = tile_length_px * i;
+			const uint32 west_tiff_px = tile_width_px * j;
+			const uint32 south_tiff_px = tile_length_px * (i + 1);
+			const uint32 east_tiff_px = tile_width_px * (j + 1);
 
 			const std::vector<vertex_3d> vertex_buffer_data = generate_vertex_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px);
 			const std::vector<uint32_t> index_buffer_data = generate_index_buffer_data(east_tiff_px - west_tiff_px, south_tiff_px - north_tiff_px);
@@ -562,66 +563,64 @@ void terrain::generate_open_gl_buffers()
 	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, 0);
 }
 
-void terrain::calculate_cell_dimensions_needed_for_uint16_index_buffer(
+std::vector<uint32_t> terrain::all_whole_denominators_sorted(uint32_t x)
+{
+	using namespace std;
+	vector<uint32_t> results;
+	if (x == 0) return results; // 0 has infinitely many divisors, return empty
+	const uint32_t limit = static_cast<uint32_t>(sqrt(x));
+	for (uint32_t i = 1; i <= limit; ++i)
+	{
+		if (x % i == 0)
+		{
+			results.push_back(i);
+			uint32_t other = x / i;
+			if (other != i) results.push_back(other);
+		}
+	}
+	sort(begin(results), end(results));
+	return results;
+}
+
+void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
 	uint32 width_px,
 	uint32 length_px,
-	uint32& output_cell_width_px,
-	uint32& output_cell_length_px)
+	uint32& output_tile_width_px,
+	uint32& output_tile_length_px)
 {
-	constexpr uint32 max_vertices_to_support =
-		std::numeric_limits<uint16>::max();
+	using namespace std;
+	constexpr uint32 max_vertices_to_support = numeric_limits<uint16>::max();
 
 	// Basic validation
 	assert(width_px > 0);
 	assert(length_px > 0);
 
-	// Start with full terrain size
-	output_cell_width_px = width_px;
-	output_cell_length_px = length_px;
+	// Set to be 1x1 tile(s)
+	output_tile_width_px = width_px;
+	output_tile_length_px = length_px;
 
 	// If already fits, done.
-	if (static_cast<uint64>(width_px) *
-		static_cast<uint64>(length_px) <= max_vertices_to_support)
+	if (width_px * length_px <= max_vertices_to_support) return;
+
+	const vector<uint32> tile_widths = all_whole_denominators_sorted(width_px);
+	const vector<uint32> tile_lengths = all_whole_denominators_sorted(length_px);
+
+	const uint32 max_combinations = min(tile_widths.size(), tile_lengths.size());
+	for (uint32 i = 0; i < max_combinations; ++i)
 	{
-		return;
-	}
-
-	// We want the largest divisors that satisfy the constraint.
-	// Iterate over possible divisors of width and length.
-
-	uint32 best_width = 0;
-	uint32 best_length = 0;
-
-	for (uint32 w = 1; w <= width_px; ++w)
-	{
-		if (width_px % w != 0)
-			continue;
-
-		for (uint32 l = 1; l <= length_px; ++l)
+		// remember we want the overlap on the cell to the east and south.
+		const uint32 width_to_check = tile_widths[i] + 1;
+		const uint32 length_to_check = tile_lengths[i] + 1;
+		if ((width_to_check * length_to_check) + 4 <= max_vertices_to_support)
 		{
-			if (length_px % l != 0)
-				continue;
-
-			const uint64 vertex_count =
-				static_cast<uint64>(w) * static_cast<uint64>(l);
-
-			if (vertex_count <= max_vertices_to_support)
-			{
-				// Prefer largest area cell
-				if (vertex_count >
-					static_cast<uint64>(best_width) * best_length)
-				{
-					best_width = w;
-					best_length = l;
-				}
-			}
+			output_tile_width_px = tile_widths[i];
+			output_tile_length_px = tile_lengths[i];
+		}
+		else
+		{
+			return; // the values are sorted, we've stepped up to the limit.
 		}
 	}
-
-	assert(best_width > 0 && best_length > 0);
-
-	output_cell_width_px = best_width;
-	output_cell_length_px = best_length;
 }
 
 std::vector<vertex_types::vertex_3d> terrain::generate_vertex_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px) const
