@@ -539,7 +539,7 @@ void terrain::generate_open_gl_buffers()
 	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, 0);
 }
 
-std::vector<uint32_t> terrain::all_whole_denominators_sorted(uint32_t x)
+std::vector<uint32_t> terrain::get_all_whole_denominators_sorted(uint32_t x)
 {
 	using namespace std;
 	vector<uint32_t> results;
@@ -578,8 +578,8 @@ void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
 	// If already fits, done.
 	if (width_px * length_px <= max_vertices_to_support) return;
 
-	const vector<uint32> tile_widths = all_whole_denominators_sorted(width_px);
-	const vector<uint32> tile_lengths = all_whole_denominators_sorted(length_px);
+	const vector<uint32> tile_widths = get_all_whole_denominators_sorted(width_px);
+	const vector<uint32> tile_lengths = get_all_whole_denominators_sorted(length_px);
 
 	const uint32 max_combinations = min(tile_widths.size(), tile_lengths.size());
 	for (uint32 i = 0; i < max_combinations; ++i)

@@ -97,7 +97,7 @@ private:
 	size_t get_height_index(uint16 x, uint16 y) const;
 	void generate_open_gl_buffers();
 
-	static std::vector<uint32_t> all_whole_denominators_sorted(uint32_t x); // todo move this into a utils header.
+	static std::vector<uint32_t> get_all_whole_denominators_sorted(uint32_t x);
 	static void calculate_tile_dimensions_needed_for_uint16_index_buffer(uint32 width_px, uint32 length_px, uint32& output_tile_width_px,uint32& output_tile_length_px);
 	void generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint32_t>& out_index_buffer) const;
 	
