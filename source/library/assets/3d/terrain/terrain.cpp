@@ -465,18 +465,15 @@ void terrain::generate_open_gl_buffers()
 	using namespace vertex_types;
 	using namespace gl;
 
-	// TODO later if there's free time. use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
-	// To be done per cell.
-
-	// Note we're using uint32 indices, this should be refactored to unit16 once tile rendering 
+	// TODO: later if coming back to the project. use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
 
 	// TODO: the length isn't uniform per pixel. we'll need to update to account for that.
 
 	const uint32 tiff_width = m_geo_tiff_height_info.width;
 	const uint32 tiff_length = m_geo_tiff_height_info.length;
 
-	uint32 mutable_tile_width_px = 0, mutable_tile_length_px = 0; // refactor this to be uint16 later.
-	calculate_tile_dimensions_needed_for_uint16_index_buffer(tiff_width, tiff_length, mutable_tile_width_px, mutable_tile_length_px); // REM want squares not strips.
+	uint32 mutable_tile_width_px = 0, mutable_tile_length_px = 0;
+	calculate_tile_dimensions_needed_for_uint16_index_buffer(tiff_width, tiff_length, mutable_tile_width_px, mutable_tile_length_px);
 	const uint32 tile_width_px = mutable_tile_width_px;
 	const uint32 tile_length_px = mutable_tile_length_px;
 
@@ -495,7 +492,7 @@ void terrain::generate_open_gl_buffers()
 
 	m_renderable_tiles.resize(n_tiles_to_make);
 
-	vector<vertex_3d> vertex_buffer_data; // declared outside the loop to avoid thrashing the stack.
+	vector<terrain_vertex> vertex_buffer_data; // declared outside the loop to avoid thrashing the stack.
 	vector<uint16_t> index_buffer_data;
 
 	for (uint32 i = 0; i < tiles_north_to_south; ++i)
@@ -568,8 +565,8 @@ void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
 	constexpr uint32 max_vertices_to_support = numeric_limits<uint16>::max();
 
 	// Basic validation
-	assert(width_px > 0);
-	assert(length_px > 0);
+	assert(width_px > 1);
+	assert(length_px > 1);
 
 	// Set to be 1x1 tile(s)
 	output_tile_width_px = width_px;
@@ -599,7 +596,7 @@ void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
 	}
 }
 
-void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::vertex_3d>& out_vertex_buffer, std::vector<uint16_t>& out_index_buffer) const
+void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::terrain_vertex>& out_vertex_buffer, std::vector<uint16_t>& out_index_buffer) const
 {
 	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
 	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
@@ -609,19 +606,22 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
 
 	// this would be static but want to read from the tiff
-	const uint32 width = tiff_east_px - tiff_west_px;
-	const uint32 length = tiff_south_px - tiff_north_px;
-	const size_t area = width * length;
-	out_vertex_buffer.resize(area);
-	for (uint32 i = 0; i < length; ++i)
+	const uint32 tile_width = tiff_east_px - tiff_west_px;
+	const uint32 tile_length = tiff_south_px - tiff_north_px;
+	const size_t tile_area = tile_width * tile_length;
+	out_vertex_buffer.resize(tile_area);
+	for (uint32 i = 0; i < tile_length; ++i)
 	{
-		for (uint32 j = 0; j < width; ++j)
+		for (uint32 j = 0; j < tile_width; ++j)
 		{
-			const int vertex_buffer_index_offset = (i * width) + j;
+			const int vertex_buffer_index_offset = (i * tile_width) + j;
 			assert(vertex_buffer_index_offset < out_vertex_buffer.size());
 
 			const size_t current_px_j = (tiff_west_px + j);
 			const size_t current_px_i = (tiff_north_px + i);
+
+			const float current_px_j_as_float = static_cast<float>(current_px_j);
+			const float current_px_i_as_float = static_cast<float>(current_px_i);
 
 			const size_t left_px = current_px_j - 1;
 			const size_t above_px = current_px_i - 1;
@@ -641,8 +641,11 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 			out_vertex_buffer[vertex_buffer_index_offset].position.x = far_west + (current_px_j * m_geo_tiff_height_info.meters_per_pixel_x);
 			out_vertex_buffer[vertex_buffer_index_offset].position.y = current_px_height;
 			out_vertex_buffer[vertex_buffer_index_offset].position.z = far_north + (current_px_i * m_geo_tiff_height_info.meters_per_pixel_z);
-			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.x = static_cast<float>(current_px_j) / tiff_width_as_float;
-			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (static_cast<float>(current_px_i) / tiff_length_as_float);
+			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.x = current_px_j_as_float / tiff_width_as_float;
+			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (current_px_i_as_float / tiff_length_as_float);
+
+			out_vertex_buffer[vertex_buffer_index_offset].terrain_texture_coordinates.x = current_px_j_as_float;
+			out_vertex_buffer[vertex_buffer_index_offset].terrain_texture_coordinates.y = current_px_i_as_float;
 
 			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
 			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
@@ -651,17 +654,17 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 	}
 	out_index_buffer.clear();
 
-	const size_t quad_count = (width - 1) * (length - 1);
+	const size_t quad_count = (tile_width - 1) * (tile_length - 1);
 	out_index_buffer.reserve(quad_count * 6);
 
-	for (uint32 y = 0; y < length - 1; ++y)
+	for (uint32 y = 0; y < tile_length - 1; ++y)
 	{
-		for (uint32 x = 0; x < width - 1; ++x)
+		for (uint32 x = 0; x < tile_width - 1; ++x)
 		{
-			uint32 i0 = y * width + x;
-			uint32 i1 = y * width + (x + 1);
-			uint32 i2 = (y + 1) * width + x;
-			uint32 i3 = (y + 1) * width + (x + 1);
+			uint32 i0 = y * tile_width + x;
+			uint32 i1 = y * tile_width + (x + 1);
+			uint32 i2 = (y + 1) * tile_width + x;
+			uint32 i3 = (y + 1) * tile_width + (x + 1);
 
 			out_index_buffer.push_back(i0);
 			out_index_buffer.push_back(i2);
@@ -674,7 +677,7 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 	}
 }
 
-void terrain::set_tile_bounds(const std::vector<vertex_types::vertex_3d>& vertices, renderable_tile_area& to_set)
+void terrain::set_tile_bounds(const std::vector<vertex_types::terrain_vertex>& vertices, renderable_tile_area& to_set)
 {
 	to_set.north_edge_in_meters = -FLT_MAX;
 	to_set.south_edge_in_meters = FLT_MAX;
@@ -696,15 +699,18 @@ void terrain::set_tile_bounds(const std::vector<vertex_types::vertex_3d>& vertic
 
 void terrain::setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id)
 {
+	using namespace gl;
 	using namespace vertex_types;
-	gl::glBindVertexArray(vertex_attrib_array_id);
-	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal
-	gl::glEnableVertexAttribArray(0);
-	gl::glVertexAttribPointer(0, 3, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, position));
-	gl::glEnableVertexAttribArray(1);
-	gl::glVertexAttribPointer(1, 2, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, texture_coordinates));
-	gl::glEnableVertexAttribArray(2);
-	gl::glVertexAttribPointer(2, 3, gl::GL_FLOAT, gl::GL_FALSE, vertex3d_struct_size, (void*)offsetof(vertex_3d, normal));
+	glBindVertexArray(vertex_attrib_array_id);
+	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal, 3 = terrain_uv
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, position));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, texture_coordinates));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, normal));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, terrain_texture_coordinates));
 }
 
 void terrain::check_referenced_textures_are_valid()

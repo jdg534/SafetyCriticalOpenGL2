@@ -11,7 +11,7 @@ namespace vertex_types
 		glm::vec2 position;
 		glm::vec2 texture_coordinates;
 	};
-	static constexpr size_t vertex2d_struct_size = sizeof(vertex_2d); // TODO: refactor name.
+	static constexpr size_t vertex2d_struct_size = sizeof(vertex_2d);
 
 	struct vertex_3d
 	{
@@ -19,9 +19,15 @@ namespace vertex_types
 		glm::vec2 texture_coordinates;
 		glm::vec3 normal;
 	};
-	static constexpr size_t vertex3d_struct_size = sizeof(vertex_3d); // TODO: refactor name.
+	static constexpr size_t vertex3d_struct_size = sizeof(vertex_3d);
 
-	// rigged geomentry later if coming back to the project
+	struct terrain_vertex : public vertex_3d
+	{
+		glm::vec2 terrain_texture_coordinates;
+	};
+	static constexpr size_t terrain_vertex_struct_size = sizeof(terrain_vertex);
+
+	// rigged geomentry later if coming back to the project and that's a goal.
 }
 
 #endif // _VERTEXT_TYPES_H_

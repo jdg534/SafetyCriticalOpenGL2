@@ -58,12 +58,20 @@ void renderable_terrain::draw()
 	glBindTexture(GL_TEXTURE_2D, terrain->get_splat_map_texture_id());
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, terrain->get_red_channel_mapped_texture_texture_id());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, terrain->get_green_channel_mapped_texture_texture_id());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, terrain->get_blue_channel_mapped_texture_texture_id());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, terrain->get_alpha_channel_mapped_texture_texture_id());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	glUniform1i(u_splat_map_location, 0); // 0 as in GL_TEXTURE0
 	glUniform1i(u_red_channel_diffuse_map_location, 1);
@@ -93,6 +101,8 @@ void renderable_terrain::draw()
 	for (auto texture_slot_index : { GL_TEXTURE0,GL_TEXTURE1,GL_TEXTURE2,GL_TEXTURE3,GL_TEXTURE4 })
 	{
 		glActiveTexture(texture_slot_index);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	glBindVertexArray(0); // clear the vertex array.

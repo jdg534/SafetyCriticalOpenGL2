@@ -11,10 +11,12 @@ uniform mat4 u_projection;
 layout(location = 0) in vec3 vs_in_position;
 layout(location = 1) in vec2 vs_in_uv;
 layout(location = 2) in vec3 vs_in_normal;
+layout(location = 3) in vec2 vs_in_terrain_uv;
 
 out vec3 vs_out_world_position;
 out vec2 vs_out_uv;
 out vec3 vs_out_normal;
+out vec2 vs_out_terrain_uv;
 
 void main()
 {
@@ -22,6 +24,7 @@ void main()
     vs_out_world_position = world_position.xyz;
     vs_out_normal = mat3(transpose(inverse(u_model))) * vs_in_normal;
     vs_out_uv = vs_in_uv;
+    vs_out_terrain_uv = vs_in_terrain_uv;
 
     gl_Position = u_projection * u_view * world_position;
 }
@@ -42,6 +45,7 @@ uniform vec3      u_ambient_light_colour; // light colour
 in vec3 vs_out_world_position;
 in vec2 vs_out_uv;
 in vec3 vs_out_normal;
+in vec2 vs_out_terrain_uv;
 
 out vec4 fs_out_frag_color;
 
@@ -59,10 +63,10 @@ void main()
     vec3 combined_light_colour = ambient_light_colour + diffuse_light_colour;
 
     vec4 combined_diffuse_colour =
-      texture(u_red_channel_diffuse_map, vs_out_uv) * weights.r +
-      texture(u_green_channel_diffuse_map, vs_out_uv) * weights.g +
-      texture(u_blue_channel_diffuse_map, vs_out_uv) * weights.b +
-      texture(u_alpha_channel_diffuse_map, vs_out_uv) * weights.a;
+      texture(u_red_channel_diffuse_map, vs_out_terrain_uv) * weights.r +
+      texture(u_green_channel_diffuse_map, vs_out_terrain_uv) * weights.g +
+      texture(u_blue_channel_diffuse_map, vs_out_terrain_uv) * weights.b +
+      texture(u_alpha_channel_diffuse_map, vs_out_terrain_uv) * weights.a;
 
     vec4 surface_colour = vec4(combined_diffuse_colour.rgb * combined_light_colour, combined_diffuse_colour.a);
     fs_out_frag_color = surface_colour;
