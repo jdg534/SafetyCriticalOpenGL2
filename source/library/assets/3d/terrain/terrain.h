@@ -33,7 +33,7 @@ struct geo_tiff_height_info
 	float meters_per_pixel_z = 1.0f; // length, positive Z points North.
 	float pixel_vertical_units_scale = 1.0f;
 
-	// the following are only to be used if raw values can't be used for height.
+	// the following are only to be used if raw values can't be used for height. refactor these out. We'll want raw floats
 	bool use_raw_height_value = false;
 	float height_min_meters = 0.0;
 	float height_max_meters = 100.0;
@@ -70,8 +70,8 @@ public:
 
 
 	const geo_tiff_height_info& get_height_info() const;
-	float get_tiff_height_at(uint16 x, uint16 y) const;
-	float get_height_range_value_at(uint16 x, uint16 y) const;
+	float get_tiff_height_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
+	float get_height_range_value_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
 	float get_height_at(float x_world_space, float z_world_space) const;
 
 	const std::vector<renderable_tile_area>& get_renderable_tiles() const;
@@ -92,7 +92,7 @@ private:
 	static void flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length);
 	static float calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 image_height, float pixel_latitude_scale_degrees);
 
-	size_t get_height_index(uint16 x, uint16 y) const;
+	uint64 get_height_index(uint16 x_tiff_pixels, uint16 y_tiff_pixels) const;
 	void generate_open_gl_buffers();
 
 	static std::vector<uint32_t> get_all_whole_denominators_sorted(uint32_t x);

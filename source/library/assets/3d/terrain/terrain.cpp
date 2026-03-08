@@ -215,21 +215,21 @@ const geo_tiff_height_info& terrain::get_height_info() const
 	return m_geo_tiff_height_info;
 }
 
-float terrain::get_tiff_height_at(uint16 x, uint16 y) const
+float terrain::get_tiff_height_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const
 {
-	const size_t index = get_height_index(x, y);
+	const size_t index = get_height_index(x_tiff_pixels, y_tiff_pixels);
 	assert(index < m_heights.size());
 	return m_heights[index];
 }
 
-float terrain::get_height_range_value_at(uint16 x, uint16 y) const
+float terrain::get_height_range_value_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const
 {
 	if (m_geo_tiff_height_info.use_raw_height_value) // if this flag is set, then values aren't normalised and aren't in range 0.0f to 1.0f (not meant to be lerped)
 	{
-		return get_tiff_height_at(x, y);
+		return get_tiff_height_at(x_tiff_pixels, y_tiff_pixels);
 	}
 	// because the heights are converted to 0.0 to 1.0f, we can just lerp
-	return glm::lerp(m_geo_tiff_height_info.height_min_meters, m_geo_tiff_height_info.height_max_meters, get_tiff_height_at(x, y));
+	return glm::lerp(m_geo_tiff_height_info.height_min_meters, m_geo_tiff_height_info.height_max_meters, get_tiff_height_at(x_tiff_pixels, y_tiff_pixels));
 }
 
 float terrain::get_height_at(float x_world_space, float z_world_space) const
@@ -454,9 +454,11 @@ float terrain::calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 
 	return tie_latitude - (image_height * 0.5 * pixel_latitude_scale_degrees);
 }
 
-size_t terrain::get_height_index(uint16 x, uint16 y) const
+uint64 terrain::get_height_index(uint16 x_tiff_pixels, uint16 y_tiff_pixels) const
 {
-	return (m_geo_tiff_height_info.width * y) + x;
+	uint64 results = (m_geo_tiff_height_info.width * y_tiff_pixels) + x_tiff_pixels;
+	assert(results >= y_tiff_pixels && results>= x_tiff_pixels);
+	return results;
 }
 
 void terrain::generate_open_gl_buffers()
