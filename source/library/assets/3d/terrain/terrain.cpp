@@ -609,6 +609,7 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 	const uint32 tile_width = tiff_east_px - tiff_west_px;
 	const uint32 tile_length = tiff_south_px - tiff_north_px;
 	const size_t tile_area = tile_width * tile_length;
+	assert(tile_area <= std::numeric_limits<uint16_t>::max());
 	out_vertex_buffer.resize(tile_area);
 	for (uint32 i = 0; i < tile_length; ++i)
 	{
@@ -645,7 +646,7 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (current_px_i_as_float / tiff_length_as_float);
 
 			out_vertex_buffer[vertex_buffer_index_offset].terrain_texture_coordinates.x = current_px_j_as_float;
-			out_vertex_buffer[vertex_buffer_index_offset].terrain_texture_coordinates.y = current_px_i_as_float;
+			out_vertex_buffer[vertex_buffer_index_offset].terrain_texture_coordinates.y = tiff_length_as_float - current_px_i_as_float;
 
 			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
 			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
@@ -661,10 +662,10 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 	{
 		for (uint32 x = 0; x < tile_width - 1; ++x)
 		{
-			uint32 i0 = y * tile_width + x;
-			uint32 i1 = y * tile_width + (x + 1);
-			uint32 i2 = (y + 1) * tile_width + x;
-			uint32 i3 = (y + 1) * tile_width + (x + 1);
+			uint16 i0 = y * tile_width + x;
+			uint16 i1 = y * tile_width + (x + 1);
+			uint16 i2 = (y + 1) * tile_width + x;
+			uint16 i3 = (y + 1) * tile_width + (x + 1);
 
 			out_index_buffer.push_back(i0);
 			out_index_buffer.push_back(i2);
