@@ -624,20 +624,21 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 			const float current_px_j_as_float = static_cast<float>(current_px_j);
 			const float current_px_i_as_float = static_cast<float>(current_px_i);
 
-			const size_t left_px = current_px_j - 1;
-			const size_t above_px = current_px_i - 1;
-			const size_t right_px = current_px_j + 1;
-			const size_t below_px = current_px_i + 1;
 			const bool got_left_px = current_px_j > 0;
 			const bool got_above_px = current_px_i > 0;
-			const bool got_right_px = right_px < m_geo_tiff_height_info.width;
-			const bool got_below_px = below_px < m_geo_tiff_height_info.length;
+			const bool got_right_px = (current_px_j + 1) < m_geo_tiff_height_info.width;
+			const bool got_below_px = (current_px_i + 1) < m_geo_tiff_height_info.length;
+
+			const size_t left_px = got_left_px ? current_px_j - 1 : current_px_j;
+			const size_t above_px = got_above_px ? current_px_i - 1 : current_px_i;
+			const size_t right_px = got_right_px ? current_px_j + 1 : current_px_j;
+			const size_t below_px = got_below_px ? current_px_i + 1 : current_px_i;
 
 			const float current_px_height = get_height_range_value_at(current_px_j, current_px_i);
-			const float above_px_height = got_above_px ? get_height_range_value_at(current_px_j, above_px) : current_px_height;
-			const float left_px_height = got_left_px ? get_height_range_value_at(left_px, current_px_i) : current_px_height;
-			const float right_px_height = got_right_px ? get_height_range_value_at(right_px, current_px_i) : current_px_height;
-			const float below_px_height = got_below_px ? get_height_range_value_at(current_px_j, below_px) : current_px_height;
+			const float above_px_height = get_height_range_value_at(current_px_j, above_px);
+			const float left_px_height = get_height_range_value_at(left_px, current_px_i);
+			const float right_px_height = get_height_range_value_at(right_px, current_px_i);
+			const float below_px_height = get_height_range_value_at(current_px_j, below_px);
 
 			out_vertex_buffer[vertex_buffer_index_offset].position.x = far_west + (current_px_j * m_geo_tiff_height_info.meters_per_pixel_x);
 			out_vertex_buffer[vertex_buffer_index_offset].position.y = current_px_height;
