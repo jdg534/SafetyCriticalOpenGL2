@@ -11,5 +11,10 @@ textures/granite.png,?,https://patternpanda.org/tex/stone1/stone-granite-4-TEX.p
 textures/plain_white.png,Josh Gibson,made in paint.net
 textures/plain_transparent.png,Josh Gibson,made in paint.net
 models/grass_cube.obj,models/grass_cube.mtl,Josh Gibson, made in Blender
-terrain/umbra_mount_yasur.tiff,Geotif's creatores,https://github.com/GeoTIFF/test-data
-terrain/umbra_mount_yasur_splatmap.png,Josh Gibson,made in paint.net
+terrain/isle_of_man.terrain,Josh Gibson,Made in notepad++
+terrain/isle_of_man.tif,...,sourced from COP 30 data in opentopography.org
+terrain/isle_of_man_splatmap.png,Josh Gibson,Made in paint.net
+terrain/st_helena.terrain,Josh Gibson,Made in notepad++
+terrain/st_helena_color_relief.tif,...,sourced from COP 30 data in opentopography.org
+terrain/st_helena_hillshade.tif,...,sourced from COP 30 data in opentopography.org
+terrain/st_helena_splatmap.png,Josh Gibson,Made in paint.net

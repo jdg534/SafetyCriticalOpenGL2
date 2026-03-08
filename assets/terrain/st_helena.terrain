@@ -1,0 +1,8 @@
+{
+	"height_map": "st_helena_hillshade.tif",
+	"splat_map_asset_name": "st_helena_splat_map",
+	"red_channel_mapped_texture_asset_name":"granite_texture",
+	"green_channel_mapped_texture_asset_name":"grass_texture",
+	"blue_channel_mapped_texture_asset_name":"soil_texture",
+	"alpha_channel_mapped_texture_asset_name":"plain_transparent"
+}
