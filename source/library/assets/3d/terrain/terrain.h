@@ -71,7 +71,7 @@ public:
 
 	const geo_tiff_height_info& get_height_info() const;
 	float get_tiff_height_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
-	float get_height_range_value_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
+	float get_height_range_value_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const; // refactor!
 	float get_height_at(float x_world_space, float z_world_space) const;
 
 	const std::vector<renderable_tile_area>& get_renderable_tiles() const;
@@ -98,6 +98,7 @@ private:
 	static std::vector<uint32_t> get_all_whole_denominators_sorted(uint32_t x);
 	static void calculate_tile_dimensions_needed_for_uint16_index_buffer(uint32 width_px, uint32 length_px, uint32& output_tile_width_px,uint32& output_tile_length_px);
 	void generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::terrain_vertex>& out_vertex_buffer, std::vector<uint16_t>& out_index_buffer) const;
+	vertex_types::terrain_vertex get_vertex_for_tiff_pixel(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
 	
 	static void set_tile_bounds(const std::vector<vertex_types::terrain_vertex>& vertices, renderable_tile_area& to_set);
 

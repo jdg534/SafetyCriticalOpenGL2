@@ -467,7 +467,8 @@ void terrain::generate_open_gl_buffers()
 	using namespace vertex_types;
 	using namespace gl;
 
-	// TODO: later if coming back to the project. use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
+	// TODO: Use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
+	// Since the tileing keeps coming out wrong and it's probably the index buffer, the different approach "might fix it.".
 
 	// TODO: the length isn't uniform per pixel. we'll need to update to account for that.
 
@@ -600,13 +601,6 @@ void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
 
 void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::terrain_vertex>& out_vertex_buffer, std::vector<uint16_t>& out_index_buffer) const
 {
-	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
-	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
-
-	// the top north west corner
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
-
 	// this would be static but want to read from the tiff
 	const uint32 tile_width = tiff_east_px - tiff_west_px;
 	const uint32 tile_length = tiff_south_px - tiff_north_px;
@@ -622,38 +616,7 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 
 			const size_t current_px_j = (tiff_west_px + j);
 			const size_t current_px_i = (tiff_north_px + i);
-
-			const float current_px_j_as_float = static_cast<float>(current_px_j);
-			const float current_px_i_as_float = static_cast<float>(current_px_i);
-
-			const bool got_left_px = current_px_j > 0;
-			const bool got_above_px = current_px_i > 0;
-			const bool got_right_px = (current_px_j + 1) < m_geo_tiff_height_info.width;
-			const bool got_below_px = (current_px_i + 1) < m_geo_tiff_height_info.length;
-
-			const size_t left_px = got_left_px ? current_px_j - 1 : current_px_j;
-			const size_t above_px = got_above_px ? current_px_i - 1 : current_px_i;
-			const size_t right_px = got_right_px ? current_px_j + 1 : current_px_j;
-			const size_t below_px = got_below_px ? current_px_i + 1 : current_px_i;
-
-			const float current_px_height = get_height_range_value_at(current_px_j, current_px_i);
-			const float above_px_height = get_height_range_value_at(current_px_j, above_px);
-			const float left_px_height = get_height_range_value_at(left_px, current_px_i);
-			const float right_px_height = get_height_range_value_at(right_px, current_px_i);
-			const float below_px_height = get_height_range_value_at(current_px_j, below_px);
-
-			out_vertex_buffer[vertex_buffer_index_offset].position.x = far_west + (current_px_j * m_geo_tiff_height_info.meters_per_pixel_x);
-			out_vertex_buffer[vertex_buffer_index_offset].position.y = current_px_height;
-			out_vertex_buffer[vertex_buffer_index_offset].position.z = far_north + (current_px_i * m_geo_tiff_height_info.meters_per_pixel_z);
-			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.x = current_px_j_as_float / tiff_width_as_float;
-			out_vertex_buffer[vertex_buffer_index_offset].texture_coordinates.y = 1.0f - (current_px_i_as_float / tiff_length_as_float);
-
-			out_vertex_buffer[vertex_buffer_index_offset].terrain_texture_coordinates.x = current_px_j_as_float;
-			out_vertex_buffer[vertex_buffer_index_offset].terrain_texture_coordinates.y = tiff_length_as_float - current_px_i_as_float;
-
-			const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
-			const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
-			out_vertex_buffer[vertex_buffer_index_offset].normal = glm::normalize(glm::cross(dy, dx));
+			out_vertex_buffer[vertex_buffer_index_offset] = get_vertex_for_tiff_pixel(current_px_j, current_px_i); 
 		}
 	}
 	out_index_buffer.clear();
@@ -665,10 +628,15 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 	{
 		for (uint32 x = 0; x < tile_width - 1; ++x)
 		{
-			uint16 i0 = y * tile_width + x;
-			uint16 i1 = y * tile_width + (x + 1);
-			uint16 i2 = (y + 1) * tile_width + x;
-			uint16 i3 = (y + 1) * tile_width + (x + 1);
+			const uint16 i0 = y * tile_width + x;
+			const uint16 i1 = y * tile_width + (x + 1);
+			const uint16 i2 = (y + 1) * tile_width + x;
+			const uint16 i3 = (y + 1) * tile_width + (x + 1);
+
+			assert(i0 >= y && i0 >= x);
+			assert(i1 >= y && i1 >= x);
+			assert(i2 >= y && i2 >= x);
+			assert(i3 >= y && i3 >= x);
 
 			out_index_buffer.push_back(i0);
 			out_index_buffer.push_back(i2);
@@ -681,14 +649,60 @@ void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, u
 	}
 }
 
+vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const
+{
+	vertex_types::terrain_vertex result;
+	std::memset(&result, 0, vertex_types::terrain_vertex_struct_size);
+
+	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
+	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
+
+	// the top north west corner
+	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
+
+	const float x_tiff_pixels_as_float = static_cast<float>(x_tiff_pixels);
+	const float y_tiff_pixels_as_float = static_cast<float>(y_tiff_pixels);
+
+	const bool got_left_px = x_tiff_pixels > 0;
+	const bool got_above_px = y_tiff_pixels > 0;
+	const bool got_right_px = (x_tiff_pixels + 1) < m_geo_tiff_height_info.width;
+	const bool got_below_px = (y_tiff_pixels + 1) < m_geo_tiff_height_info.length;
+
+	const uint64 left_px = got_left_px ? x_tiff_pixels - 1 : x_tiff_pixels;
+	const uint64 above_px = got_above_px ? y_tiff_pixels - 1 : y_tiff_pixels;
+	const uint64 right_px = got_right_px ? x_tiff_pixels + 1 : x_tiff_pixels;
+	const uint64 below_px = got_below_px ? y_tiff_pixels + 1 : y_tiff_pixels;
+
+	const float current_px_height = get_height_range_value_at(x_tiff_pixels, y_tiff_pixels);
+	const float above_px_height = get_height_range_value_at(y_tiff_pixels, above_px);
+	const float left_px_height = get_height_range_value_at(left_px, y_tiff_pixels);
+	const float right_px_height = get_height_range_value_at(right_px, y_tiff_pixels);
+	const float below_px_height = get_height_range_value_at(y_tiff_pixels, below_px);
+
+	result.position.x = far_west + (x_tiff_pixels * m_geo_tiff_height_info.meters_per_pixel_x);
+	result.position.y = current_px_height;
+	result.position.z = far_north + (y_tiff_pixels * m_geo_tiff_height_info.meters_per_pixel_z);
+	result.texture_coordinates.x = x_tiff_pixels_as_float / tiff_width_as_float;
+	result.texture_coordinates.y = 1.0f - (y_tiff_pixels_as_float / tiff_length_as_float);
+
+	result.terrain_texture_coordinates.x = x_tiff_pixels_as_float;
+	result.terrain_texture_coordinates.y = tiff_length_as_float - y_tiff_pixels_as_float;
+
+	const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
+	const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
+	result.normal = glm::normalize(glm::cross(dy, dx));
+	return result;
+}
+
 void terrain::set_tile_bounds(const std::vector<vertex_types::terrain_vertex>& vertices, renderable_tile_area& to_set)
 {
-	to_set.north_edge_in_meters = -FLT_MAX;
-	to_set.south_edge_in_meters = FLT_MAX;
-	to_set.west_edge_in_meters = FLT_MAX;
-	to_set.east_edge_in_meters = -FLT_MAX;
+	to_set.north_edge_in_meters     = -FLT_MAX;
+	to_set.south_edge_in_meters     =  FLT_MAX;
+	to_set.west_edge_in_meters      =  FLT_MAX;
+	to_set.east_edge_in_meters      = -FLT_MAX;
 	to_set.heighest_point_in_meters = -FLT_MAX;
-	to_set.lowest_point_in_meters = FLT_MAX;
+	to_set.lowest_point_in_meters   =  FLT_MAX;
 
 	for (const auto& vertex : vertices)
 	{
