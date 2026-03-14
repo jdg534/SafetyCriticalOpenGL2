@@ -222,16 +222,6 @@ float terrain::get_tiff_height_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) co
 	return m_heights[index];
 }
 
-float terrain::get_height_range_value_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const
-{
-	if (m_geo_tiff_height_info.use_raw_height_value) // if this flag is set, then values aren't normalised and aren't in range 0.0f to 1.0f (not meant to be lerped)
-	{
-		return get_tiff_height_at(x_tiff_pixels, y_tiff_pixels);
-	}
-	// because the heights are converted to 0.0 to 1.0f, we can just lerp
-	return glm::lerp(m_geo_tiff_height_info.height_min_meters, m_geo_tiff_height_info.height_max_meters, get_tiff_height_at(x_tiff_pixels, y_tiff_pixels));
-}
-
 float terrain::get_height_at(float x_world_space, float z_world_space) const
 {
 	// treat x+ as west to east
@@ -257,13 +247,13 @@ float terrain::get_height_at(float x_world_space, float z_world_space) const
 	const float x_weight = position_in_tiff_x - std::floorf(position_in_tiff_x);
 	const float z_weight = position_in_tiff_z - std::floorf(position_in_tiff_z);
 
-	const uint16 x_cell = static_cast<uint16>(std::floorf(position_in_tiff_x));
-	const uint16 z_cell = static_cast<uint16>(std::floorf(position_in_tiff_z));
-	const uint16 x_cell_east = x_cell + 1;
-	const uint16 z_cell_south = z_cell + 1;
+	const uint16 x_tiff_pixel_west = static_cast<uint16>(std::floorf(position_in_tiff_x));
+	const uint16 y_tiff_pixel_north = static_cast<uint16>(std::floorf(position_in_tiff_z));
+	const uint16 x_tiff_pixel_east = x_tiff_pixel_west + 1;
+	const uint16 y_tiff_pixel_south = y_tiff_pixel_north + 1;
 
-	const float x_north = glm::lerp(get_height_range_value_at(x_cell, z_cell), get_height_range_value_at(x_cell_east, z_cell), x_weight);
-	const float x_south = glm::lerp(get_height_range_value_at(x_cell, z_cell_south), get_height_range_value_at(x_cell_east, z_cell_south), x_weight);
+	const float x_north = glm::lerp(get_tiff_height_at(x_tiff_pixel_west, y_tiff_pixel_north), get_tiff_height_at(x_tiff_pixel_east, y_tiff_pixel_north), x_weight);
+	const float x_south = glm::lerp(get_tiff_height_at(x_tiff_pixel_west, y_tiff_pixel_south), get_tiff_height_at(x_tiff_pixel_east, y_tiff_pixel_south), x_weight);
 	return glm::lerp(x_north, x_south, z_weight);
 }
 
@@ -528,6 +518,9 @@ void terrain::generate_open_gl_buffers()
 			glBindBuffer(GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
 			glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
 			to_set.num_indices_to_draw = index_buffer_data.size();
+
+			vertex_buffer_data.clear();
+			index_buffer_data.clear();
 		}
 	}
 
@@ -674,11 +667,11 @@ vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pi
 	const uint64 right_px = got_right_px ? x_tiff_pixels + 1 : x_tiff_pixels;
 	const uint64 below_px = got_below_px ? y_tiff_pixels + 1 : y_tiff_pixels;
 
-	const float current_px_height = get_height_range_value_at(x_tiff_pixels, y_tiff_pixels);
-	const float above_px_height = get_height_range_value_at(y_tiff_pixels, above_px);
-	const float left_px_height = get_height_range_value_at(left_px, y_tiff_pixels);
-	const float right_px_height = get_height_range_value_at(right_px, y_tiff_pixels);
-	const float below_px_height = get_height_range_value_at(y_tiff_pixels, below_px);
+	const float current_px_height = get_tiff_height_at(x_tiff_pixels, y_tiff_pixels);
+	const float above_px_height = get_tiff_height_at(y_tiff_pixels, above_px);
+	const float left_px_height = get_tiff_height_at(left_px, y_tiff_pixels);
+	const float right_px_height = get_tiff_height_at(right_px, y_tiff_pixels);
+	const float below_px_height = get_tiff_height_at(y_tiff_pixels, below_px);
 
 	result.position.x = far_west + (x_tiff_pixels * m_geo_tiff_height_info.meters_per_pixel_x);
 	result.position.y = current_px_height;
