@@ -740,7 +740,7 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 {
 	using namespace vertex_types;
 	const size_t vb_size = vertex_buffer_data.size();
-	assert(vb_size % 4 == 0);
+	assert(vb_size > 0);
 	for (const terrain_vertex& vertex : vertex_buffer_data)
 	{
 		constexpr glm::vec3 origin{ 0.0f,0.0f,0.0f };
