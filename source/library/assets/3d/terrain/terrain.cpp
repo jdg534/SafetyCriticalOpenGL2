@@ -516,7 +516,7 @@ void terrain::generate_open_gl_buffers()
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint16_t), index_buffer_data.data(), GL_STATIC_DRAW);
 			setup_vertex_attrib_array(to_set.vertex_array_object_id);
 			glBindBuffer(GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
-			glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * vertex3d_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * terrain_vertex_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
 			to_set.num_indices_to_draw = index_buffer_data.size();
 
 			vertex_buffer_data.clear();
