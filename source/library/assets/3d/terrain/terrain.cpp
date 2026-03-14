@@ -668,10 +668,10 @@ vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pi
 	const uint64 below_px = got_below_px ? y_tiff_pixels + 1 : y_tiff_pixels;
 
 	const float current_px_height = get_tiff_height_at(x_tiff_pixels, y_tiff_pixels);
-	const float above_px_height = get_tiff_height_at(y_tiff_pixels, above_px);
+	const float above_px_height = get_tiff_height_at(x_tiff_pixels, above_px);
 	const float left_px_height = get_tiff_height_at(left_px, y_tiff_pixels);
 	const float right_px_height = get_tiff_height_at(right_px, y_tiff_pixels);
-	const float below_px_height = get_tiff_height_at(y_tiff_pixels, below_px);
+	const float below_px_height = get_tiff_height_at(x_tiff_pixels, below_px);
 
 	result.position.x = far_west + (x_tiff_pixels * m_geo_tiff_height_info.meters_per_pixel_x);
 	result.position.y = current_px_height;
