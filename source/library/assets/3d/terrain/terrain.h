@@ -103,6 +103,7 @@ private:
 
 	static void setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id);
 	void check_referenced_textures_are_valid();
+	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16_t>& index_buffer_data); // debug code
 
 	gl::GLuint get_texture_id(std::string_view texture_asset_name) const;
 

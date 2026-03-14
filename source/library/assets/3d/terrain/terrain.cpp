@@ -457,7 +457,7 @@ void terrain::generate_open_gl_buffers()
 	using namespace vertex_types;
 	using namespace gl;
 
-	// TODO: Use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height.
+	// TODO: Use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height, actually. better to do it on if (delta > threshold) { devide();}
 	// Since the tileing keeps coming out wrong and it's probably the index buffer, the different approach "might fix it.".
 
 	// TODO: the length isn't uniform per pixel. we'll need to update to account for that.
@@ -505,6 +505,7 @@ void terrain::generate_open_gl_buffers()
 
 			generate_tile_vertex_and_index_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px, vertex_buffer_data, index_buffer_data);
 			set_tile_bounds(vertex_buffer_data, to_set);
+			sanity_check_buffer_data(vertex_buffer_data, index_buffer_data); // debug code
 
 			to_set.tile_index = tile_index;
 			to_set.vertex_buffer_id = vertex_buffer_ids[to_set.tile_index];
@@ -732,6 +733,29 @@ void terrain::check_referenced_textures_are_valid()
 		m_green_channel_mapped_texture_asset_name, m_blue_channel_mapped_texture_asset_name,m_alpha_channel_mapped_texture_asset_name})
 	{
 		asset_manager->get_asset_on_name(asset_name); // throws if the asset isn't present.
+	}
+}
+
+void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16_t>& index_buffer_data)
+{
+	using namespace vertex_types;
+	const size_t vb_size = vertex_buffer_data.size();
+	assert(vb_size % 4 == 0);
+	for (const terrain_vertex& vertex : vertex_buffer_data)
+	{
+		constexpr glm::vec3 origin{ 0.0f,0.0f,0.0f };
+		assert(vertex.position != origin);
+		assert(!glm::any(glm::isnan(vertex.position)));
+		assert(!glm::any(glm::isnan(vertex.texture_coordinates)));
+		assert(!glm::any(glm::isnan(vertex.normal)));
+		assert(!glm::any(glm::isnan(vertex.terrain_texture_coordinates)));
+	}
+	assert(index_buffer_data.size() % 6 == 0);
+	for (const uint16 index : index_buffer_data)
+	{
+		assert(!std::isnan(index));
+		assert(index >= 0);
+		assert(index < vb_size);
 	}
 }
 
