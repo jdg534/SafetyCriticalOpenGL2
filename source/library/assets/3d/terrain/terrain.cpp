@@ -492,6 +492,7 @@ void terrain::generate_ROAM_tree()
 	m_ROAM_tree.root->west_tiff_px = 0;
 	m_ROAM_tree.root->east_tiff_px = height_info.width - 1; // remember all loops are to be inclusive
 	generate_ROAM_tree_worker(m_ROAM_tree.root);
+	m_ROAM_tree.tree_depth_to_construct_buffers_at = static_cast<uint16>(calculate_depth_needed_to_begin_buffer_creation_at(m_ROAM_tree.root, 0));
 }
 
 void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
@@ -593,7 +594,7 @@ float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const lea
 	return std::abs(max_value - min_value);
 }
 
-void terrain::get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_to_decend, const ROAM_leaf_node* const leaf, std::vector<const ROAM_leaf_node*> leaves)
+void terrain::get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_to_decend, const ROAM_leaf_node* const leaf, std::vector<const ROAM_leaf_node*>& leaves)
 {
 	if (remaining_depths_to_decend > 0 && does_leaf_have_children(leaf))
 	{
@@ -656,8 +657,55 @@ void terrain::generate_open_gl_buffers()
 	using namespace vertex_types;
 	using namespace gl;
 
-	// TODO: Change this to use ROAM.
+	std::vector<const ROAM_leaf_node*> ROAM_tree_leaves;
+	get_leaves_to_begin_buffer_population_at(m_ROAM_tree.tree_depth_to_construct_buffers_at, m_ROAM_tree.root, ROAM_tree_leaves);
+	const size_t num_buffers_needed_for_ROAM = ROAM_tree_leaves.size();
+	m_ROAM_tree.renderable_areas.resize(num_buffers_needed_for_ROAM);
 
+	GLuint* ROAM_vao_ids = new GLuint[num_buffers_needed_for_ROAM];
+	glGenVertexArrays(num_buffers_needed_for_ROAM, ROAM_vao_ids);
+	GLuint* ROAM_vertex_buffer_ids = new GLuint[num_buffers_needed_for_ROAM];
+	glGenBuffers(num_buffers_needed_for_ROAM, ROAM_vertex_buffer_ids);
+	GLuint* ROAM_index_buffer_ids = new GLuint[num_buffers_needed_for_ROAM];
+	glGenBuffers(num_buffers_needed_for_ROAM, ROAM_index_buffer_ids);
+
+	vector<terrain_vertex> ROAM_vertex_buffer_data;
+	vector<uint16_t> ROAM_index_buffer_data;
+	for (size_t i = 0; i < num_buffers_needed_for_ROAM; ++i)
+	{
+		uint64 vertices_needed = 0, indices_needed = 0;
+		calculate_vertex_and_index_count_needed_for_ROAM_leaf(ROAM_tree_leaves[i], vertices_needed, indices_needed);
+		assert(vertices_needed < std::numeric_limits<uint16>::max());
+
+		ROAM_vertex_buffer_data.reserve(vertices_needed);
+		ROAM_index_buffer_data.reserve(indices_needed);
+		fill_vertex_and_index_buffer_for_leaf(ROAM_tree_leaves[i], ROAM_vertex_buffer_data, ROAM_index_buffer_data);
+
+		m_ROAM_tree.renderable_areas[i].tile_index = i;
+		m_ROAM_tree.renderable_areas[i].vertex_buffer_id = ROAM_vertex_buffer_ids[i];
+		m_ROAM_tree.renderable_areas[i].vertex_array_object_id = ROAM_vao_ids[i];
+		m_ROAM_tree.renderable_areas[i].index_buffer_id = ROAM_index_buffer_ids[i];
+
+		set_tile_bounds(ROAM_vertex_buffer_data, m_ROAM_tree.renderable_areas[i]);
+		sanity_check_buffer_data(ROAM_vertex_buffer_data, ROAM_index_buffer_data); // debug code
+
+		setup_vertex_attrib_array(m_ROAM_tree.renderable_areas[i].vertex_array_object_id);
+		glBindBuffer(GL_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].vertex_buffer_id);
+		glBufferData(GL_ARRAY_BUFFER, ROAM_vertex_buffer_data.size() * terrain_vertex_struct_size, ROAM_vertex_buffer_data.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].index_buffer_id);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ROAM_index_buffer_data.size() * sizeof(uint16_t), ROAM_index_buffer_data.data(), GL_STATIC_DRAW);
+		m_ROAM_tree.renderable_areas[i].num_indices_to_draw = ROAM_index_buffer_data.size();
+
+		ROAM_vertex_buffer_data.clear();
+		ROAM_index_buffer_data.clear();
+	}
+	delete[] ROAM_vao_ids;
+	delete[] ROAM_vertex_buffer_ids;
+	delete[] ROAM_index_buffer_ids;
+	m_renderable_tiles = m_ROAM_tree.renderable_areas;
+	return; // hack, refactor this out once it works.
+
+	// Old code! yeat it once got correct buffer creation
 	const uint32 tiff_width = m_geo_tiff_height_info.width;
 	const uint32 tiff_length = m_geo_tiff_height_info.length;
 
@@ -725,8 +773,9 @@ void terrain::generate_open_gl_buffers()
 	delete[] vertex_buffer_ids;
 	delete[] index_buffer_ids;
 
-	gl::glBindVertexArray(0);
-	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 std::vector<uint32_t> terrain::get_all_whole_denominators_sorted(uint32_t x)
