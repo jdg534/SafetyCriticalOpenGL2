@@ -29,8 +29,37 @@
 // public
 /////////
 
+ROAM_leaf_node::~ROAM_leaf_node()
+{
+	if (north_west_child)
+	{
+		delete north_west_child;
+		north_west_child = nullptr;
+	}
+	if (north_east_child)
+	{
+		delete north_east_child;
+		north_east_child = nullptr;
+	}
+	if (south_west_child)
+	{
+		delete south_west_child;
+		south_west_child = nullptr;
+	}
+	if (south_east_child)
+	{
+		delete south_east_child;
+		south_east_child = nullptr;
+	}
+}
+
 terrain::terrain(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager)
 	: asset(name, path, asset_manager)
+	, m_splat_map_texture_id(0)
+	, m_red_channel_mapped_texture_texture_id(0)
+	, m_green_channel_mapped_texture_texture_id(0)
+	, m_blue_channel_mapped_texture_texture_id(0)
+	, m_alpha_channel_mapped_texture_texture_id(0)
 {
 
 }
@@ -172,6 +201,7 @@ void terrain::initialise()
 		m_geo_tiff_height_info.height_max_meters = doc["height_max_meters"].GetFloat();
 	}
 
+	generate_ROAM_tree();
 	generate_open_gl_buffers();
 
 	m_splat_map_asset_name = doc["splat_map_asset_name"].GetString();
@@ -451,16 +481,182 @@ uint64 terrain::get_height_index(uint16 x_tiff_pixels, uint16 y_tiff_pixels) con
 	return results;
 }
 
+void terrain::generate_ROAM_tree()
+{
+	const geo_tiff_height_info& height_info = get_height_info();
+
+	assert(m_ROAM_tree.root == nullptr);
+	m_ROAM_tree.root = new ROAM_leaf_node;
+	m_ROAM_tree.root->north_tiff_px = 0;
+	m_ROAM_tree.root->south_tiff_px = height_info.length - 1; // remember all loops are to be inclusive
+	m_ROAM_tree.root->west_tiff_px = 0;
+	m_ROAM_tree.root->east_tiff_px = height_info.width - 1; // remember all loops are to be inclusive
+	generate_ROAM_tree_worker(m_ROAM_tree.root);
+}
+
+void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
+{
+	// if (got height delta) or (width > 3 && length > 3)
+	const uint32 width = current_leaf->east_tiff_px - current_leaf->west_tiff_px;
+	const uint32 length = current_leaf->south_tiff_px - current_leaf->north_tiff_px;
+	const bool can_subdivide = width > 3 && length > 3;
+	const float vertical_delta = calculate_vertical_delta_for_leaf(current_leaf);
+	if (can_subdivide && vertical_delta > m_ROAM_tree.vertical_delta_to_stop_recursion_at)
+	{
+		const float flt_north_tiff_px = static_cast<float>(current_leaf->north_tiff_px);
+		const float flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);
+		const float flt_west_tiff_px = static_cast<float>(current_leaf->west_tiff_px);
+		const float flt_east_tiff_px = static_cast<float>(current_leaf->east_tiff_px);
+		const uint32 west_to_east_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5f)));
+		const uint32 north_to_south_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5f)));
+		
+		current_leaf->north_west_child = new ROAM_leaf_node;
+		current_leaf->north_west_child->north_tiff_px = current_leaf->north_tiff_px;
+		current_leaf->north_west_child->west_tiff_px = current_leaf->west_tiff_px;
+		current_leaf->north_west_child->south_tiff_px = north_to_south_mid_point;
+		current_leaf->north_west_child->east_tiff_px = west_to_east_mid_point;
+		
+		current_leaf->north_east_child = new ROAM_leaf_node;
+		current_leaf->north_east_child->north_tiff_px = current_leaf->north_tiff_px;
+		current_leaf->north_east_child->west_tiff_px = west_to_east_mid_point;
+		current_leaf->north_east_child->south_tiff_px = north_to_south_mid_point;
+		current_leaf->north_east_child->east_tiff_px = current_leaf->east_tiff_px;
+		
+		current_leaf->south_west_child= new ROAM_leaf_node;
+		current_leaf->south_west_child->north_tiff_px = north_to_south_mid_point;
+		current_leaf->south_west_child->west_tiff_px = current_leaf->west_tiff_px;
+		current_leaf->south_west_child->south_tiff_px = current_leaf->south_tiff_px;
+		current_leaf->south_west_child->east_tiff_px = west_to_east_mid_point;
+		
+		current_leaf->south_east_child = new ROAM_leaf_node;
+		current_leaf->south_east_child->north_tiff_px = north_to_south_mid_point;
+		current_leaf->south_east_child->west_tiff_px = west_to_east_mid_point;
+		current_leaf->south_east_child->south_tiff_px = current_leaf->south_tiff_px;
+		current_leaf->south_east_child->east_tiff_px = current_leaf->east_tiff_px;
+		
+		generate_ROAM_tree_worker(current_leaf->north_west_child);
+		generate_ROAM_tree_worker(current_leaf->north_east_child);
+		generate_ROAM_tree_worker(current_leaf->south_west_child);
+		generate_ROAM_tree_worker(current_leaf->south_east_child);
+	}
+}
+
+void terrain::calculate_vertex_and_index_count_needed_for_ROAM_leaf(const ROAM_leaf_node* const leaf, uint64& vertices_needed, uint64& indices_needed) const
+{
+	if (does_leaf_have_children(leaf))
+	{
+		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->north_west_child, vertices_needed, indices_needed);
+		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->north_east_child, vertices_needed, indices_needed);
+		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->south_west_child, vertices_needed, indices_needed);
+		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->south_east_child, vertices_needed, indices_needed);
+	}
+	else
+	{
+		vertices_needed += 4;
+		indices_needed += 6;
+	}
+}
+
+uint64 terrain::calculate_depth_needed_to_begin_buffer_creation_at(const ROAM_leaf_node* const leaf, uint64 current_depth_level) const
+{
+	constexpr uint64 max_acceptable_vertex_buffer_size = std::numeric_limits<uint16>::max();
+	uint64 vertices_needed_for_current_level = 0, indices_needed_for_current_level = 0;
+	calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf, vertices_needed_for_current_level, indices_needed_for_current_level);
+	if (max_acceptable_vertex_buffer_size > vertices_needed_for_current_level)
+	{
+		return current_depth_level;
+	}
+	assert(does_leaf_have_children(leaf));
+	const auto child_depths_needed =
+	{
+		calculate_depth_needed_to_begin_buffer_creation_at(leaf->north_west_child, current_depth_level + 1),
+		calculate_depth_needed_to_begin_buffer_creation_at(leaf->north_east_child, current_depth_level + 1),
+		calculate_depth_needed_to_begin_buffer_creation_at(leaf->south_west_child, current_depth_level + 1),
+		calculate_depth_needed_to_begin_buffer_creation_at(leaf->south_east_child, current_depth_level + 1)
+	};
+	return std::max(child_depths_needed);
+}
+
+float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const leaf) const
+{
+	float min_value = std::numeric_limits<float>::max();
+	float max_value = std::numeric_limits<float>::lowest();
+	for (uint32 i = leaf->north_tiff_px; i <= leaf->south_tiff_px; ++i)
+	{
+		for (uint32 j = leaf->west_tiff_px; j <= leaf->east_tiff_px; ++j)
+		{
+			const float px_height = get_tiff_height_at(j, i);
+			min_value = std::min(px_height, min_value);
+			max_value = std::max(px_height, max_value);
+		}
+	}
+	return std::abs(max_value - min_value);
+}
+
+void terrain::get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_to_decend, const ROAM_leaf_node* const leaf, std::vector<const ROAM_leaf_node*> leaves)
+{
+	if (remaining_depths_to_decend > 0 && does_leaf_have_children(leaf))
+	{
+		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->north_west_child, leaves);
+		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->north_east_child, leaves);
+		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->south_west_child, leaves);
+		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->south_east_child, leaves);
+	}
+	else
+	{
+		leaves.push_back(leaf);
+	}
+}
+
+void terrain::fill_vertex_and_index_buffer_for_leaf(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& vertex_buffer, std::vector<uint16>& index_buffer) const
+{
+	if (does_leaf_have_children(leaf))
+	{
+		fill_vertex_and_index_buffer_for_leaf(leaf->north_west_child, vertex_buffer, index_buffer);
+		fill_vertex_and_index_buffer_for_leaf(leaf->north_east_child, vertex_buffer, index_buffer);
+		fill_vertex_and_index_buffer_for_leaf(leaf->south_west_child, vertex_buffer, index_buffer);
+		fill_vertex_and_index_buffer_for_leaf(leaf->south_east_child, vertex_buffer, index_buffer);
+	}
+	else
+	{
+		const size_t pre_insert_vertex_buffer_size = vertex_buffer.size();
+
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->north_tiff_px));
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
+
+		const uint16 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
+		const uint16 north_east_vert_index = pre_insert_vertex_buffer_size + 1;
+		const uint16 south_west_vert_index = pre_insert_vertex_buffer_size + 2;
+		const uint16 south_east_vert_index = pre_insert_vertex_buffer_size + 3;
+
+		index_buffer.push_back(north_west_vert_index);
+		index_buffer.push_back(south_west_vert_index);
+		index_buffer.push_back(north_east_vert_index);
+
+		index_buffer.push_back(north_east_vert_index);
+		index_buffer.push_back(south_west_vert_index);
+		index_buffer.push_back(south_east_vert_index);
+	}
+}
+
+bool terrain::does_leaf_have_children(const ROAM_leaf_node* const leaf)
+{
+	if (leaf->north_west_child) return true;
+	if (leaf->north_east_child) return true;
+	if (leaf->south_west_child) return true;
+	if (leaf->south_east_child) return true;
+	return false;
+}
+
 void terrain::generate_open_gl_buffers()
 {
 	using namespace std;
 	using namespace vertex_types;
 	using namespace gl;
 
-	// TODO: Use ROAM to make the tri count smaller. think quad tree sub devision until the leaf note has no delta in height, actually. better to do it on if (delta > threshold) { devide();}
-	// Since the tileing keeps coming out wrong and it's probably the index buffer, the different approach "might fix it.".
-
-	// TODO: the length isn't uniform per pixel. we'll need to update to account for that.
+	// TODO: Change this to use ROAM.
 
 	const uint32 tiff_width = m_geo_tiff_height_info.width;
 	const uint32 tiff_length = m_geo_tiff_height_info.length;
@@ -537,7 +733,7 @@ std::vector<uint32_t> terrain::get_all_whole_denominators_sorted(uint32_t x)
 {
 	using namespace std;
 	vector<uint32_t> results;
-	if (x == 0) return results; // 0 has infinitely many divisors, return empty
+	if (x == 0) return results;
 	const uint32_t limit = static_cast<uint32_t>(sqrt(x));
 	for (uint32_t i = 1; i <= limit; ++i)
 	{

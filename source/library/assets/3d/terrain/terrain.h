@@ -55,6 +55,30 @@ struct renderable_tile_area
 	gl::GLuint num_indices_to_draw = 0;
 };
 
+struct ROAM_leaf_node
+{
+	uint32 north_tiff_px = 0;
+	uint32 south_tiff_px = 0;
+	uint32 west_tiff_px = 0;
+	uint32 east_tiff_px = 0;
+
+	ROAM_leaf_node* north_west_child = nullptr;
+	ROAM_leaf_node* north_east_child = nullptr;
+	ROAM_leaf_node* south_west_child = nullptr;
+	ROAM_leaf_node* south_east_child = nullptr;
+
+	~ROAM_leaf_node();
+};
+
+struct ROAM_tree
+{
+	ROAM_leaf_node* root = nullptr;
+	uint16 tree_depth_to_construct_buffers_at = 0;
+	float vertical_delta_to_stop_recursion_at = 1.0f; // meters...
+
+	std::vector<renderable_tile_area> renderable_areas;
+};
+
 class terrain : public asset
 {
 
@@ -92,6 +116,16 @@ private:
 	static float calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 image_height, float pixel_latitude_scale_degrees);
 
 	uint64 get_height_index(uint16 x_tiff_pixels, uint16 y_tiff_pixels) const;
+	void generate_ROAM_tree();
+	void generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const;
+
+	void calculate_vertex_and_index_count_needed_for_ROAM_leaf(const ROAM_leaf_node* const leaf, uint64& vertices_needed, uint64& indices_needed) const;
+	uint64 calculate_depth_needed_to_begin_buffer_creation_at(const ROAM_leaf_node* const leaf, uint64 current_depth_level) const;
+	float calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const leaf) const;
+	static void get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_to_decend, const ROAM_leaf_node* const leaf, std::vector<const ROAM_leaf_node*> leaves);
+	void fill_vertex_and_index_buffer_for_leaf(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& vertex_buffer, std::vector<uint16>& index_buffer) const;
+	static bool does_leaf_have_children(const ROAM_leaf_node* const leaf);
+
 	void generate_open_gl_buffers();
 
 	static std::vector<uint32_t> get_all_whole_denominators_sorted(uint32_t x);
@@ -110,6 +144,7 @@ private:
 	geo_tiff_height_info m_geo_tiff_height_info;
 	std::vector<float> m_heights;
 
+	ROAM_tree m_ROAM_tree;
 	std::vector<renderable_tile_area> m_renderable_tiles;
 
 	// cache the ids! refactor these out later
