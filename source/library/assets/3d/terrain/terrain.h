@@ -145,7 +145,6 @@ private:
 	std::vector<float> m_heights;
 
 	ROAM_tree m_ROAM_tree;
-	std::vector<renderable_tile_area> m_renderable_tiles;
 
 	// cache the ids! refactor these out later
 	std::string m_splat_map_asset_name;

@@ -216,15 +216,15 @@ void terrain::shutdown()
 {
 	using namespace gl;
 	m_heights.clear();
-	const size_t n_tiles = m_renderable_tiles.size();
+	const size_t n_tiles = m_ROAM_tree.renderable_areas.size();
 	std::vector<GLuint> vao_ids(n_tiles);
 	std::vector<GLuint> vertex_buffer_ids(n_tiles);
 	std::vector<GLuint> index_buffer_ids(n_tiles);
 	for (size_t i = 0; i < n_tiles; ++i)
 	{
-		vao_ids[i] = m_renderable_tiles[i].vertex_array_object_id;
-		vertex_buffer_ids[i] = m_renderable_tiles[i].vertex_buffer_id;
-		index_buffer_ids[i] = m_renderable_tiles[i].index_buffer_id;
+		vao_ids[i] = m_ROAM_tree.renderable_areas[i].vertex_array_object_id;
+		vertex_buffer_ids[i] = m_ROAM_tree.renderable_areas[i].vertex_buffer_id;
+		index_buffer_ids[i] = m_ROAM_tree.renderable_areas[i].index_buffer_id;
 	}
 	glDeleteVertexArrays(n_tiles, vao_ids.data());
 	glDeleteBuffers(n_tiles, vertex_buffer_ids.data());
@@ -232,7 +232,7 @@ void terrain::shutdown()
 	vao_ids.clear();
 	vertex_buffer_ids.clear();
 	index_buffer_ids.clear();
-	m_renderable_tiles.clear();
+	m_ROAM_tree.renderable_areas.clear();
 }
 
 asset_type terrain::get_type() const
@@ -289,7 +289,7 @@ float terrain::get_height_at(float x_world_space, float z_world_space) const
 
 const std::vector<renderable_tile_area>& terrain::get_renderable_tiles() const
 {
-	return m_renderable_tiles;
+	return m_ROAM_tree.renderable_areas;
 }
 
 gl::GLuint terrain::get_splat_map_texture_id() const
@@ -488,9 +488,9 @@ void terrain::generate_ROAM_tree()
 	assert(m_ROAM_tree.root == nullptr);
 	m_ROAM_tree.root = new ROAM_leaf_node;
 	m_ROAM_tree.root->north_tiff_px = 0;
-	m_ROAM_tree.root->south_tiff_px = height_info.length - 1; // remember all loops are to be inclusive
 	m_ROAM_tree.root->west_tiff_px = 0;
-	m_ROAM_tree.root->east_tiff_px = height_info.width - 1; // remember all loops are to be inclusive
+	m_ROAM_tree.root->south_tiff_px = height_info.length - 1; // remember we subdivide on pixels, 0 indexed.
+	m_ROAM_tree.root->east_tiff_px = height_info.width - 1; // (as above)
 	generate_ROAM_tree_worker(m_ROAM_tree.root);
 	m_ROAM_tree.tree_depth_to_construct_buffers_at = static_cast<uint16>(calculate_depth_needed_to_begin_buffer_creation_at(m_ROAM_tree.root, 0));
 }
@@ -702,76 +702,9 @@ void terrain::generate_open_gl_buffers()
 	delete[] ROAM_vao_ids;
 	delete[] ROAM_vertex_buffer_ids;
 	delete[] ROAM_index_buffer_ids;
-	m_renderable_tiles = m_ROAM_tree.renderable_areas;
-	return; // hack, refactor this out once it works.
-
-	// Old code! yeat it once got correct buffer creation
-	const uint32 tiff_width = m_geo_tiff_height_info.width;
-	const uint32 tiff_length = m_geo_tiff_height_info.length;
-
-	uint32 mutable_tile_width_px = 0, mutable_tile_length_px = 0;
-	calculate_tile_dimensions_needed_for_uint16_index_buffer(tiff_width, tiff_length, mutable_tile_width_px, mutable_tile_length_px);
-	const uint32 tile_width_px = mutable_tile_width_px;
-	const uint32 tile_length_px = mutable_tile_length_px;
-
-	assert(tiff_width % tile_width_px == 0);
-	assert(tiff_length % tile_length_px == 0);
-	const size_t tiles_west_to_east = tiff_width / tile_width_px;
-	const size_t tiles_north_to_south = tiff_length / tile_length_px;
-	const size_t n_tiles_to_make = tiles_west_to_east * tiles_north_to_south;
-
-	GLuint* vao_ids = new GLuint[n_tiles_to_make];
-	glGenVertexArrays(n_tiles_to_make, vao_ids);
-	GLuint* vertex_buffer_ids = new GLuint[n_tiles_to_make];
-	glGenBuffers(n_tiles_to_make, vertex_buffer_ids);
-	GLuint* index_buffer_ids = new GLuint[n_tiles_to_make];
-	glGenBuffers(n_tiles_to_make, index_buffer_ids);
-
-	m_renderable_tiles.resize(n_tiles_to_make);
-
-	vector<terrain_vertex> vertex_buffer_data; // declared outside the loop to avoid thrashing the stack.
-	vector<uint16_t> index_buffer_data;
-
-	for (uint32 i = 0; i < tiles_north_to_south; ++i)
-	{
-		const bool need_overlap_with_south_cell = i < tiles_north_to_south - 1;
-		for (uint32 j = 0; j < tiles_west_to_east; ++j)
-		{
-			const uint32 tile_index = j + (tiles_west_to_east * i);
-			renderable_tile_area& to_set = m_renderable_tiles[tile_index];
-			const bool need_overlap_with_east_cell = j < tiles_west_to_east - 1;
-
-			// determine the north, south, west, east px in the tiff bounds.
-			const uint32 north_tiff_px = tile_length_px * i;
-			const uint32 west_tiff_px = tile_width_px * j;
-			const uint32 south_tiff_px = tile_length_px * (i + 1) + (need_overlap_with_south_cell ? 1 : 0);
-			const uint32 east_tiff_px = tile_width_px * (j + 1) + (need_overlap_with_east_cell ? 1 : 0);
-
-			generate_tile_vertex_and_index_buffer_data(north_tiff_px, south_tiff_px, west_tiff_px, east_tiff_px, vertex_buffer_data, index_buffer_data);
-			set_tile_bounds(vertex_buffer_data, to_set);
-			sanity_check_buffer_data(vertex_buffer_data, index_buffer_data); // debug code
-
-			to_set.tile_index = tile_index;
-			to_set.vertex_buffer_id = vertex_buffer_ids[to_set.tile_index];
-			to_set.vertex_array_object_id = vao_ids[to_set.tile_index];
-			to_set.index_buffer_id = index_buffer_ids[to_set.tile_index];
-
-
-			setup_vertex_attrib_array(to_set.vertex_array_object_id);
-			glBindBuffer(GL_ARRAY_BUFFER, to_set.vertex_buffer_id);
-			glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * terrain_vertex_struct_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
-			to_set.num_indices_to_draw = index_buffer_data.size();
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, to_set.index_buffer_id);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_data.size() * sizeof(uint16_t), index_buffer_data.data(), GL_STATIC_DRAW);
-
-			vertex_buffer_data.clear();
-			index_buffer_data.clear();
-		}
-	}
-
-	delete[] vao_ids;
-	delete[] vertex_buffer_ids;
-	delete[] index_buffer_ids;
+	
+	// Deleteing the tree. we've got what we want of out it.
+	delete m_ROAM_tree.root; // remember the delete operator will recursively delete 
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

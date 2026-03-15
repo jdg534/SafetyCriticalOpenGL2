@@ -86,7 +86,7 @@ void renderable_terrain::draw()
 	// buffers
 	for (const auto& terrain_cell : terrain->get_renderable_tiles())
 	{
-		if (checks::do_boxes_overlap_y_axis_up(view_area, tile_area_to_aabb(terrain_cell)))
+		// if (checks::do_boxes_overlap_y_axis_up(view_area, tile_area_to_aabb(terrain_cell))) // bring it back later.
 		{
 			glBindVertexArray(terrain_cell.vertex_array_object_id);
 			glBindBuffer(GL_ARRAY_BUFFER, terrain_cell.vertex_buffer_id);
@@ -106,6 +106,8 @@ void renderable_terrain::draw()
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	glBindVertexArray(0); // clear the vertex array.
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 float renderable_terrain::get_height_at(float x_world_space, float z_world_space) const
