@@ -1,5 +1,5 @@
-#ifndef _STATIC_MODEL_3D_H_ // TODO: rename this guard
-#define _STATIC_MODEL_3D_H_
+#ifndef _STATIC_MODEL_H_
+#define _STATIC_MODEL_H_
 
 #include <memory>
 
@@ -27,4 +27,4 @@ private:
 	std::weak_ptr<const model> m_model;
 };
 
-#endif // _STATIC_MODEL_3D_H_
+#endif // _STATIC_MODEL_H_

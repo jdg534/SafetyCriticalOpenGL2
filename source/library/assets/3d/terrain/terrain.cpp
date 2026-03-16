@@ -933,7 +933,6 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 
 gl::GLuint terrain::get_texture_id(std::string_view texture_asset_name) const
 {
-	// TODO: cache the texture ids.
 	std::weak_ptr<const asset> result = get_asset_manager().lock()->get_asset_on_name(texture_asset_name);
 	return std::dynamic_pointer_cast<const texture>(result.lock())->get_id();
 }
