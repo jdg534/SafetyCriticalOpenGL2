@@ -29,6 +29,20 @@ renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap, std
 
 void renderer::initialise()
 {
+#ifdef _DEBUG
+	using namespace gl;
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+	glDebugMessageCallback(
+		[](GLenum source, GLenum type, GLuint id,
+			GLenum severity, GLsizei length,
+			const GLchar* message, const void* userParam)
+		{
+			std::cerr << "OpenGL: " << message << std::endl;
+		}, nullptr);
+#endif // _DEBUG
+
 	initialise_shaders();
 	m_render_list.reserve(m_render_list_cap);
 }
