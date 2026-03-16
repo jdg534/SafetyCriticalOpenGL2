@@ -136,7 +136,6 @@ private:
 	static void set_tile_bounds(const std::vector<vertex_types::terrain_vertex>& vertices, renderable_tile_area& to_set);
 
 	static void setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id);
-	void check_referenced_textures_are_valid();
 	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16_t>& index_buffer_data); // debug code
 
 	gl::GLuint get_texture_id(std::string_view texture_asset_name) const;
@@ -145,13 +144,6 @@ private:
 	std::vector<float> m_heights;
 
 	ROAM_tree m_ROAM_tree;
-
-	// cache the ids! refactor these out later
-	std::string m_splat_map_asset_name;
-	std::string m_red_channel_mapped_texture_asset_name;
-	std::string m_green_channel_mapped_texture_asset_name;
-	std::string m_blue_channel_mapped_texture_asset_name;
-	std::string m_alpha_channel_mapped_texture_asset_name;
 
 	gl::GLuint m_splat_map_texture_id;
 	gl::GLuint m_red_channel_mapped_texture_texture_id;

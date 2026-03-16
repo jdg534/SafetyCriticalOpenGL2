@@ -204,12 +204,11 @@ void terrain::initialise()
 	generate_ROAM_tree();
 	generate_open_gl_buffers();
 
-	m_splat_map_asset_name = doc["splat_map_asset_name"].GetString();
-	m_red_channel_mapped_texture_asset_name = doc["red_channel_mapped_texture_asset_name"].GetString();
-	m_green_channel_mapped_texture_asset_name = doc["green_channel_mapped_texture_asset_name"].GetString();
-	m_blue_channel_mapped_texture_asset_name = doc["blue_channel_mapped_texture_asset_name"].GetString();
-	m_alpha_channel_mapped_texture_asset_name = doc["alpha_channel_mapped_texture_asset_name"].GetString();
-	check_referenced_textures_are_valid();
+	m_splat_map_texture_id = get_texture_id(doc["splat_map_asset_name"].GetString());
+	m_red_channel_mapped_texture_texture_id = get_texture_id(doc["red_channel_mapped_texture_asset_name"].GetString());
+	m_green_channel_mapped_texture_texture_id = get_texture_id(doc["green_channel_mapped_texture_asset_name"].GetString());
+	m_blue_channel_mapped_texture_texture_id = get_texture_id(doc["blue_channel_mapped_texture_asset_name"].GetString());
+	m_alpha_channel_mapped_texture_texture_id = get_texture_id(doc["alpha_channel_mapped_texture_asset_name"].GetString());
 }
 
 void terrain::shutdown()
@@ -294,27 +293,32 @@ const std::vector<renderable_tile_area>& terrain::get_renderable_tiles() const
 
 gl::GLuint terrain::get_splat_map_texture_id() const
 {
-	return get_texture_id(m_splat_map_asset_name);
+	assert(m_splat_map_texture_id != 0);
+	return m_splat_map_texture_id;
 }
 
 gl::GLuint terrain::get_red_channel_mapped_texture_texture_id() const
 {
-	return get_texture_id(m_red_channel_mapped_texture_asset_name);
+	assert(m_red_channel_mapped_texture_texture_id != 0);
+	return m_red_channel_mapped_texture_texture_id;
 }
 
 gl::GLuint terrain::get_green_channel_mapped_texture_texture_id() const
 {
-	return get_texture_id(m_green_channel_mapped_texture_asset_name);
+	assert(m_green_channel_mapped_texture_texture_id != 0);
+	return m_green_channel_mapped_texture_texture_id;
 }
 
 gl::GLuint terrain::get_blue_channel_mapped_texture_texture_id() const
 {
-	return get_texture_id(m_blue_channel_mapped_texture_asset_name);
+	assert(m_blue_channel_mapped_texture_texture_id != 0);
+	return m_blue_channel_mapped_texture_texture_id;
 }
 
 gl::GLuint terrain::get_alpha_channel_mapped_texture_texture_id() const
 {
-	return get_texture_id(m_alpha_channel_mapped_texture_asset_name);
+	assert(m_alpha_channel_mapped_texture_texture_id != 0);
+	return m_alpha_channel_mapped_texture_texture_id;
 }
 
 // private
@@ -902,16 +906,6 @@ void terrain::setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id)
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, normal));
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, terrain_texture_coordinates));
-}
-
-void terrain::check_referenced_textures_are_valid()
-{
-	auto asset_manager = get_asset_manager().lock();
-	for (auto asset_name : { m_splat_map_asset_name, m_red_channel_mapped_texture_asset_name,
-		m_green_channel_mapped_texture_asset_name, m_blue_channel_mapped_texture_asset_name,m_alpha_channel_mapped_texture_asset_name})
-	{
-		asset_manager->get_asset_on_name(asset_name); // throws if the asset isn't present.
-	}
 }
 
 void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16_t>& index_buffer_data)
