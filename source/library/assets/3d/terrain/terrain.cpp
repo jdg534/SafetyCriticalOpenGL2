@@ -564,10 +564,9 @@ void terrain::calculate_vertex_and_index_count_needed_for_ROAM_leaf(const ROAM_l
 
 uint64 terrain::calculate_depth_needed_to_begin_buffer_creation_at(const ROAM_leaf_node* const leaf, uint64 current_depth_level) const
 {
-	constexpr uint64 max_acceptable_vertex_buffer_size = std::numeric_limits<uint16>::max();
 	uint64 vertices_needed_for_current_level = 0, indices_needed_for_current_level = 0;
 	calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf, vertices_needed_for_current_level, indices_needed_for_current_level);
-	if (max_acceptable_vertex_buffer_size > vertices_needed_for_current_level)
+	if (MAX_VERTEX_BUFFER_SIZE > vertices_needed_for_current_level)
 	{
 		return current_depth_level;
 	}
@@ -679,7 +678,7 @@ void terrain::generate_open_gl_buffers()
 	{
 		uint64 vertices_needed = 0, indices_needed = 0;
 		calculate_vertex_and_index_count_needed_for_ROAM_leaf(ROAM_tree_leaves[i], vertices_needed, indices_needed);
-		assert(vertices_needed < std::numeric_limits<uint16>::max());
+		assert(vertices_needed < MAX_VERTEX_BUFFER_SIZE);
 
 		ROAM_vertex_buffer_data.reserve(vertices_needed);
 		ROAM_index_buffer_data.reserve(indices_needed);
@@ -713,116 +712,6 @@ void terrain::generate_open_gl_buffers()
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-std::vector<uint32_t> terrain::get_all_whole_denominators_sorted(uint32_t x)
-{
-	using namespace std;
-	vector<uint32_t> results;
-	if (x == 0) return results;
-	const uint32_t limit = static_cast<uint32_t>(sqrt(x));
-	for (uint32_t i = 1; i <= limit; ++i)
-	{
-		if (x % i == 0)
-		{
-			results.push_back(i);
-			uint32_t other = x / i;
-			if (other != i) results.push_back(other);
-		}
-	}
-	sort(begin(results), end(results));
-	return results;
-}
-
-void terrain::calculate_tile_dimensions_needed_for_uint16_index_buffer(
-	uint32 width_px,
-	uint32 length_px,
-	uint32& output_tile_width_px,
-	uint32& output_tile_length_px)
-{
-	using namespace std;
-	constexpr uint32 max_vertices_to_support = numeric_limits<uint16>::max();
-
-	// Basic validation
-	assert(width_px > 1);
-	assert(length_px > 1);
-
-	// Set to be 1x1 tile(s)
-	output_tile_width_px = width_px;
-	output_tile_length_px = length_px;
-
-	// If already fits, done.
-	if (width_px * length_px <= max_vertices_to_support) return;
-
-	const vector<uint32> tile_widths = get_all_whole_denominators_sorted(width_px);
-	const vector<uint32> tile_lengths = get_all_whole_denominators_sorted(length_px);
-
-	const uint32 max_combinations = min(tile_widths.size(), tile_lengths.size());
-	for (uint32 i = 0; i < max_combinations; ++i)
-	{
-		// remember we want the overlap on the cell to the east and south.
-		const uint32 width_to_check = tile_widths[i] + 1;
-		const uint32 length_to_check = tile_lengths[i] + 1;
-		if ((width_to_check * length_to_check) + 4 <= max_vertices_to_support)
-		{
-			output_tile_width_px = tile_widths[i];
-			output_tile_length_px = tile_lengths[i];
-		}
-		else
-		{
-			return; // the values are sorted, we've stepped up to the limit.
-		}
-	}
-}
-
-void terrain::generate_tile_vertex_and_index_buffer_data(uint32 tiff_north_px, uint32 tiff_south_px, uint32 tiff_west_px, uint32 tiff_east_px, std::vector<vertex_types::terrain_vertex>& out_vertex_buffer, std::vector<uint16_t>& out_index_buffer) const
-{
-	// this would be static but want to read from the tiff
-	const uint32 tile_width = tiff_east_px - tiff_west_px;
-	const uint32 tile_length = tiff_south_px - tiff_north_px;
-	const size_t tile_area = tile_width * tile_length;
-	assert(tile_area <= std::numeric_limits<uint16_t>::max());
-	out_vertex_buffer.resize(tile_area);
-	for (uint32 i = 0; i < tile_length; ++i)
-	{
-		for (uint32 j = 0; j < tile_width; ++j)
-		{
-			const int vertex_buffer_index_offset = (i * tile_width) + j;
-			assert(vertex_buffer_index_offset < out_vertex_buffer.size());
-
-			const size_t current_px_j = (tiff_west_px + j);
-			const size_t current_px_i = (tiff_north_px + i);
-			out_vertex_buffer[vertex_buffer_index_offset] = get_vertex_for_tiff_pixel(current_px_j, current_px_i); 
-		}
-	}
-	out_index_buffer.clear();
-
-	const size_t quad_count = (tile_width - 1) * (tile_length - 1);
-	out_index_buffer.reserve(quad_count * 6);
-
-	for (uint32 y = 0; y < tile_length - 1; ++y)
-	{
-		for (uint32 x = 0; x < tile_width - 1; ++x)
-		{
-			const uint16 i0 = y * tile_width + x;
-			const uint16 i1 = y * tile_width + (x + 1);
-			const uint16 i2 = (y + 1) * tile_width + x;
-			const uint16 i3 = (y + 1) * tile_width + (x + 1);
-
-			assert(i0 >= y && i0 >= x);
-			assert(i1 >= y && i1 >= x);
-			assert(i2 >= y && i2 >= x);
-			assert(i3 >= y && i3 >= x);
-
-			out_index_buffer.push_back(i0);
-			out_index_buffer.push_back(i2);
-			out_index_buffer.push_back(i1);
-
-			out_index_buffer.push_back(i1);
-			out_index_buffer.push_back(i2);
-			out_index_buffer.push_back(i3);
-		}
-	}
 }
 
 vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const
