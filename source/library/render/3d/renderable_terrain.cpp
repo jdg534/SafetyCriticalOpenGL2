@@ -101,8 +101,6 @@ void renderable_terrain::draw()
 	for (auto texture_slot_index : { GL_TEXTURE0,GL_TEXTURE1,GL_TEXTURE2,GL_TEXTURE3,GL_TEXTURE4 })
 	{
 		glActiveTexture(texture_slot_index);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	glBindVertexArray(0); // clear the vertex array.
