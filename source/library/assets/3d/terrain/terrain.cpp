@@ -478,9 +478,9 @@ float terrain::calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 
 	return tie_latitude - (image_height * 0.5 * pixel_latitude_scale_degrees);
 }
 
-uint64 terrain::get_height_index(uint16 x_tiff_pixels, uint16 y_tiff_pixels) const
+size_t terrain::get_height_index(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const
 {
-	uint64 results = (m_geo_tiff_height_info.width * y_tiff_pixels) + x_tiff_pixels;
+	size_t results = (m_geo_tiff_height_info.width * y_tiff_pixels) + x_tiff_pixels;
 	assert(results >= y_tiff_pixels && results>= x_tiff_pixels);
 	return results;
 }
@@ -629,11 +629,17 @@ void terrain::fill_vertex_and_index_buffer_for_leaf(const ROAM_leaf_node* const 
 		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
 		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
 		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
+		assert(vertex_buffer.size() <= MAX_VERTEX_BUFFER_SIZE);
 
 		const uint16 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
 		const uint16 north_east_vert_index = pre_insert_vertex_buffer_size + 1;
 		const uint16 south_west_vert_index = pre_insert_vertex_buffer_size + 2;
 		const uint16 south_east_vert_index = pre_insert_vertex_buffer_size + 3;
+
+		assert(north_west_vert_index >= pre_insert_vertex_buffer_size);
+		assert(north_east_vert_index >= pre_insert_vertex_buffer_size);
+		assert(south_west_vert_index >= pre_insert_vertex_buffer_size);
+		assert(south_east_vert_index >= pre_insert_vertex_buffer_size);
 
 		index_buffer.push_back(north_west_vert_index);
 		index_buffer.push_back(south_west_vert_index);
@@ -683,6 +689,8 @@ void terrain::generate_open_gl_buffers()
 		ROAM_vertex_buffer_data.reserve(vertices_needed);
 		ROAM_index_buffer_data.reserve(indices_needed);
 		fill_vertex_and_index_buffer_for_leaf(ROAM_tree_leaves[i], ROAM_vertex_buffer_data, ROAM_index_buffer_data);
+		sanity_check_buffer_data(ROAM_vertex_buffer_data, ROAM_index_buffer_data); // debug code
+
 
 		m_ROAM_tree.renderable_areas[i].tile_index = i;
 		m_ROAM_tree.renderable_areas[i].vertex_buffer_id = ROAM_vertex_buffer_ids[i];
@@ -690,7 +698,6 @@ void terrain::generate_open_gl_buffers()
 		m_ROAM_tree.renderable_areas[i].index_buffer_id = ROAM_index_buffer_ids[i];
 
 		set_tile_bounds(ROAM_vertex_buffer_data, m_ROAM_tree.renderable_areas[i]);
-		sanity_check_buffer_data(ROAM_vertex_buffer_data, ROAM_index_buffer_data); // debug code
 
 		setup_vertex_attrib_array(m_ROAM_tree.renderable_areas[i].vertex_array_object_id);
 		glBindBuffer(GL_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].vertex_buffer_id);
@@ -802,6 +809,7 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 	using namespace vertex_types;
 	const size_t vb_size = vertex_buffer_data.size();
 	assert(vb_size > 0);
+	assert(vb_size < MAX_VERTEX_BUFFER_SIZE);
 	for (const terrain_vertex& vertex : vertex_buffer_data)
 	{
 		constexpr glm::vec3 origin{ 0.0f,0.0f,0.0f };

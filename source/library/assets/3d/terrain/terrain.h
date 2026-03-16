@@ -115,7 +115,7 @@ private:
 	static void flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length);
 	static float calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 image_height, float pixel_latitude_scale_degrees);
 
-	uint64 get_height_index(uint16 x_tiff_pixels, uint16 y_tiff_pixels) const;
+	size_t get_height_index(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const;
 	void generate_ROAM_tree();
 	void generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const;
 
