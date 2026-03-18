@@ -124,6 +124,7 @@ private:
 	float calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const leaf) const;
 	static void get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_to_decend, const ROAM_leaf_node* const leaf, std::vector<const ROAM_leaf_node*>& leaves);
 	void fill_vertex_and_index_buffer_for_leaf(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& vertex_buffer, std::vector<uint16>& index_buffer) const;
+	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16>& index_buffer_data); // debug code
 	static bool does_leaf_have_children(const ROAM_leaf_node* const leaf);
 
 	void generate_open_gl_buffers();
@@ -133,7 +134,7 @@ private:
 	static void set_tile_bounds(const std::vector<vertex_types::terrain_vertex>& vertices, renderable_tile_area& to_set);
 
 	static void setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id);
-	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16_t>& index_buffer_data); // debug code
+	
 
 	gl::GLuint get_texture_id(std::string_view texture_asset_name) const;
 

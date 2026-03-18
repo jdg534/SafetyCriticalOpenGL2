@@ -612,6 +612,30 @@ void terrain::get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_t
 	}
 }
 
+void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16>& index_buffer_data)
+{
+	using namespace vertex_types;
+	const size_t vb_size = vertex_buffer_data.size();
+	assert(vb_size > 0);
+	assert(vb_size < MAX_VERTEX_BUFFER_SIZE);
+	for (const terrain_vertex& vertex : vertex_buffer_data)
+	{
+		constexpr glm::vec3 origin{ 0.0f,0.0f,0.0f };
+		assert(vertex.position != origin);
+		assert(!glm::any(glm::isnan(vertex.position)));
+		assert(!glm::any(glm::isnan(vertex.texture_coordinates)));
+		assert(!glm::any(glm::isnan(vertex.normal)));
+		assert(!glm::any(glm::isnan(vertex.terrain_texture_coordinates)));
+	}
+	assert(index_buffer_data.size() % 6 == 0);
+	for (const uint16 index : index_buffer_data)
+	{
+		assert(!std::isnan(index));
+		assert(index >= 0);
+		assert(index < vb_size);
+	}
+}
+
 void terrain::fill_vertex_and_index_buffer_for_leaf(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& vertex_buffer, std::vector<uint16>& index_buffer) const
 {
 	if (does_leaf_have_children(leaf))
@@ -802,30 +826,6 @@ void terrain::setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id)
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, normal));
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, terrain_texture_coordinates));
-}
-
-void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16_t>& index_buffer_data)
-{
-	using namespace vertex_types;
-	const size_t vb_size = vertex_buffer_data.size();
-	assert(vb_size > 0);
-	assert(vb_size < MAX_VERTEX_BUFFER_SIZE);
-	for (const terrain_vertex& vertex : vertex_buffer_data)
-	{
-		constexpr glm::vec3 origin{ 0.0f,0.0f,0.0f };
-		assert(vertex.position != origin);
-		assert(!glm::any(glm::isnan(vertex.position)));
-		assert(!glm::any(glm::isnan(vertex.texture_coordinates)));
-		assert(!glm::any(glm::isnan(vertex.normal)));
-		assert(!glm::any(glm::isnan(vertex.terrain_texture_coordinates)));
-	}
-	assert(index_buffer_data.size() % 6 == 0);
-	for (const uint16 index : index_buffer_data)
-	{
-		assert(!std::isnan(index));
-		assert(index >= 0);
-		assert(index < vb_size);
-	}
 }
 
 gl::GLuint terrain::get_texture_id(std::string_view texture_asset_name) const
