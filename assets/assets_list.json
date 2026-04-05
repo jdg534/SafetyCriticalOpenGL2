@@ -68,9 +68,9 @@
 			"path": "terrain/st_helena_splatmap.png"
 		},
 		{
-			"name": "st_helena",
+			"name": "isle_of_man",
 			"type": "terrain",
-			"path": "terrain/st_helena.terrain"
+			"path": "terrain/isle_of_man.terrain"
 		}
 	]
 }
