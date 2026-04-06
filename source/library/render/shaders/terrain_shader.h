@@ -41,6 +41,7 @@ uniform sampler2D u_alpha_channel_diffuse_map;
 uniform vec3      u_light_direction;     // unit vectors only
 uniform vec3      u_light_colour;
 uniform vec3      u_ambient_light_colour; // light colour
+uniform vec4      u_terrain_blend_colour;
 
 in vec3 vs_out_world_position;
 in vec2 vs_out_uv;
@@ -69,7 +70,7 @@ void main()
       texture(u_alpha_channel_diffuse_map, vs_out_terrain_uv) * weights.a;
 
     vec4 surface_colour = vec4(combined_diffuse_colour.rgb * combined_light_colour, combined_diffuse_colour.a);
-    fs_out_frag_color = surface_colour;
+    fs_out_frag_color = surface_colour * u_terrain_blend_colour;
 }
 )";
 

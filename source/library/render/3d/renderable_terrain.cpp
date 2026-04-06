@@ -46,7 +46,7 @@ void renderable_terrain::draw()
 	const GLint u_green_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_green_channel_diffuse_map");
 	const GLint u_blue_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_blue_channel_diffuse_map");
 	const GLint u_alpha_channel_diffuse_map_location = glGetUniformLocation(shader_id, "u_alpha_channel_diffuse_map");
-
+	const GLint u_terrain_blend_colour_location = glGetUniformLocation(shader_id, "u_terrain_blend_colour");
 
 	const glm::mat4x4 net_transform = get_net_transform();
 
@@ -79,15 +79,16 @@ void renderable_terrain::draw()
 	glUniform1i(u_blue_channel_diffuse_map_location, 3);
 	glUniform1i(u_alpha_channel_diffuse_map_location, 4);
 
-
 	assert(!m_active_camera.expired());
 	const axis_aligned_bounding_box view_area = get_aabb_of_camera_view_area();
 
 	// buffers
 	for (const auto& terrain_cell : terrain->get_renderable_tiles())
 	{
+
 		// if (checks::do_boxes_overlap_y_axis_up(view_area, tile_area_to_aabb(terrain_cell))) // bring it back later.
 		{
+			glUniform4fv(u_terrain_blend_colour_location, 1, glm::value_ptr(terrain_cell.blend_colour));
 			glBindVertexArray(terrain_cell.vertex_array_object_id);
 			glBindBuffer(GL_ARRAY_BUFFER, terrain_cell.vertex_buffer_id);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrain_cell.index_buffer_id);

@@ -709,7 +709,16 @@ vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pi
 	const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
 	const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
 	result.normal = glm::normalize(glm::cross(dy, dx));
-	if (glm::any(glm::isnan(result.normal))) result.normal = glm::vec3(0, 1, 0);
+	if (glm::any(glm::isnan(result.normal)) || std::isinf(current_px_height))
+	{
+		result.normal = glm::vec3(0, 1, 0);
+	}
+		
+	if (result.position == glm::vec3(0, 0, 0))
+	{
+		assert(false && "Wrong terrain vertex");
+	}
+
 	return result;
 }
 

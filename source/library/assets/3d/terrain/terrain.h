@@ -53,6 +53,8 @@ struct renderable_tile_area
 	gl::GLuint index_buffer_id = 0;
 	gl::GLuint vertex_array_object_id = 0;
 	gl::GLuint num_indices_to_draw = 0;
+
+	glm::vec4 blend_colour { 1.0f, 1.0f, 1.0f, 1.0f };
 };
 
 struct ROAM_leaf_node
@@ -73,7 +75,7 @@ struct ROAM_leaf_node
 struct ROAM_tree
 {
 	ROAM_leaf_node* root = nullptr;
-	float vertical_delta_to_stop_recursion_at = 0.01f; // meters...
+	float vertical_delta_to_stop_recursion_at = 0.001f; // meters...
 
 	std::vector<renderable_tile_area> renderable_areas;
 };
