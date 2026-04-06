@@ -73,8 +73,7 @@ struct ROAM_leaf_node
 struct ROAM_tree
 {
 	ROAM_leaf_node* root = nullptr;
-	uint16 tree_depth_to_construct_buffers_at = 0;
-	float vertical_delta_to_stop_recursion_at = 1.0f; // meters...
+	float vertical_delta_to_stop_recursion_at = 0.01f; // meters...
 
 	std::vector<renderable_tile_area> renderable_areas;
 };
@@ -119,12 +118,9 @@ private:
 	void generate_ROAM_tree();
 	void generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const;
 
-	void calculate_vertex_and_index_count_needed_for_ROAM_leaf(const ROAM_leaf_node* const leaf, uint64& vertices_needed, uint64& indices_needed) const; // can be static?
-	uint64 calculate_depth_needed_to_begin_buffer_creation_at(const ROAM_leaf_node* const leaf, uint64 current_depth_level) const;
 	float calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const leaf) const;
-	void populate_buffer_as_monolith(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& out_vb, std::vector<uint32>& out_ib);
 	void populate_buffers(const ROAM_leaf_node* const leaf,
-		std::vector<std::vector<vertex_types::terrain_vertex>>& out_vb, std::vector<std::vector<uint16>>& out_ib);
+		std::vector<std::vector<vertex_types::terrain_vertex>>& output_vertex_buffers, std::vector<std::vector<uint16>>& output_index_buffers);
 
 
 	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16>& index_buffer_data); // debug code

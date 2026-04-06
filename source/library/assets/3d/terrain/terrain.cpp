@@ -496,12 +496,10 @@ void terrain::generate_ROAM_tree()
 	m_ROAM_tree.root->south_tiff_px = height_info.length - 1; // remember we subdivide on pixels, 0 indexed.
 	m_ROAM_tree.root->east_tiff_px = height_info.width - 1; // (as above)
 	generate_ROAM_tree_worker(m_ROAM_tree.root);
-	m_ROAM_tree.tree_depth_to_construct_buffers_at = static_cast<uint16>(calculate_depth_needed_to_begin_buffer_creation_at(m_ROAM_tree.root, 0));
 }
 
 void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
 {
-	// if (got height delta) or (width > 3 && length > 3)
 	const uint32 width = current_leaf->east_tiff_px - current_leaf->west_tiff_px;
 	const uint32 length = current_leaf->south_tiff_px - current_leaf->north_tiff_px;
 	const bool can_subdivide = width > 3 && length > 3;
@@ -546,41 +544,6 @@ void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
 	}
 }
 
-void terrain::calculate_vertex_and_index_count_needed_for_ROAM_leaf(const ROAM_leaf_node* const leaf, uint64& vertices_needed, uint64& indices_needed) const
-{
-	if (does_leaf_have_children(leaf))
-	{
-		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->north_west_child, vertices_needed, indices_needed);
-		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->north_east_child, vertices_needed, indices_needed);
-		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->south_west_child, vertices_needed, indices_needed);
-		calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf->south_east_child, vertices_needed, indices_needed);
-	}
-	else
-	{
-		vertices_needed += 4;
-		indices_needed += 6;
-	}
-}
-
-uint64 terrain::calculate_depth_needed_to_begin_buffer_creation_at(const ROAM_leaf_node* const leaf, uint64 current_depth_level) const
-{
-	uint64 vertices_needed_for_current_level = 0, indices_needed_for_current_level = 0;
-	calculate_vertex_and_index_count_needed_for_ROAM_leaf(leaf, vertices_needed_for_current_level, indices_needed_for_current_level);
-	if (MAX_VERTEX_BUFFER_SIZE > vertices_needed_for_current_level)
-	{
-		return current_depth_level;
-	}
-	assert(does_leaf_have_children(leaf));
-	const auto child_depths_needed =
-	{
-		calculate_depth_needed_to_begin_buffer_creation_at(leaf->north_west_child, current_depth_level + 1),
-		calculate_depth_needed_to_begin_buffer_creation_at(leaf->north_east_child, current_depth_level + 1),
-		calculate_depth_needed_to_begin_buffer_creation_at(leaf->south_west_child, current_depth_level + 1),
-		calculate_depth_needed_to_begin_buffer_creation_at(leaf->south_east_child, current_depth_level + 1)
-	};
-	return std::max(child_depths_needed);
-}
-
 float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const leaf) const
 {
 	float min_value = std::numeric_limits<float>::max();
@@ -595,45 +558,6 @@ float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const lea
 		}
 	}
 	return std::abs(max_value - min_value);
-}
-
-void terrain::populate_buffer_as_monolith(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& out_vb, std::vector<uint32>& out_ib)
-{
-	if (does_leaf_have_children(leaf))
-	{
-		populate_buffer_as_monolith(leaf->north_west_child, out_vb, out_ib);
-		populate_buffer_as_monolith(leaf->north_east_child, out_vb, out_ib);
-		populate_buffer_as_monolith(leaf->south_west_child, out_vb, out_ib);
-		populate_buffer_as_monolith(leaf->south_east_child, out_vb, out_ib);
-	}
-	else
-	{
-		const size_t pre_insert_vertex_buffer_size = out_vb.size();
-
-		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->north_tiff_px));
-		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
-		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
-		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
-		
-
-		const uint32 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
-		const uint32 north_east_vert_index = pre_insert_vertex_buffer_size + 1;
-		const uint32 south_west_vert_index = pre_insert_vertex_buffer_size + 2;
-		const uint32 south_east_vert_index = pre_insert_vertex_buffer_size + 3;
-
-		assert(north_west_vert_index >= pre_insert_vertex_buffer_size);
-		assert(north_east_vert_index >= pre_insert_vertex_buffer_size);
-		assert(south_west_vert_index >= pre_insert_vertex_buffer_size);
-		assert(south_east_vert_index >= pre_insert_vertex_buffer_size);
-
-		out_ib.push_back(north_west_vert_index);
-		out_ib.push_back(south_west_vert_index);
-		out_ib.push_back(north_east_vert_index);
-
-		out_ib.push_back(north_east_vert_index);
-		out_ib.push_back(south_west_vert_index);
-		out_ib.push_back(south_east_vert_index);
-	}
 }
 
 void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
@@ -732,15 +656,11 @@ void terrain::generate_open_gl_buffers()
 	using namespace vertex_types;
 	using namespace gl;
 
-	// std::vector<vertex_types::terrain_vertex> mono_vb;
-	// std::vector<uint32> mono_ib;
-	// populate_buffer_as_monolith(m_ROAM_tree.root, mono_vb, mono_ib);
+	std::vector<std::vector<vertex_types::terrain_vertex>> vertex_buffers;
+	std::vector<std::vector<uint16>> index_buffers;
+	populate_buffers(m_ROAM_tree.root, vertex_buffers, index_buffers);
 
-	std::vector<std::vector<vertex_types::terrain_vertex>> vbs;
-	std::vector<std::vector<uint16>> ibs;
-	populate_buffers(m_ROAM_tree.root, vbs, ibs);
-
-	const size_t num_buffers_needed_for_ROAM = vbs.size();// PICK UP HERE!
+	const size_t num_buffers_needed_for_ROAM = vertex_buffers.size();
 	m_ROAM_tree.renderable_areas.resize(num_buffers_needed_for_ROAM);
 
 	GLuint* ROAM_vao_ids = new GLuint[num_buffers_needed_for_ROAM];
@@ -757,14 +677,14 @@ void terrain::generate_open_gl_buffers()
 		m_ROAM_tree.renderable_areas[i].vertex_array_object_id = ROAM_vao_ids[i];
 		m_ROAM_tree.renderable_areas[i].index_buffer_id = ROAM_index_buffer_ids[i];
 
-		set_tile_bounds(vbs[i], m_ROAM_tree.renderable_areas[i]);
+		set_tile_bounds(vertex_buffers[i], m_ROAM_tree.renderable_areas[i]);
 
 		setup_vertex_attrib_array(m_ROAM_tree.renderable_areas[i].vertex_array_object_id);
 		glBindBuffer(GL_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].vertex_buffer_id);
-		glBufferData(GL_ARRAY_BUFFER, vbs[i].size() * terrain_vertex_struct_size, vbs[i].data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertex_buffers[i].size() * terrain_vertex_struct_size, vertex_buffers[i].data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].index_buffer_id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibs[i].size() * sizeof(uint16), ibs[i].data(), GL_STATIC_DRAW);
-		m_ROAM_tree.renderable_areas[i].num_indices_to_draw = ibs[i].size();
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffers[i].size() * sizeof(uint16), index_buffers[i].data(), GL_STATIC_DRAW);
+		m_ROAM_tree.renderable_areas[i].num_indices_to_draw = index_buffers[i].size();
 	}
 	delete[] ROAM_vao_ids;
 	delete[] ROAM_vertex_buffer_ids;
