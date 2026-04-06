@@ -24,7 +24,6 @@ public:
 	void shutdown() override;
 	void draw() override;
 
-	float get_height_at(float x_world_space, float z_world_space) const;
 	void set_active_camera(std::weak_ptr<const camera> active_camera);
 
 	float get_clip_area_meters_padding() const;

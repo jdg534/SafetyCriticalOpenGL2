@@ -108,11 +108,6 @@ void renderable_terrain::draw()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-float renderable_terrain::get_height_at(float x_world_space, float z_world_space) const
-{
-	return m_terrain.lock()->get_height_at(x_world_space, z_world_space);
-}
-
 void renderable_terrain::set_active_camera(std::weak_ptr<const camera> active_camera)
 {
 	m_active_camera = active_camera;

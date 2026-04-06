@@ -251,41 +251,6 @@ float terrain::get_tiff_height_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) co
 	return m_heights[index];
 }
 
-float terrain::get_height_at(float x_world_space, float z_world_space) const
-{
-	// treat x+ as west to east
-	// treat z+ as north to south. this is how it would appear in the tiff file
-	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length);
-	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width);
-
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float far_north = -(tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
-	const float far_south = (tiff_length_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
-	const float far_east = (tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-
-	const bool too_far_north = z_world_space <= far_north;
-	const bool too_far_south = z_world_space >= far_south;
-	const bool too_far_west = x_world_space <= far_west;
-	const bool too_far_east = x_world_space >= far_east;
-
-	if (too_far_north || too_far_south || too_far_west || too_far_east) return 0.0f;
-
-	// will otherwise bilerp so will 
-	const float position_in_tiff_x = x_world_space - far_west;
-	const float position_in_tiff_z = z_world_space - far_north;
-	const float x_weight = position_in_tiff_x - std::floorf(position_in_tiff_x);
-	const float z_weight = position_in_tiff_z - std::floorf(position_in_tiff_z);
-
-	const uint16 x_tiff_pixel_west = static_cast<uint16>(std::floorf(position_in_tiff_x));
-	const uint16 y_tiff_pixel_north = static_cast<uint16>(std::floorf(position_in_tiff_z));
-	const uint16 x_tiff_pixel_east = x_tiff_pixel_west + 1;
-	const uint16 y_tiff_pixel_south = y_tiff_pixel_north + 1;
-
-	const float x_north = glm::lerp(get_tiff_height_at(x_tiff_pixel_west, y_tiff_pixel_north), get_tiff_height_at(x_tiff_pixel_east, y_tiff_pixel_north), x_weight);
-	const float x_south = glm::lerp(get_tiff_height_at(x_tiff_pixel_west, y_tiff_pixel_south), get_tiff_height_at(x_tiff_pixel_east, y_tiff_pixel_south), x_weight);
-	return glm::lerp(x_north, x_south, z_weight);
-}
-
 const std::vector<renderable_tile_area>& terrain::get_renderable_tiles() const
 {
 	return m_ROAM_tree.renderable_areas;
