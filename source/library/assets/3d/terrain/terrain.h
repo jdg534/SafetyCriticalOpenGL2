@@ -122,8 +122,11 @@ private:
 	void calculate_vertex_and_index_count_needed_for_ROAM_leaf(const ROAM_leaf_node* const leaf, uint64& vertices_needed, uint64& indices_needed) const; // can be static?
 	uint64 calculate_depth_needed_to_begin_buffer_creation_at(const ROAM_leaf_node* const leaf, uint64 current_depth_level) const;
 	float calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const leaf) const;
-	static void get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_to_decend, const ROAM_leaf_node* const leaf, std::vector<const ROAM_leaf_node*>& leaves);
-	void fill_vertex_and_index_buffer_for_leaf(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& vertex_buffer, std::vector<uint16>& index_buffer) const;
+	void populate_buffer_as_monolith(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& out_vb, std::vector<uint32>& out_ib);
+	void populate_buffers(const ROAM_leaf_node* const leaf,
+		std::vector<std::vector<vertex_types::terrain_vertex>>& out_vb, std::vector<std::vector<uint16>>& out_ib);
+
+
 	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16>& index_buffer_data); // debug code
 	static bool does_leaf_have_children(const ROAM_leaf_node* const leaf);
 

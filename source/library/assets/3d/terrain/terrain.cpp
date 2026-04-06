@@ -597,18 +597,98 @@ float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const lea
 	return std::abs(max_value - min_value);
 }
 
-void terrain::get_leaves_to_begin_buffer_population_at(uint64 remaining_depths_to_decend, const ROAM_leaf_node* const leaf, std::vector<const ROAM_leaf_node*>& leaves)
+void terrain::populate_buffer_as_monolith(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& out_vb, std::vector<uint32>& out_ib)
 {
-	if (remaining_depths_to_decend > 0 && does_leaf_have_children(leaf))
+	if (does_leaf_have_children(leaf))
 	{
-		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->north_west_child, leaves);
-		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->north_east_child, leaves);
-		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->south_west_child, leaves);
-		get_leaves_to_begin_buffer_population_at(remaining_depths_to_decend - 1, leaf->south_east_child, leaves);
+		populate_buffer_as_monolith(leaf->north_west_child, out_vb, out_ib);
+		populate_buffer_as_monolith(leaf->north_east_child, out_vb, out_ib);
+		populate_buffer_as_monolith(leaf->south_west_child, out_vb, out_ib);
+		populate_buffer_as_monolith(leaf->south_east_child, out_vb, out_ib);
 	}
 	else
 	{
-		leaves.push_back(leaf);
+		const size_t pre_insert_vertex_buffer_size = out_vb.size();
+
+		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->north_tiff_px));
+		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
+		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
+		out_vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
+		
+
+		const uint32 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
+		const uint32 north_east_vert_index = pre_insert_vertex_buffer_size + 1;
+		const uint32 south_west_vert_index = pre_insert_vertex_buffer_size + 2;
+		const uint32 south_east_vert_index = pre_insert_vertex_buffer_size + 3;
+
+		assert(north_west_vert_index >= pre_insert_vertex_buffer_size);
+		assert(north_east_vert_index >= pre_insert_vertex_buffer_size);
+		assert(south_west_vert_index >= pre_insert_vertex_buffer_size);
+		assert(south_east_vert_index >= pre_insert_vertex_buffer_size);
+
+		out_ib.push_back(north_west_vert_index);
+		out_ib.push_back(south_west_vert_index);
+		out_ib.push_back(north_east_vert_index);
+
+		out_ib.push_back(north_east_vert_index);
+		out_ib.push_back(south_west_vert_index);
+		out_ib.push_back(south_east_vert_index);
+	}
+}
+
+void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
+	std::vector<std::vector<vertex_types::terrain_vertex>>& out_vb, std::vector<std::vector<uint16>>& out_ib)
+{
+	if (does_leaf_have_children(leaf))
+	{
+		populate_buffers(leaf->north_west_child, out_vb, out_ib);
+		populate_buffers(leaf->north_east_child, out_vb, out_ib);
+		populate_buffers(leaf->south_west_child, out_vb, out_ib);
+		populate_buffers(leaf->south_east_child, out_vb, out_ib);
+	}
+	else
+	{
+		if (out_vb.size() == 0 || out_ib.size() == 0)
+		{
+			out_vb.push_back({});
+			out_ib.push_back({});
+		}
+
+		const size_t current_vb_size = out_vb[out_vb.size() - 1].size();
+		if (current_vb_size + 4 >= MAX_VERTEX_BUFFER_SIZE)
+		{
+			out_vb.push_back({});
+			out_ib.push_back({});
+		}
+
+		std::vector<vertex_types::terrain_vertex>& vb = out_vb[out_vb.size() - 1];
+		std::vector<uint16>& ib = out_ib[out_ib.size() - 1];
+
+		const size_t pre_insert_vertex_buffer_size = vb.size();
+
+		vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->north_tiff_px));
+		vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
+		vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
+		vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
+
+
+		const uint32 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
+		const uint32 north_east_vert_index = pre_insert_vertex_buffer_size + 1;
+		const uint32 south_west_vert_index = pre_insert_vertex_buffer_size + 2;
+		const uint32 south_east_vert_index = pre_insert_vertex_buffer_size + 3;
+
+		assert(north_west_vert_index >= pre_insert_vertex_buffer_size);
+		assert(north_east_vert_index >= pre_insert_vertex_buffer_size);
+		assert(south_west_vert_index >= pre_insert_vertex_buffer_size);
+		assert(south_east_vert_index >= pre_insert_vertex_buffer_size);
+
+		ib.push_back(north_west_vert_index);
+		ib.push_back(south_west_vert_index);
+		ib.push_back(north_east_vert_index);
+
+		ib.push_back(north_east_vert_index);
+		ib.push_back(south_west_vert_index);
+		ib.push_back(south_east_vert_index);
 	}
 }
 
@@ -636,44 +716,6 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 	}
 }
 
-void terrain::fill_vertex_and_index_buffer_for_leaf(const ROAM_leaf_node* const leaf, std::vector<vertex_types::terrain_vertex>& vertex_buffer, std::vector<uint16>& index_buffer) const
-{
-	if (does_leaf_have_children(leaf))
-	{
-		fill_vertex_and_index_buffer_for_leaf(leaf->north_west_child, vertex_buffer, index_buffer);
-		fill_vertex_and_index_buffer_for_leaf(leaf->north_east_child, vertex_buffer, index_buffer);
-		fill_vertex_and_index_buffer_for_leaf(leaf->south_west_child, vertex_buffer, index_buffer);
-		fill_vertex_and_index_buffer_for_leaf(leaf->south_east_child, vertex_buffer, index_buffer);
-	}
-	else
-	{
-		const size_t pre_insert_vertex_buffer_size = vertex_buffer.size();
-
-		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->north_tiff_px));
-		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
-		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
-		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
-		assert(vertex_buffer.size() <= MAX_VERTEX_BUFFER_SIZE);
-
-		const uint16 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
-		const uint16 north_east_vert_index = pre_insert_vertex_buffer_size + 1;
-		const uint16 south_west_vert_index = pre_insert_vertex_buffer_size + 2;
-		const uint16 south_east_vert_index = pre_insert_vertex_buffer_size + 3;
-
-		assert(north_west_vert_index >= pre_insert_vertex_buffer_size);
-		assert(north_east_vert_index >= pre_insert_vertex_buffer_size);
-		assert(south_west_vert_index >= pre_insert_vertex_buffer_size);
-		assert(south_east_vert_index >= pre_insert_vertex_buffer_size);
-
-		index_buffer.push_back(north_west_vert_index);
-		index_buffer.push_back(south_west_vert_index);
-		index_buffer.push_back(north_east_vert_index);
-
-		index_buffer.push_back(north_east_vert_index);
-		index_buffer.push_back(south_west_vert_index);
-		index_buffer.push_back(south_east_vert_index);
-	}
-}
 
 bool terrain::does_leaf_have_children(const ROAM_leaf_node* const leaf)
 {
@@ -690,9 +732,15 @@ void terrain::generate_open_gl_buffers()
 	using namespace vertex_types;
 	using namespace gl;
 
-	std::vector<const ROAM_leaf_node*> ROAM_tree_leaves;
-	get_leaves_to_begin_buffer_population_at(m_ROAM_tree.tree_depth_to_construct_buffers_at, m_ROAM_tree.root, ROAM_tree_leaves);
-	const size_t num_buffers_needed_for_ROAM = ROAM_tree_leaves.size();
+	// std::vector<vertex_types::terrain_vertex> mono_vb;
+	// std::vector<uint32> mono_ib;
+	// populate_buffer_as_monolith(m_ROAM_tree.root, mono_vb, mono_ib);
+
+	std::vector<std::vector<vertex_types::terrain_vertex>> vbs;
+	std::vector<std::vector<uint16>> ibs;
+	populate_buffers(m_ROAM_tree.root, vbs, ibs);
+
+	const size_t num_buffers_needed_for_ROAM = vbs.size();// PICK UP HERE!
 	m_ROAM_tree.renderable_areas.resize(num_buffers_needed_for_ROAM);
 
 	GLuint* ROAM_vao_ids = new GLuint[num_buffers_needed_for_ROAM];
@@ -702,36 +750,21 @@ void terrain::generate_open_gl_buffers()
 	GLuint* ROAM_index_buffer_ids = new GLuint[num_buffers_needed_for_ROAM];
 	glGenBuffers(num_buffers_needed_for_ROAM, ROAM_index_buffer_ids);
 
-	vector<terrain_vertex> ROAM_vertex_buffer_data;
-	vector<uint16_t> ROAM_index_buffer_data;
 	for (size_t i = 0; i < num_buffers_needed_for_ROAM; ++i)
 	{
-		uint64 vertices_needed = 0, indices_needed = 0;
-		calculate_vertex_and_index_count_needed_for_ROAM_leaf(ROAM_tree_leaves[i], vertices_needed, indices_needed);
-		assert(vertices_needed < MAX_VERTEX_BUFFER_SIZE);
-
-		ROAM_vertex_buffer_data.reserve(vertices_needed);
-		ROAM_index_buffer_data.reserve(indices_needed);
-		fill_vertex_and_index_buffer_for_leaf(ROAM_tree_leaves[i], ROAM_vertex_buffer_data, ROAM_index_buffer_data);
-		sanity_check_buffer_data(ROAM_vertex_buffer_data, ROAM_index_buffer_data); // debug code
-
-
 		m_ROAM_tree.renderable_areas[i].tile_index = i;
 		m_ROAM_tree.renderable_areas[i].vertex_buffer_id = ROAM_vertex_buffer_ids[i];
 		m_ROAM_tree.renderable_areas[i].vertex_array_object_id = ROAM_vao_ids[i];
 		m_ROAM_tree.renderable_areas[i].index_buffer_id = ROAM_index_buffer_ids[i];
 
-		set_tile_bounds(ROAM_vertex_buffer_data, m_ROAM_tree.renderable_areas[i]);
+		set_tile_bounds(vbs[i], m_ROAM_tree.renderable_areas[i]);
 
 		setup_vertex_attrib_array(m_ROAM_tree.renderable_areas[i].vertex_array_object_id);
 		glBindBuffer(GL_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].vertex_buffer_id);
-		glBufferData(GL_ARRAY_BUFFER, ROAM_vertex_buffer_data.size() * terrain_vertex_struct_size, ROAM_vertex_buffer_data.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vbs[i].size() * terrain_vertex_struct_size, vbs[i].data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].index_buffer_id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ROAM_index_buffer_data.size() * sizeof(uint16_t), ROAM_index_buffer_data.data(), GL_STATIC_DRAW);
-		m_ROAM_tree.renderable_areas[i].num_indices_to_draw = ROAM_index_buffer_data.size();
-
-		ROAM_vertex_buffer_data.clear();
-		ROAM_index_buffer_data.clear();
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibs[i].size() * sizeof(uint16), ibs[i].data(), GL_STATIC_DRAW);
+		m_ROAM_tree.renderable_areas[i].num_indices_to_draw = ibs[i].size();
 	}
 	delete[] ROAM_vao_ids;
 	delete[] ROAM_vertex_buffer_ids;
