@@ -93,7 +93,7 @@ public:
 
 
 	const geo_tiff_height_info& get_height_info() const;
-	float get_tiff_height_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
+	float get_tiff_height_at(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const;
 
 	const std::vector<renderable_tile_area>& get_renderable_tiles() const;
 

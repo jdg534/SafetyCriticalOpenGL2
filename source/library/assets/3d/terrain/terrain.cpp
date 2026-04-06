@@ -244,8 +244,11 @@ const geo_tiff_height_info& terrain::get_height_info() const
 	return m_geo_tiff_height_info;
 }
 
-float terrain::get_tiff_height_at(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const
+float terrain::get_tiff_height_at(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const
 {
+	x_tiff_pixels = std::min(x_tiff_pixels, m_geo_tiff_height_info.width -1);
+	y_tiff_pixels = std::min(y_tiff_pixels, m_geo_tiff_height_info.length -1);
+
 	const size_t index = get_height_index(x_tiff_pixels, y_tiff_pixels);
 	assert(index < m_heights.size());
 	return m_heights[index];
