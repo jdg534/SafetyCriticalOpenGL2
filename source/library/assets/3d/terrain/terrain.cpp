@@ -631,32 +631,62 @@ void terrain::generate_open_gl_buffers()
 	const size_t num_buffers_needed_for_ROAM = vertex_buffers.size();
 	m_ROAM_tree.renderable_areas.resize(num_buffers_needed_for_ROAM);
 
-	GLuint* ROAM_vao_ids = new GLuint[num_buffers_needed_for_ROAM];
-	glGenVertexArrays(num_buffers_needed_for_ROAM, ROAM_vao_ids);
-	GLuint* ROAM_vertex_buffer_ids = new GLuint[num_buffers_needed_for_ROAM];
-	glGenBuffers(num_buffers_needed_for_ROAM, ROAM_vertex_buffer_ids);
-	GLuint* ROAM_index_buffer_ids = new GLuint[num_buffers_needed_for_ROAM];
-	glGenBuffers(num_buffers_needed_for_ROAM, ROAM_index_buffer_ids);
+	vector<GLuint> vaos(num_buffers_needed_for_ROAM);
+	vector<GLuint> vbos(num_buffers_needed_for_ROAM);
+	vector<GLuint> ebos(num_buffers_needed_for_ROAM);
+
+	glGenVertexArrays(num_buffers_needed_for_ROAM, vaos.data());
+	glGenBuffers(num_buffers_needed_for_ROAM, vbos.data());
+	glGenBuffers(num_buffers_needed_for_ROAM, ebos.data());
 
 	for (size_t i = 0; i < num_buffers_needed_for_ROAM; ++i)
 	{
-		m_ROAM_tree.renderable_areas[i].tile_index = i;
-		m_ROAM_tree.renderable_areas[i].vertex_buffer_id = ROAM_vertex_buffer_ids[i];
-		m_ROAM_tree.renderable_areas[i].vertex_array_object_id = ROAM_vao_ids[i];
-		m_ROAM_tree.renderable_areas[i].index_buffer_id = ROAM_index_buffer_ids[i];
+		auto& area = m_ROAM_tree.renderable_areas[i];
 
-		set_tile_bounds(vertex_buffers[i], m_ROAM_tree.renderable_areas[i]);
+		area.tile_index = i;
+		area.vertex_array_object_id = vaos[i];
+		area.vertex_buffer_id = vbos[i];
+		area.index_buffer_id = ebos[i];
+		area.num_indices_to_draw = index_buffers[i].size();
 
-		setup_vertex_attrib_array(m_ROAM_tree.renderable_areas[i].vertex_array_object_id);
-		glBindBuffer(GL_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].vertex_buffer_id);
-		glBufferData(GL_ARRAY_BUFFER, vertex_buffers[i].size() * terrain_vertex_struct_size, vertex_buffers[i].data(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ROAM_tree.renderable_areas[i].index_buffer_id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffers[i].size() * sizeof(uint16), index_buffers[i].data(), GL_STATIC_DRAW);
-		m_ROAM_tree.renderable_areas[i].num_indices_to_draw = index_buffers[i].size();
+		set_tile_bounds(vertex_buffers[i], area);
+
+		// --- Begin immutable setup for this VAO ---
+		glBindVertexArray(area.vertex_array_object_id);
+
+		// 1. Bind and upload VBO FIRST
+		glBindBuffer(GL_ARRAY_BUFFER, area.vertex_buffer_id);
+		glBufferData(GL_ARRAY_BUFFER,
+			vertex_buffers[i].size() * terrain_vertex_struct_size,
+			vertex_buffers[i].data(),
+			GL_STATIC_DRAW);
+
+		// 2. Bind and upload EBO (captured by VAO)
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, area.index_buffer_id);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+			index_buffers[i].size() * sizeof(uint16),
+			index_buffers[i].data(),
+			GL_STATIC_DRAW);
+
+		// 3. NOW define vertex layout (captures VBO binding)
+		// IMPORTANT: this function MUST NOT bind VAO internally
+		setup_vertex_attrib_array(area.vertex_array_object_id);
+
+#ifdef _DEBUG
+		// --- Validate captured state ---
+		GLint boundEBO = 0;
+		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &boundEBO);
+		assert(boundEBO == (GLint)area.index_buffer_id);
+
+		GLint boundVBO = 0;
+		glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &boundVBO);
+		assert(boundVBO == (GLint)area.vertex_buffer_id);
+#endif
+
+		// 4. Freeze VAO state
+		glBindVertexArray(0);
 	}
-	delete[] ROAM_vao_ids;
-	delete[] ROAM_vertex_buffer_ids;
-	delete[] ROAM_index_buffer_ids;
+
 	
 	// Deleteing the tree. we've got what we want of out it.
 	delete m_ROAM_tree.root; // remember the delete operator will recursively delete 
@@ -746,7 +776,6 @@ void terrain::setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id)
 {
 	using namespace gl;
 	using namespace vertex_types;
-	glBindVertexArray(vertex_attrib_array_id);
 	// attribute layout: 0 = position, 1 = texture_coordinates ,2 = normal, 3 = terrain_uv
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, terrain_vertex_struct_size, (void*)offsetof(terrain_vertex, position));
