@@ -544,6 +544,9 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 		{
 			out_vb.push_back({});
 			out_ib.push_back({});
+			const size_t end_buffer_index = out_vb.size() - 1;
+			out_vb[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
+			out_ib[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
 		}
 
 		const size_t current_vb_size = out_vb[out_vb.size() - 1].size();
@@ -551,6 +554,9 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 		{
 			out_vb.push_back({});
 			out_ib.push_back({});
+			const size_t end_buffer_index = out_vb.size() - 1;
+			out_vb[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
+			out_ib[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
 		}
 
 		std::vector<vertex_types::terrain_vertex>& vb = out_vb[out_vb.size() - 1];
