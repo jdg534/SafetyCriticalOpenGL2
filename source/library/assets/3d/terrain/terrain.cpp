@@ -529,45 +529,45 @@ float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const lea
 }
 
 void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
-	std::vector<std::vector<vertex_types::terrain_vertex>>& out_vb, std::vector<std::vector<uint16>>& out_ib)
+	std::vector<std::vector<vertex_types::terrain_vertex>>& output_vertex_buffers, std::vector<std::vector<uint16>>& output_index_buffers)
 {
 	if (does_leaf_have_children(leaf))
 	{
-		populate_buffers(leaf->north_west_child, out_vb, out_ib);
-		populate_buffers(leaf->north_east_child, out_vb, out_ib);
-		populate_buffers(leaf->south_west_child, out_vb, out_ib);
-		populate_buffers(leaf->south_east_child, out_vb, out_ib);
+		populate_buffers(leaf->north_west_child, output_vertex_buffers, output_index_buffers);
+		populate_buffers(leaf->north_east_child, output_vertex_buffers, output_index_buffers);
+		populate_buffers(leaf->south_west_child, output_vertex_buffers, output_index_buffers);
+		populate_buffers(leaf->south_east_child, output_vertex_buffers, output_index_buffers);
 	}
 	else
 	{
-		if (out_vb.size() == 0 || out_ib.size() == 0)
+		if (output_vertex_buffers.size() == 0 || output_index_buffers.size() == 0)
 		{
-			out_vb.push_back({});
-			out_ib.push_back({});
-			const size_t end_buffer_index = out_vb.size() - 1;
-			out_vb[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
-			out_ib[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
+			output_vertex_buffers.push_back({});
+			output_index_buffers.push_back({});
+			const size_t end_buffer_index = output_vertex_buffers.size() - 1;
+			output_vertex_buffers[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
+			output_index_buffers[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
 		}
 
-		const size_t current_vb_size = out_vb[out_vb.size() - 1].size();
+		const size_t current_vb_size = output_vertex_buffers[output_vertex_buffers.size() - 1].size();
 		if (current_vb_size + 4 >= MAX_VERTEX_BUFFER_SIZE)
 		{
-			out_vb.push_back({});
-			out_ib.push_back({});
-			const size_t end_buffer_index = out_vb.size() - 1;
-			out_vb[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
-			out_ib[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
+			output_vertex_buffers.push_back({});
+			output_index_buffers.push_back({});
+			const size_t end_buffer_index = output_vertex_buffers.size() - 1;
+			output_vertex_buffers[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
+			output_index_buffers[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
 		}
 
-		std::vector<vertex_types::terrain_vertex>& vb = out_vb[out_vb.size() - 1];
-		std::vector<uint16>& ib = out_ib[out_ib.size() - 1];
+		std::vector<vertex_types::terrain_vertex>& vertex_buffer = output_vertex_buffers[output_vertex_buffers.size() - 1];
+		std::vector<uint16>& index_buffer = output_index_buffers[output_index_buffers.size() - 1];
 
-		const size_t pre_insert_vertex_buffer_size = vb.size();
+		const size_t pre_insert_vertex_buffer_size = vertex_buffer.size();
 
-		vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->north_tiff_px));
-		vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
-		vb.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
-		vb.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->north_tiff_px));
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->north_tiff_px));
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->west_tiff_px, leaf->south_tiff_px));
+		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
 
 
 		const uint32 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
@@ -580,13 +580,13 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 		assert(south_west_vert_index >= pre_insert_vertex_buffer_size);
 		assert(south_east_vert_index >= pre_insert_vertex_buffer_size);
 
-		ib.push_back(north_west_vert_index);
-		ib.push_back(south_west_vert_index);
-		ib.push_back(north_east_vert_index);
+		index_buffer.push_back(north_west_vert_index);
+		index_buffer.push_back(south_west_vert_index);
+		index_buffer.push_back(north_east_vert_index);
 
-		ib.push_back(north_east_vert_index);
-		ib.push_back(south_west_vert_index);
-		ib.push_back(south_east_vert_index);
+		index_buffer.push_back(north_east_vert_index);
+		index_buffer.push_back(south_west_vert_index);
+		index_buffer.push_back(south_east_vert_index);
 	}
 }
 
