@@ -85,7 +85,7 @@ void renderable_terrain::draw()
 	// buffers
 	for (const auto& terrain_cell : terrain->get_renderable_tiles())
 	{
-		if (checks::do_boxes_overlap_y_axis_up(view_area, tile_area_to_aabb(terrain_cell))) // bring it back later.
+		if (checks::do_boxes_overlap_y_axis_up(view_area, tile_area_to_aabb(terrain_cell)))
 		{
 			glUniform4fv(u_terrain_blend_colour_location, 1, glm::value_ptr(terrain_cell.blend_colour));
 			glBindVertexArray(terrain_cell.vertex_array_object_id);
