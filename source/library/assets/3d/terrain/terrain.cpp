@@ -106,89 +106,9 @@ void terrain::initialise()
 	TIFFGetField(tiff_file, TIFFTAG_BITSPERSAMPLE, &m_geo_tiff_height_info.bits_per_sample);
 	TIFFGetFieldDefaulted(tiff_file, TIFFTAG_SAMPLEFORMAT, &m_geo_tiff_height_info.sample_format);
 
+	compute_tiff_pixel_dimensions(geo_tiff, tiff_file);
 
-	// we're going to assume the tiff is using angular values (degees) for the X & Y in tiff, not linear (meters)
-	// keys are in: geokeys.inc
-
-	// --- Pixel scale ---
-	unsigned short num_pixel_scale_count = 0;
-	double* pixel_scale = nullptr;
-	if (TIFFGetField(tiff_file, TIFFTAG_GEOPIXELSCALE,&num_pixel_scale_count, &pixel_scale))
-	{
-		assert(pixel_scale != nullptr);
-
-		const float pixel_longitude_scale_in_degrees = pixel_scale[0];
-		const float pixel_latitude_scale_in_degrees = pixel_scale[1];
-
-		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0f;
-		const float centre_latitude_degrees = calculate_centre_latitude_from_tiepoints(tiff_file, m_geo_tiff_height_info.length, pixel_latitude_scale_in_degrees);
-
-		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0f;
-		const float meters_per_degree_longitude = METERS_PER_DEGREE_LATITUDE * std::cos(centre_latitude_radians);
-
-		m_geo_tiff_height_info.meters_per_pixel_x = pixel_longitude_scale_in_degrees * meters_per_degree_longitude;
-		m_geo_tiff_height_info.meters_per_pixel_z = pixel_latitude_scale_in_degrees * METERS_PER_DEGREE_LATITUDE;
-		m_geo_tiff_height_info.pixel_vertical_units_scale = num_pixel_scale_count > 2 ? pixel_scale[2] : m_geo_tiff_height_info.pixel_vertical_units_scale;
-		m_geo_tiff_height_info.pixel_vertical_units_scale = m_geo_tiff_height_info.pixel_vertical_units_scale == 0.0f ? 1.0f : m_geo_tiff_height_info.pixel_vertical_units_scale;
-	}
-
-	// --- Vertical units ---
-	short vertical_units = 0;
-	if (GTIFKeyGet(geo_tiff, VerticalUnitsGeoKey, &vertical_units, 0, 1))
-	{
-		// values from: http://geotiff.maptools.org/spec/geotiff6.html, focusing on meters and feet.
-		if (vertical_units == 9001)
-		{
-			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::METERS;
-		}
-		else if (vertical_units == 9002)
-		{
-			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::FEET;
-		}
-		else
-		{
-			throw runtime_error("Unsupported vertical unit encountered");
-		}
-	}
-
-	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_VOID) { throw runtime_error("unsupported height data format"); }
-
-	const bool is_tiled = TIFFIsTiled(tiff_file);
-
-	m_heights.resize(m_geo_tiff_height_info.width * m_geo_tiff_height_info.length);
-
-	if (is_tiled)
-	{
-		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
-		{
-			read_heights_f32_tiled(m_heights, tiff_file);
-			m_geo_tiff_height_info.use_raw_height_value = true;
-		}
-		else
-		{
-			throw runtime_error("Unsupported tiled tiff file format encountered.");
-		}
-	}
-	else
-	{
-		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_UINT && m_geo_tiff_height_info.bits_per_sample == 8)
-		{
-			read_heights_uint8(m_heights, tiff_file);
-		}
-		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_INT && m_geo_tiff_height_info.bits_per_sample == 8)
-		{
-			read_heights_sint8(m_heights, tiff_file);
-		}
-		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
-		{
-			read_heights_f32(m_heights, tiff_file);
-			m_geo_tiff_height_info.use_raw_height_value = true;
-		}
-		else
-		{
-			throw runtime_error("Unsupported tiff file format encountered.");
-		}
-	}
+	read_heights(tiff_file);
 	flip_rows(m_heights, m_geo_tiff_height_info.width, m_geo_tiff_height_info.length);
 	override_nan_values(m_heights);
 	GTIFFree(geo_tiff);
@@ -291,6 +211,90 @@ gl::GLuint terrain::get_alpha_channel_mapped_texture_texture_id() const
 
 // private
 //////////
+
+void terrain::compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff)
+{
+	// --- Pixel scale ---
+	unsigned short num_pixel_scale_count = 0;
+	double* pixel_scale = nullptr;
+	// we're going to assume the tiff is using angular values (degees) for the X & Y in tiff, not linear (meters)
+	if (TIFFGetField(tiff, TIFFTAG_GEOPIXELSCALE, &num_pixel_scale_count, &pixel_scale))
+	{
+		assert(pixel_scale != nullptr);
+
+		const float pixel_longitude_scale_in_degrees = pixel_scale[0];
+		const float pixel_latitude_scale_in_degrees = pixel_scale[1];
+
+		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0f;
+		const float centre_latitude_degrees = calculate_centre_latitude_from_tiepoints(tiff, m_geo_tiff_height_info.length, pixel_latitude_scale_in_degrees);
+
+		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0f;
+		const float meters_per_degree_longitude = METERS_PER_DEGREE_LATITUDE * std::cos(centre_latitude_radians);
+
+		m_geo_tiff_height_info.meters_per_pixel_x = pixel_longitude_scale_in_degrees * meters_per_degree_longitude;
+		m_geo_tiff_height_info.meters_per_pixel_z = pixel_latitude_scale_in_degrees * METERS_PER_DEGREE_LATITUDE;
+		m_geo_tiff_height_info.pixel_vertical_units_scale = num_pixel_scale_count > 2 ? pixel_scale[2] : m_geo_tiff_height_info.pixel_vertical_units_scale;
+		m_geo_tiff_height_info.pixel_vertical_units_scale = m_geo_tiff_height_info.pixel_vertical_units_scale == 0.0f ? 1.0f : m_geo_tiff_height_info.pixel_vertical_units_scale;
+	}
+
+	// --- Vertical units ---
+	short vertical_units = 0;
+	if (GTIFKeyGet(gtif, VerticalUnitsGeoKey, &vertical_units, 0, 1))
+	{
+		// values from: http://geotiff.maptools.org/spec/geotiff6.html, focusing on meters and feet.
+		if (vertical_units == 9001)
+		{
+			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::METERS;
+		}
+		else if (vertical_units == 9002)
+		{
+			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::FEET;
+		}
+		else
+		{
+			throw std::runtime_error("Unsupported vertical unit encountered");
+		}
+	}
+}
+
+void terrain::read_heights(TIFF* tiff_file)
+{
+	if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_VOID) { throw std::runtime_error("unsupported height data format"); }
+	const bool is_tiled = TIFFIsTiled(tiff_file);
+	m_heights.resize(m_geo_tiff_height_info.width * m_geo_tiff_height_info.length);
+	if (is_tiled)
+	{
+		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
+		{
+			read_heights_f32_tiled(m_heights, tiff_file);
+			m_geo_tiff_height_info.use_raw_height_value = true;
+		}
+		else
+		{
+			throw std::runtime_error("Unsupported tiled tiff file format encountered.");
+		}
+	}
+	else
+	{
+		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_UINT && m_geo_tiff_height_info.bits_per_sample == 8)
+		{
+			read_heights_uint8(m_heights, tiff_file);
+		}
+		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_INT && m_geo_tiff_height_info.bits_per_sample == 8)
+		{
+			read_heights_sint8(m_heights, tiff_file);
+		}
+		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
+		{
+			read_heights_f32(m_heights, tiff_file);
+			m_geo_tiff_height_info.use_raw_height_value = true;
+		}
+		else
+		{
+			throw std::runtime_error("Unsupported tiff file format encountered.");
+		}
+	}
+}
 
 void terrain::read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_file)
 {
@@ -614,7 +618,6 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 	}
 }
 
-
 bool terrain::does_leaf_have_children(const ROAM_leaf_node* const leaf)
 {
 	if (leaf->north_west_child) return true;
@@ -654,12 +657,10 @@ void terrain::generate_open_gl_buffers()
 		area.vertex_buffer_id = vbos[i];
 		area.index_buffer_id = ebos[i];
 		area.num_indices_to_draw = index_buffers[i].size();
-
+		sanity_check_buffer_data(vertex_buffers[i], index_buffers[i]);
 		set_tile_bounds(vertex_buffers[i], area);
 
-		// --- Begin immutable setup for this VAO ---
-		glBindVertexArray(area.vertex_array_object_id);
-
+		glBindVertexArray(area.vertex_array_object_id); // don't change the order that the numbered steps take place in.
 		// 1. Bind and upload VBO FIRST
 		glBindBuffer(GL_ARRAY_BUFFER, area.vertex_buffer_id);
 		glBufferData(GL_ARRAY_BUFFER,
@@ -675,7 +676,6 @@ void terrain::generate_open_gl_buffers()
 			GL_STATIC_DRAW);
 
 		// 3. NOW define vertex layout (captures VBO binding)
-		// IMPORTANT: this function MUST NOT bind VAO internally
 		setup_vertex_attrib_array(area.vertex_array_object_id);
 
 #ifdef _DEBUG
@@ -687,13 +687,12 @@ void terrain::generate_open_gl_buffers()
 		GLint boundVBO = 0;
 		glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &boundVBO);
 		assert(boundVBO == (GLint)area.vertex_buffer_id);
-#endif
+#endif // _DEBUG
 
 		// 4. Freeze VAO state
 		glBindVertexArray(0);
 	}
 
-	
 	// Deleteing the tree. we've got what we want of out it.
 	delete m_ROAM_tree.root; // remember the delete operator will recursively delete 
 

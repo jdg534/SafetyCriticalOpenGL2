@@ -6,6 +6,7 @@
 #include "../../../render/vertex_types.h"
 
 #include <tiffio.h>
+#include <geotiff.h>
 
 #include <string>
 #include <vector>
@@ -93,7 +94,6 @@ public:
 	void shutdown() override;
 	asset_type get_type() const override;
 
-
 	const geo_tiff_height_info& get_height_info() const;
 	float get_tiff_height_at(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const;
 
@@ -107,6 +107,9 @@ public:
 
 private:
 
+	void compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff); // args should be const, but the api needs them to be mutable.
+
+	void read_heights(TIFF* tiff_file);
 	static void read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_file);
@@ -123,7 +126,6 @@ private:
 	void populate_buffers(const ROAM_leaf_node* const leaf,
 		std::vector<std::vector<vertex_types::terrain_vertex>>& output_vertex_buffers, std::vector<std::vector<uint16>>& output_index_buffers);
 
-
 	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16>& index_buffer_data); // debug code
 	static bool does_leaf_have_children(const ROAM_leaf_node* const leaf);
 
@@ -132,9 +134,7 @@ private:
 	vertex_types::terrain_vertex get_vertex_for_tiff_pixel(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
 	
 	static void set_tile_bounds(const std::vector<vertex_types::terrain_vertex>& vertices, renderable_tile_area& to_set);
-
 	static void setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id);
-	
 
 	gl::GLuint get_texture_id(std::string_view texture_asset_name) const;
 
