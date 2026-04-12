@@ -114,12 +114,6 @@ void terrain::initialise()
 	XTIFFClose(tiff_file);
 	tiff_file = nullptr;
 
-	if ((doc.HasMember("height_min_meters") && doc.HasMember("height_max_meters")) && false == m_geo_tiff_height_info.use_raw_height_value)
-	{
-		m_geo_tiff_height_info.height_min_meters = doc["height_min_meters"].GetFloat();
-		m_geo_tiff_height_info.height_max_meters = doc["height_max_meters"].GetFloat();
-	}
-
 	generate_ROAM_tree();
 	generate_open_gl_buffers();
 
@@ -266,7 +260,6 @@ void terrain::read_heights(TIFF* tiff_file)
 		if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
 		{
 			read_heights_f32_tiled(m_heights, tiff_file);
-			m_geo_tiff_height_info.use_raw_height_value = true;
 		}
 		else
 		{
@@ -286,7 +279,6 @@ void terrain::read_heights(TIFF* tiff_file)
 		else if (m_geo_tiff_height_info.sample_format == SAMPLEFORMAT_IEEEFP && m_geo_tiff_height_info.bits_per_sample == 32)
 		{
 			read_heights_f32(m_heights, tiff_file);
-			m_geo_tiff_height_info.use_raw_height_value = true;
 		}
 		else
 		{

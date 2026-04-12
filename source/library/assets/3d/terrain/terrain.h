@@ -33,11 +33,6 @@ struct geo_tiff_height_info
 	float meters_per_pixel_x = 1.0f;
 	float meters_per_pixel_z = 1.0f; // length, positive Z points North.
 	float pixel_vertical_units_scale = 1.0f;
-
-	// the following are only to be used if raw values can't be used for height. refactor these out. We'll want raw floats
-	bool use_raw_height_value = false;
-	float height_min_meters = 0.0;
-	float height_max_meters = 100.0;
 };
 
 struct renderable_tile_area
