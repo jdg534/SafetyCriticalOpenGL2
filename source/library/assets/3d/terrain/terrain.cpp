@@ -164,7 +164,7 @@ float terrain::get_tiff_height_at(uint32 x_tiff_pixels, uint32 y_tiff_pixels) co
 
 	const size_t index = get_height_index(x_tiff_pixels, y_tiff_pixels);
 	assert(index < m_heights.size());
-	return m_heights[index];
+	return m_heights[index] * m_geo_tiff_height_info.pixel_vertical_units_scale;
 }
 
 const std::vector<renderable_tile_area>& terrain::get_renderable_tiles() const
