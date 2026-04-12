@@ -114,6 +114,11 @@ void terrain::initialise()
 	XTIFFClose(tiff_file);
 	tiff_file = nullptr;
 
+	if (doc.HasMember("ROAM_MINIMUM_HEIGHT_DELTA_FOR_SUBDIVISION_IN_METERS") && doc["ROAM_MINIMUM_HEIGHT_DELTA_FOR_SUBDIVISION_IN_METERS"].IsFloat())
+	{
+		m_ROAM_tree.vertical_delta_to_stop_recursion_at_in_meters = doc["ROAM_MINIMUM_HEIGHT_DELTA_FOR_SUBDIVISION_IN_METERS"].GetFloat();
+	}
+
 	generate_ROAM_tree();
 	generate_open_gl_buffers();
 
@@ -467,7 +472,7 @@ void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
 	const uint32 length = current_leaf->south_tiff_px - current_leaf->north_tiff_px;
 	const bool can_subdivide = width > 3 && length > 3;
 	const float vertical_delta = calculate_vertical_delta_for_leaf(current_leaf);
-	if (can_subdivide && vertical_delta > m_ROAM_tree.vertical_delta_to_stop_recursion_at)
+	if (can_subdivide && vertical_delta > m_ROAM_tree.vertical_delta_to_stop_recursion_at_in_meters)
 	{
 		const float flt_north_tiff_px = static_cast<float>(current_leaf->north_tiff_px);
 		const float flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);

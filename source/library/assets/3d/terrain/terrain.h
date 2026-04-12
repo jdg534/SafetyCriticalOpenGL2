@@ -31,7 +31,7 @@ struct geo_tiff_height_info
 
 	// Horizontal scale
 	float meters_per_pixel_x = 1.0f;
-	float meters_per_pixel_z = 1.0f; // length, positive Z points North.
+	float meters_per_pixel_z = 1.0f;
 	float pixel_vertical_units_scale = 1.0f;
 };
 
@@ -71,7 +71,7 @@ struct ROAM_leaf_node
 struct ROAM_tree
 {
 	ROAM_leaf_node* root = nullptr;
-	float vertical_delta_to_stop_recursion_at = 0.001f; // meters...
+	float vertical_delta_to_stop_recursion_at_in_meters = 0.001f;
 
 	std::vector<renderable_tile_area> renderable_areas;
 };
