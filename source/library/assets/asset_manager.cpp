@@ -14,6 +14,7 @@
 #include "font.h"
 #include "texture.h"
 #include "3d/model.h"
+#include "3d/terrain/terrain.h"
 
 void asset_manager::initialise(std::string_view assets_list_file_path)
 {
@@ -97,6 +98,7 @@ asset_type asset_manager::to_type(std::string_view s)
 	if (s == "texture") return asset_type::texture;
 	if (s == "font") return asset_type::font;
 	if (s == "model") return asset_type::model;
+	if (s == "terrain") return asset_type::terrain;
 	return asset_type::invalid;
 }
 
@@ -107,6 +109,7 @@ std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::str
 		case asset_type::texture: return load_texture(name, path);
 		case asset_type::font: return load_font(name, path);
 		case asset_type::model: return load_model(name, path);
+		case asset_type::terrain: return load_terrain(name, path);
 		default: throw std::exception("asset type not recognised"); break;
 	}
 	return nullptr;
@@ -130,6 +133,13 @@ std::shared_ptr<asset> asset_manager::load_font(std::string_view name, std::stri
 std::shared_ptr<asset> asset_manager::load_model(std::string_view name, std::string_view path)
 {
 	std::shared_ptr<model> result = std::make_shared<model>(name.data(), path.data(), weak_from_this());
+	result->initialise();
+	return result;
+}
+
+std::shared_ptr<asset> asset_manager::load_terrain(std::string_view name, std::string_view path)
+{
+	std::shared_ptr<terrain> result = std::make_shared<terrain>(name.data(), path.data(), weak_from_this());
 	result->initialise();
 	return result;
 }

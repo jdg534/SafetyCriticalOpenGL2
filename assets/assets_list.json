@@ -18,6 +18,11 @@
 			"path": "textures/plain_white.png"
 		},
 		{
+			"name": "plain_transparent",
+			"type": "texture",
+			"path": "textures/plain_transparent.png"
+		},
+		{
 			"name": "smiley",
 			"type": "texture",
 			"path": "test_smile.png"
@@ -33,9 +38,34 @@
 			"path": "textures/grass.png"
 		},
 		{
+			"name": "soil_texture",
+			"type": "texture",
+			"path": "textures/soil.png"
+		},
+		{
+			"name": "snow_texture",
+			"type": "texture",
+			"path": "textures/snow.png"
+		},
+		{
+			"name": "granite_texture",
+			"type": "texture",
+			"path": "textures/granite.png"
+		},
+		{
 			"name": "grass_cube",
 			"type": "model",
 			"path": "models/grass_cube.obj"
+		},
+		{
+			"name": "st_helena_splat_map",
+			"type": "texture",
+			"path": "terrain/st_helena_splatmap.png"
+		},
+		{
+			"name": "st_helena",
+			"type": "terrain",
+			"path": "terrain/st_helena.terrain"
 		}
 	]
 }

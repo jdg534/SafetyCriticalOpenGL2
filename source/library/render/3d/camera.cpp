@@ -41,3 +41,31 @@ float camera::get_near_clipping_distance() const { return m_near_clipping_distan
 void camera::set_near_clipping_distance(float distance) { m_near_clipping_distance = distance; }
 float camera::get_far_clipping_distance() const { return m_far_clipping_distance; }
 void camera::set_far_clipping_distance(float distance) { m_far_clipping_distance = distance; }
+
+frustum camera::get_frustrum() const
+{
+    frustum f;
+
+    const glm::mat4 vp = get_projection_matrix() * get_view_matrix();
+
+    // Left
+    f.planes[0] = vp[3] + vp[0];
+    // Right
+    f.planes[1] = vp[3] - vp[0];
+    // Bottom
+    f.planes[2] = vp[3] + vp[1];
+    // Top
+    f.planes[3] = vp[3] - vp[1];
+    // Near
+    f.planes[4] = vp[3] + vp[2];
+    // Far
+    f.planes[5] = vp[3] - vp[2];
+
+    // Normalize
+    for (auto& p : f.planes)
+    {
+        float len = glm::length(glm::vec3(p));
+        p /= len;
+    }
+    return f;
+}

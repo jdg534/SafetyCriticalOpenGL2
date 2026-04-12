@@ -3,6 +3,11 @@
 
 #include <glm/glm.hpp>
 
+struct frustum
+{
+	glm::vec4 planes[6];
+};
+
 class camera
 {
 
@@ -38,6 +43,8 @@ public:
 	float get_far_clipping_distance() const;
 	void set_far_clipping_distance(float distance);
 
+	frustum get_frustrum() const;
+
 private:
 
 	glm::vec3 m_position = { 0.0f, 0.0f, 0.0f };
@@ -47,7 +54,7 @@ private:
 	float m_view_port_width = { 800.0f };
 	float m_view_port_height ={ 600.0f };
 	float m_near_clipping_distance = { 0.001f };
-	float m_far_clipping_distance = { 1000.0f };
+	float m_far_clipping_distance = { 800.0f * 1000.0f }; // GPT says max view distence is 800km for a fast jet, using that since viewing from space would be overkill.
 };
 
 #endif // _CAMERA_H_

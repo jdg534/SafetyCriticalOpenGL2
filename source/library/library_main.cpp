@@ -24,13 +24,12 @@ library_main* library_main::s_instance_ptr = nullptr;
 
 constexpr glm::vec4 text_changing_tint = { 1.0f, 0.0f, 0.0f, 1.0f };
 constexpr glm::vec4 text_normal_tint   = { 1.0f, 1.0f, 1.0f, 1.0f };
+constexpr glm::vec3 camera_starting_position = { 0.0f, 705.0f, -10.0f };
 
 // public
 /////////
 
 library_main::library_main()
-	: m_camera_movement_speed(0.0f,0.0f,0.0f)
-	, m_camera_look_at_point_movement_speed(0.0f, 0.0f, 0.0f)
 {
 	s_instance_ptr = this;
 }
@@ -72,10 +71,10 @@ void library_main::initialise()
 	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
 	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
 
-	m_camera = make_shared<camera>();
+	m_camera = make_shared<flying_camera>(m_window);
 	m_camera->set_view_port_width(flt_framebuffer_width);
 	m_camera->set_view_port_height(flt_framebuffer_height);
-	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
+	m_camera->set_position(camera_starting_position);
 
 	m_renderer = make_unique<renderer>(glm::vec2(flt_framebuffer_width, flt_framebuffer_height), 50, m_camera);
 	m_renderer->initialise();
@@ -88,7 +87,7 @@ void library_main::initialise()
 
 	initialise_test_data();
 
-	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text })
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text, m_camera_move_speed_text })
 	{
 		m_renderer->add_to_render_list(text_block);
 	}
@@ -97,9 +96,10 @@ void library_main::initialise()
 
 	// 3d stuff will be z buffered. (order doesn't matter).
 	m_renderer->add_to_render_list(m_test_cube);
-
+	m_renderer->add_to_render_list(m_terrain);
 	m_renderer->sort_render_list();
 
+	m_tick_group.push_back(m_camera);
 
 	/*
 	after this line add flag to not permit allocations to deallocations.
@@ -178,22 +178,32 @@ void library_main::initialise_test_data()
 
 	// setup for objects that are to be used for texting the rendered. Remember 2d stuff uses the painters algorithm.
 	m_cube_position_text = make_shared<text_block>(U"Cube position: X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
-	m_cube_position_text->initialise();
 	m_camera_position_text = make_shared<text_block>(U"Camera position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
-	m_camera_position_text->initialise();
 	m_camera_look_at_position_text = make_shared<text_block>(U"Camera look at position: : X.XXXX, Y.YYYY, Z.ZZZZ", font_ptr, 64, line_spaceing::RELATIVE_1_2);
-	m_camera_look_at_position_text->initialise();
+	m_camera_move_speed_text = make_shared<text_block>(U"Camera speed (when moving): : X.XXXX", font_ptr, 64, line_spaceing::RELATIVE_1_2);
+	for (auto text_to_init : {m_cube_position_text,m_camera_position_text,m_camera_look_at_position_text,m_camera_move_speed_text })
+	{
+		text_to_init->initialise();
+	}
 
 	m_camera_position_text->set_parent(m_cube_position_text);
 	m_camera_look_at_position_text->set_parent(m_camera_position_text);
-	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text })
+	m_camera_move_speed_text->set_parent(m_camera_look_at_position_text);
+
+	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text, m_camera_move_speed_text })
 	{
 		camera_text_block->set_transform(glm::translate(identity<mat4x4>(), { 0.0f, 25.0f, 0.0f }));
 	}
 
 	weak_ptr<const texture> smiley_texture = dynamic_pointer_cast<const texture>(m_asset_manager->get_asset_on_name("smiley").lock());
 	m_textured_quad = make_shared<quad>(smiley_texture, vec2{50.0f, 50.0f});
+	m_textured_quad->initialise();
 	m_textured_quad->set_transform(glm::translate(identity<mat4x4>(), {45.0f, 175.0f, 0.0f}));
+
+	weak_ptr<const terrain> test_terrain = dynamic_pointer_cast<const terrain>(m_asset_manager->get_asset_on_name("st_helena").lock());
+	m_terrain = make_shared<renderable_terrain>(test_terrain);
+	m_terrain->initialise();
+	m_terrain->set_active_camera(m_camera);
 }
 
 void library_main::shutdown()
@@ -219,14 +229,17 @@ void library_main::shutdown()
 
 void library_main::shutdown_test_data()
 {
-	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text})
+	for (auto text_block : { m_cube_position_text, m_camera_position_text, m_camera_look_at_position_text, m_camera_move_speed_text })
 	{
 		text_block->shutdown();
 		text_block.reset();
 	}
 	m_textured_quad->shutdown();
+	m_textured_quad.reset();
 	m_test_cube->shutdown();
 	m_test_cube.reset();
+	m_terrain->shutdown();
+	m_terrain.reset();
 }
 
 void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int height)
@@ -250,89 +263,8 @@ void library_main::s_on_key_callback(GLFWwindow* window, int key, int scancode, 
 
 void library_main::on_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	const bool is_press_event = action == GLFW_PRESS;
-	const bool is_release_event = action == GLFW_RELEASE;
-	if (is_press_event == false
-	&& is_release_event == false)
-	{
-		return;
-	}
-
-	if (is_press_event)
-	{
-		switch (key)
-		{
-			case GLFW_KEY_LEFT:      on_left_pressed();      break;
-			case GLFW_KEY_RIGHT:     on_right_pressed();     break;
-			case GLFW_KEY_UP:        on_up_pressed();        break;
-			case GLFW_KEY_DOWN:      on_down_pressed();      break;
-			case GLFW_KEY_PAGE_UP:   on_page_up_pressed();   break;
-			case GLFW_KEY_PAGE_DOWN: on_page_down_pressed(); break;
-			case GLFW_KEY_W:         on_w_pressed();         break;
-			case GLFW_KEY_A:         on_a_pressed();         break;
-			case GLFW_KEY_S:         on_s_pressed();         break;
-			case GLFW_KEY_D:         on_d_pressed();         break;
-			case GLFW_KEY_Q:         on_q_pressed();         break;
-			case GLFW_KEY_E:         on_e_pressed();         break;
-			case GLFW_KEY_R:         on_r_pressed();         break;
-			default: break;
-		}
-	}
-	else if (is_release_event)
-	{
-		switch (key)
-		{
-			case GLFW_KEY_LEFT:      on_left_released();      break;
-			case GLFW_KEY_RIGHT:     on_right_released();     break;
-			case GLFW_KEY_UP:        on_up_released();        break;
-			case GLFW_KEY_DOWN:      on_down_released();      break;
-			case GLFW_KEY_PAGE_UP:   on_page_up_released();   break;
-			case GLFW_KEY_PAGE_DOWN: on_page_down_released(); break;
-			case GLFW_KEY_W:         on_w_released();         break;
-			case GLFW_KEY_A:         on_a_released();         break;
-			case GLFW_KEY_S:         on_s_released();         break;
-			case GLFW_KEY_D:         on_d_released();         break;
-			case GLFW_KEY_Q:         on_q_released();         break;
-			case GLFW_KEY_E:         on_e_released();         break;
-			default: break;
-		}
-		
-	}
 	update_text_tints();
 }
-
-void library_main::on_left_pressed() { m_camera_look_at_point_movement_speed.x = -1.0f; }
-void library_main::on_right_pressed() { m_camera_look_at_point_movement_speed.x = 1.0f; }
-void library_main::on_up_pressed() { m_camera_look_at_point_movement_speed.z = 1.0f; }
-void library_main::on_down_pressed() { m_camera_look_at_point_movement_speed.z = -1.0f; }
-void library_main::on_page_up_pressed() { m_camera_look_at_point_movement_speed.y = 1.0f; }
-void library_main::on_page_down_pressed() { m_camera_look_at_point_movement_speed.y = -1.0f; }
-void library_main::on_left_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
-void library_main::on_right_released() { m_camera_look_at_point_movement_speed.x = 0.0f; }
-void library_main::on_up_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
-void library_main::on_down_released() { m_camera_look_at_point_movement_speed.z = 0.0f; }
-void library_main::on_page_up_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
-void library_main::on_page_down_released() { m_camera_look_at_point_movement_speed.y = 0.0f; }
-void library_main::on_w_pressed() { m_camera_movement_speed.z = 1.0f; }
-void library_main::on_a_pressed() { m_camera_movement_speed.x = -1.0f; }
-void library_main::on_s_pressed() { m_camera_movement_speed.z = -1.0f; }
-void library_main::on_d_pressed() { m_camera_movement_speed.x = 1.0f; }
-void library_main::on_q_pressed() { m_camera_movement_speed.y = 1.0f; }
-void library_main::on_e_pressed() { m_camera_movement_speed.y = -1.0f; }
-
-void library_main::on_r_pressed()
-{
-	m_camera_movement_speed = m_camera_look_at_point_movement_speed = glm::vec3(0.0f, 0.0f, 0.0f);
-	m_camera->set_look_at_position({ 0.0f, 0.0f, 0.0f });
-	m_camera->set_position({ 5.0f, 1.0f, -10.0f });
-}
-
-void library_main::on_w_released() { m_camera_movement_speed.z = 0.0f; }
-void library_main::on_a_released() { m_camera_movement_speed.x = 0.0f; }
-void library_main::on_s_released() { m_camera_movement_speed.z = 0.0f; }
-void library_main::on_d_released() { m_camera_movement_speed.x = 0.0f; }
-void library_main::on_q_released() { m_camera_movement_speed.y = 0.0f; }
-void library_main::on_e_released() { m_camera_movement_speed.y = 0.0f; }
 
 void library_main::tick(float delta_time)
 {
@@ -341,20 +273,12 @@ void library_main::tick(float delta_time)
 
 	static constexpr float delta_time_cap = 0.25f;
 	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
-	static float angle = 0.0f, turn_speed_degrees = 1.0f;
-	angle += turn_speed_degrees * delta_time_to_use;
+	update_test_cube(delta_time_to_use);
 
-	int frame_buffer_width = 0, frame_buffer_height = 0;
-	glfwGetFramebufferSize(m_window, &frame_buffer_width, &frame_buffer_height);
-	const float flt_fbw = static_cast<float>(frame_buffer_width), flt_fbh = static_cast<float>(frame_buffer_height);
-	m_test_cube->set_transform(rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
-
-	vec3 camera_position = m_camera->get_position();
-	vec3 camera_look_at_position = m_camera->get_look_at_position();
-	camera_position += m_camera_movement_speed * delta_time_to_use;
-	camera_look_at_position += m_camera_look_at_point_movement_speed * delta_time_to_use;
-	m_camera->set_position(camera_position);
-	m_camera->set_look_at_position(camera_look_at_position);
+	for (auto tickable_instance : m_tick_group)
+	{
+		tickable_instance.lock()->tick(delta_time_to_use);
+	}
 
 	// this is post initialisation, we'll want a different heap that has fixed size.
 	const vec3 cube_position = m_test_cube->get_net_transform()[3];
@@ -362,20 +286,44 @@ void library_main::tick(float delta_time)
 	text_utilities::append_vec3(text_to_set, cube_position);
 	m_cube_position_text->set_text(text_to_set);
 	text_to_set = U"Camera position: ";
-	text_utilities::append_vec3(text_to_set, camera_position);
+	text_utilities::append_vec3(text_to_set, m_camera->get_position());
 	m_camera_position_text->set_text(text_to_set);
 	text_to_set = U"Camera look at position: ";
-	text_utilities::append_vec3(text_to_set, camera_look_at_position);
+	text_utilities::append_vec3(text_to_set, m_camera->get_look_at_position());
 	m_camera_look_at_position_text->set_text(text_to_set);
+	text_to_set = U"Camera movement speed: ";
+	text_utilities::append_vec3(text_to_set, { m_camera->get_move_speed(), 0.0f, 0.0f });
+	m_camera_move_speed_text->set_text(text_to_set);
+
+	if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS)
+	{
+		m_renderer->set_render_mode(render_mode::FILL);
+	}
+	else if (glfwGetKey(m_window, GLFW_KEY_2) == GLFW_PRESS) 
+	{
+		m_renderer->set_render_mode(render_mode::LINES);
+	}
+	else if (glfwGetKey(m_window, GLFW_KEY_3) == GLFW_PRESS) 
+	{
+		m_renderer->set_render_mode(render_mode::POINTS);
+	}
 }
 
 void library_main::update_text_tints()
 {
-	update_text_tint(m_camera_position_text, length(m_camera_movement_speed) > 0.0f);
-	update_text_tint(m_camera_look_at_position_text, length(m_camera_look_at_point_movement_speed) > 0.0f);
+	update_text_tint(m_camera_position_text, m_camera->is_moving());
+	update_text_tint(m_camera_look_at_position_text, m_camera->is_moving());
 }
 
 void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool use_change_colour)
 {
 	to_update->set_tint(use_change_colour ? text_changing_tint : text_normal_tint);
+}
+
+void library_main::update_test_cube(float delta_time)
+{
+	using namespace glm;
+	static float angle = 0.0f, turn_speed_degrees = 1.0f;
+	angle += turn_speed_degrees * delta_time;
+	m_test_cube->set_transform(translate(identity<mat4x4>(), {0.0f, 700.0f, 0.0f}) * rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
 }

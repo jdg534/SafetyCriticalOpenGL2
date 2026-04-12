@@ -33,6 +33,7 @@ private:
 	std::shared_ptr<asset> load_texture(std::string_view name, std::string_view path);
 	std::shared_ptr<asset> load_font(std::string_view name, std::string_view path);
 	std::shared_ptr<asset> load_model(std::string_view name, std::string_view path); // (triggers the loading of materials)
+	std::shared_ptr<asset> load_terrain(std::string_view name, std::string_view path);
 
 	std::vector<std::shared_ptr<asset>> m_assets;
 };
