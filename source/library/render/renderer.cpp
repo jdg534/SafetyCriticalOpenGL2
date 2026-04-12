@@ -222,6 +222,8 @@ void renderer::switch_to_terrain_shader()
 	glUseProgram(m_terrain_program_id);
 	m_current_shader_program = m_terrain_program_id;
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);   // LH system requires clockwise winding, CW = Clock Wise winding order.
 	glCullFace(GL_BACK);
