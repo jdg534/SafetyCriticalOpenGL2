@@ -71,7 +71,6 @@ terrain::~terrain()
 void terrain::initialise()
 {
 	using namespace std;
-	// load the file!
 	const string_view path = get_path();
 	if (!filesystem::exists(path)) throw exception("Couldn't find file at path");
 

@@ -58,19 +58,14 @@
 			"path": "models/grass_cube.obj"
 		},
 		{
-			"name": "isle_of_man_splat_map",
-			"type": "texture",
-			"path": "terrain/isle_of_man_splatmap.png"
-		},
-		{
 			"name": "st_helena_splat_map",
 			"type": "texture",
 			"path": "terrain/st_helena_splatmap.png"
 		},
 		{
-			"name": "isle_of_man",
+			"name": "st_helena",
 			"type": "terrain",
-			"path": "terrain/isle_of_man.terrain"
+			"path": "terrain/st_helena.terrain"
 		}
 	]
 }
