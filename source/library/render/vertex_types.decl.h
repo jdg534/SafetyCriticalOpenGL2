@@ -6,9 +6,8 @@ namespace vertex_types
 {
 	struct vertex_2d;
 	struct vertex_3d;
+	struct terrain_vertex;
 
-	// todo, if need vertex type for terrain.
-	
 	// rigged geomentry later if coming back to the project
 }
 
