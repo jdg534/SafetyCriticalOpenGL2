@@ -247,6 +247,8 @@ void terrain::compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff)
 		else if (vertical_units == 9002)
 		{
 			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::FEET;
+			constexpr float feet_to_meters = 1.000000032f / 3.28084f;
+			m_geo_tiff_height_info.pixel_vertical_units_scale *= feet_to_meters; // covert feet to meters.
 		}
 		else
 		{
