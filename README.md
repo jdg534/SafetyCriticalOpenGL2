@@ -44,6 +44,6 @@ cmake --preset=windows-static
 ```
 In the generated `build/` folder you will find `OpenGl_SC_Playground.sln`, open it and attempt to run `artifact_executable`.
 
-## Packageing
+## Packaging
 
 Packaging of this library to be consumable as a binary dependency will be considered if requested.
