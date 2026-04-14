@@ -11,8 +11,8 @@ C++17 is used as the langage standard.
 
 - Rendering of static meshes.
 - Rendering of terrain.
-.....* Bug: T-Junction detection and elimination. ROAM used.
-.....* Improvement: Vertex buffer optimisation, reusing vertices.
+    - Bug: T-Junction detection and elimination. ROAM used.
+    - Improvement: Vertex buffer optimisation, reusing vertices.
 - Rendering of textured quads.
 - Rendering of bitmap fonts.
 
