@@ -15,6 +15,9 @@ C++17 is used as the langage standard.
     - Improvement: Vertex buffer optimisation, reusing vertices.
 - Rendering of textured quads.
 - Rendering of bitmap fonts.
+- Custom memory allocators.
+    - Initialisation phase, no limit, but won't allow allocations once initialisation finishes.
+	- Running phase, fixed size, can allow allocations after Initialisation.
 
 ## TODOs
 
