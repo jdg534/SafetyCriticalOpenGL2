@@ -186,6 +186,28 @@ void renderer::set_render_mode(render_mode render_mode)
 
 void renderer::initialise_shaders()
 {
+#ifdef _DEBUG
+	printf_s("Compiling static mesh vertex shader");
+	m_static_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, STATIC_MESH_VERTEX_SHADER);
+	printf_s("Compiling static mesh fragment shader");
+	m_static_geometry_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, STATIC_MESH_FRAGMENT_SHADER);
+	printf_s("linking static mesh shader");
+	m_static_geometry_program_id = shaders_compilation::link_shaders_to_program(m_static_geometry_vertex_shader_object_id, m_static_geometry_fragment_shader_id);
+
+	printf_s("Compiling textured quad vertex shader");
+	m_textured_quad_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TEXTURED_QUAD_VERTEX_SHADER);
+	printf_s("Compiling textured quad fragment shader");
+	m_textured_quad_geometry_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TEXTURED_QUAD_FRAGMENT_SHADER);
+	printf_s("linking textured quad vertex shader");
+	m_textured_quad_geometry_program_id = shaders_compilation::link_shaders_to_program(m_textured_quad_geometry_vertex_shader_object_id, m_textured_quad_geometry_fragment_shander_id);
+
+	printf_s("Compiling terrain vertex shader");
+	m_terrain_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TERRAIN_VERTEX_SHADER);
+	printf_s("Compiling terrain fragment shader");
+	m_terrain_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TERRAIN_FRAGMENT_SHADER);
+	printf_s("linking terrain shader");
+	m_terrain_program_id = shaders_compilation::link_shaders_to_program(m_terrain_vertex_shader_object_id, m_terrain_fragment_shander_id);
+#else
 	m_static_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, STATIC_MESH_VERTEX_SHADER);
 	m_static_geometry_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, STATIC_MESH_FRAGMENT_SHADER);
 	m_static_geometry_program_id = shaders_compilation::link_shaders_to_program(m_static_geometry_vertex_shader_object_id, m_static_geometry_fragment_shader_id);
@@ -197,6 +219,7 @@ void renderer::initialise_shaders()
 	m_terrain_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TERRAIN_VERTEX_SHADER);
 	m_terrain_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TERRAIN_FRAGMENT_SHADER);
 	m_terrain_program_id = shaders_compilation::link_shaders_to_program(m_terrain_vertex_shader_object_id, m_terrain_fragment_shander_id);
+#endif // _DEBUG
 }
 
 void renderer::shutdown_shaders()
