@@ -7,17 +7,12 @@ HI-C++ validation is done via a CI script, if the script passes then the releven
 
 C++17 is used as the langage standard.
 
-## Areas to addressed
+## Areas addressed
 
 - Rendering of static meshes.
 - Rendering of terrain.
-    - Bug: T-Junction detection and elimination. ROAM used.
-    - Improvement: Vertex buffer optimisation, reusing vertices.
 - Rendering of textured quads.
 - Rendering of bitmap fonts.
-- Custom memory allocators.
-    - Initialisation phase, no limit, but won't allow allocations once initialisation finishes.
-	- Running phase, fixed size, can allow allocations after Initialisation.
 
 ## TODOs
 
@@ -28,11 +23,18 @@ Some remaining improvement exist.
 - Update the OpenGL context creation to ensure [OpenGL SC 2.0](https://registry.khronos.org/OpenGL/specs/sc/sc_spec_2.0.pdf) is used.
 - Update the shaders to use `GL_SC_VERSION` when defining the GLSL version in shaders.
 - Update the clang-tidy useage to use a [compilation database](https://cmake.org/cmake/help/latest/variable/CMAKE_EXPORT_COMPILE_COMMANDS.html) and jq to iterate over the files being compiled via a .sh script.
+- Bugfix: T-Junction detection and elimination. In the vertex & index buffer population code for the terrain.
+- Custom memory allocators.
+    - Initialisation phase, no limit, but won't allow allocations once initialisation finishes.
+	- Running phase, fixed size, can allow allocations after Initialisation.
+- (Once all of the above are addressed) Update the code to be HI C++ complient.
 
 ### Should Address areas (on revisiting the project)
 
 - Rendering of rigged geometry, forward kinematics only.
 - Text rendering using SDF / MSDF font atlases. (IF this can be done while being HI-C++ complient)
+- Improvement: Vertex buffer optimisation, reusing vertices.
+- Removal of git submodule dependencies in favour of dependencies with vcpkg packages or conan package (not a mix of both).
 
 ### Could address areas
 
