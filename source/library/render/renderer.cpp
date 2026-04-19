@@ -60,7 +60,7 @@ void renderer::render_frame()
 	glClearColor(m_clear_colour.r, m_clear_colour.g, m_clear_colour.b, m_clear_colour.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	const render_mode current_render_mode = get_render_mode();
+	const render_mode current_render_mode = get_render_mode(); // this isn't supported anymore! because we're using OpenGL ES glPolygonMode() isn't supported.
 	switch (current_render_mode)
 	{
 		case render_mode::POINTS: glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); break;
