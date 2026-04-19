@@ -111,9 +111,11 @@ void library_main::initialise()
 
 GLFWwindow* library_main::initialise_window()
 {
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // todo figure out correct values of SC 2.0
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // ''
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // ''
+	// We request OpenGL ES 2.0, this is what OpenGL SC 2.0 is based off.
+	// This is the closest possible to what's supported by glfw.
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API); 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #ifdef NDEBUG
 	// non debug code.
 #else

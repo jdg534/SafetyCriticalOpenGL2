@@ -1,44 +1,45 @@
 #ifndef _TEXTURED_QUAD_SHADER_H_
 #define _TEXTURED_QUAD_SHADER_H_
 
-static constexpr char* TEXTURED_QUAD_VERTEX_SHADER = R"(
-#version 330 core
+static constexpr char* TEXTURED_QUAD_VERTEX_SHADER = R"(#version 100
 
-layout(location = 0) in vec2 vs_in_position_in_pixels;    // pixel coordinates (x, y)
-layout(location = 1) in vec2 vs_in_uv;
+attribute vec2 vs_in_position_in_pixels;
+attribute vec2 vs_in_uv;
 
-uniform vec2 u_resolution; // viewport size in pixels (width, height)
-uniform mat4 u_transform;  // optional 2D transform in pixel-space (affine). done as 4x4 to work with the class structure used.
+uniform vec2 u_resolution;
+uniform mat4 u_transform;
 
-out vec2 vs_out_uv;
+varying vec2 vs_out_uv;
 
 void main()
 {
     vec4 post_transform_px = u_transform * vec4(vs_in_position_in_pixels, 1.0, 1.0);
-    vec2 normalised_device_coords = (post_transform_px.xy / u_resolution) * 2.0 - 1.0; // [0..res] -> [-1..1]
-    normalised_device_coords.y = -normalised_device_coords.y; // flip Y (positive Y goes down)
+    vec2 normalised_device_coords = (post_transform_px.xy / u_resolution) * 2.0 - 1.0;
+    normalised_device_coords.y = -normalised_device_coords.y;
 
     gl_Position = vec4(normalised_device_coords, 0.0, 1.0);
     vs_out_uv = vs_in_uv;
 }
 )";
 
-static constexpr char* TEXTURED_QUAD_FRAGMENT_SHADER = R"(
-#version 330 core
+static constexpr char* TEXTURED_QUAD_FRAGMENT_SHADER = R"(#version 100
 
-in vec2 vs_out_uv;
+precision mediump float;
+
+varying vec2 vs_out_uv;
 
 uniform sampler2D u_texture;
-uniform vec4 u_tint;           // RGBA tint multiplier (use vec4(1.0) for no tint)
-uniform float u_alpha_cut_off; // 0.0 = disabled. otherwise alpha values below are culled
-
-out vec4 fs_out_frag_color;
+uniform vec4 u_tint;
+uniform float u_alpha_cut_off;
 
 void main()
 {
-    vec4 tex = texture(u_texture, vs_out_uv);
-    if (u_alpha_cut_off > 0.0 && tex.a <= u_alpha_cut_off) discard;
-    fs_out_frag_color = tex * u_tint;
+    vec4 tex = texture2D(u_texture, vs_out_uv);
+
+    if (u_alpha_cut_off > 0.0 && tex.a <= u_alpha_cut_off)
+        discard;
+
+    gl_FragColor = tex * u_tint;
 }
 )";
 

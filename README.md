@@ -1,5 +1,6 @@
 # SafetyCriticalOpenGL2
-This is for Practicing OpenGL SC 2.0 code.
+
+This is for Practicing OpenGL SC 2.0 code / the closest equivalent without running in certified hardware (OpenGL ES 2.0).
 
 Note that rather than focusing on MISRA C++ 2023, ontop of the C++17 standard. [HI-C++](https://en.wikipedia.org/wiki/High_Integrity_C%2B%2B) is used, this is due to it being supported by clang-tidy without having to deal with licences and subscriptions.
 
@@ -13,6 +14,9 @@ C++17 is used as the langage standard.
 - Rendering of terrain.
 - Rendering of textured quads.
 - Rendering of bitmap fonts.
+- OpenGL ES 2.0 is used to ensure similarity to OpenGL SC 2.0 covering:
+	- OpenGL ES 2.0 drawing context used at initilaisation time.
+	- All glsl shaders use `#version 100` which is the only accepted shader version supporting under OpenGL SC 2.0.
 
 ## TODOs
 
@@ -20,8 +24,6 @@ Some remaining improvement exist.
 
 ### Must Address areas
 
-- Update the OpenGL context creation to ensure [OpenGL SC 2.0](https://registry.khronos.org/OpenGL/specs/sc/sc_spec_2.0.pdf) is used.
-- Update the shaders to use `GL_SC_VERSION` when defining the GLSL version in shaders.
 - Update the clang-tidy useage to use a [compilation database](https://cmake.org/cmake/help/latest/variable/CMAKE_EXPORT_COMPILE_COMMANDS.html) and jq to iterate over the files being compiled via a .sh script.
 - Bugfix: T-Junction detection and elimination. In the vertex & index buffer population code for the terrain.
 - Custom memory allocators.
