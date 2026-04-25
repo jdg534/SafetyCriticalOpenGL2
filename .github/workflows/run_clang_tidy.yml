@@ -25,11 +25,11 @@ jobs:
                 submodules: true 
             - run: sudo apt update
             - name: Get general build tools.
-              run: sudo apt install --quiet -y clang-tidy cmake g++ ninja-build jq
+              run: sudo apt install --quiet -y clang-tidy cmake g++ ninja-build jq build-essential
             - name: Get build tools for dependencies.
               run: sudo apt install --quiet -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
             - run: git submodule update --init --recursive
-            # vcpkg install zlib libpng rapidjson ?
+            # vcpkg install zlib libpng rapidjson ? or update the vcpkg usage?
             - run: cmake --preset=static-analysis
             - name: check compile_commands.json
               run: cat build/compile_commands.json
