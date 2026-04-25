@@ -25,15 +25,16 @@ jobs:
                 submodules: true 
             - run: sudo apt update
             - name: Get general build tools.
-              run: sudo apt install -y clang-tidy cmake g++ ninja-build jq
+              run: sudo apt install --quiet -y clang-tidy cmake g++ ninja-build jq
             - name: Get build tools for dependencies.
-              run: sudo apt install -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+              run: sudo apt install --quiet -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
             - run: git submodule update --init --recursive
             # vcpkg install zlib libpng rapidjson ?
-            - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --preset=linux-static
+            - run: cmake --preset=static-analysis
             - name: check compile_commands.json
               run: cat build/compile_commands.json
-            - run: |
+            - name: Run clang-tidy on the source.
+              run: |
                 while IFS= read -r file; do
                     clang-tidy "$file" -p "./static_analysis"
                 done < <(jq -r '.[].file | select(contains("submodules") | not)' "./static_analysis/compile_commands.json")
