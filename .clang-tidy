@@ -1,6 +1,4 @@
-Checks: >
-  -*,
-  hicpp-*
+Checks: hicpp-*
 
 WarningsAsErrors: hicpp-*
 

@@ -1,17 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Configuration
-SOURCE_DIR="source/library"
-BUILD_DIR="build_for_clang_tidy_analysis"
+cmake --preset=static-analysis
 
-# Ensure compile_commands.json exists
-if [ ! -f "$BUILD_DIR/compile_commands.json" ]; then
-    echo "Generating compile_commands.json with CMake..."
-    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B "$BUILD_DIR"
-fi
+BUILD_DIR="./static_analysis"
+COMPILE_DB="$BUILD_DIR/compile_commands.json"
 
-# Find and analyze only files in source/
-find "$SOURCE_DIR" \( -name "*.cpp" -o -name "*.cc" -o -name "*.cxx" -o -name "*.c" -o -name "*.h" -o -name "*.hpp" \) | while read -r file; do
-    echo "Running clang-tidy on $file"
-    clang-tidy "$file" -p "$BUILD_DIR"
-done
+while IFS= read -r file; do
+	windows_style_path=$(cygpath -m "$file")
+    clang-tidy "$windows_style_path" -p "$BUILD_DIR"
+done < <(jq -r '.[].file | select(contains("submodules") | not)' "$COMPILE_DB")
+
