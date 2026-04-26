@@ -33,6 +33,20 @@
 			"VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
 			"CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
 		}
+	},
+	{
+		"name": "ci-static-analysis",
+		"displayName": "CI Static Analysis (Linux x64)",
+		"description": "Linux-native build for CI static analysis (no cross-compilation)",
+		"generator": "Unix Makefiles",
+		"binaryDir": "${sourceDir}/ci_static_analysis",
+		"cacheVariables":
+		{
+			"CMAKE_TOOLCHAIN_FILE": "${sourceDir}/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"VCPKG_TARGET_TRIPLET": "x64-linux",
+			"CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+			"CMAKE_BUILD_TYPE": "Release"
+		}
 	}
   ]
 }

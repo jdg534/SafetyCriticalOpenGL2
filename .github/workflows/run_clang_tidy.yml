@@ -30,11 +30,11 @@ jobs:
               run: sudo apt install --quiet -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
             - run: git submodule update --init --recursive
             # vcpkg install zlib libpng rapidjson ? or update the vcpkg usage?
-            - run: cmake --preset=static-analysis
+            - run: cmake --preset=ci-static-analysis
             - name: check compile_commands.json
               run: cat build/compile_commands.json
             - name: Run clang-tidy on the source.
               run: |
                 while IFS= read -r file; do
-                    clang-tidy "$file" -p "./static_analysis"
-                done < <(jq -r '.[].file | select(contains("submodules") | not)' "./static_analysis/compile_commands.json")
+                    clang-tidy "$file" -p "./ci_static_analysis"
+                done < <(jq -r '.[].file | select(contains("submodules") | not)' "./ci_static_analysis/compile_commands.json")
