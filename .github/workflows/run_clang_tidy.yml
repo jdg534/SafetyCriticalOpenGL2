@@ -32,7 +32,7 @@ jobs:
             # vcpkg install zlib libpng rapidjson ? or update the vcpkg usage?
             - run: cmake --preset=ci-static-analysis
             - name: check compile_commands.json
-              run: cat build/compile_commands.json
+              run: cat ./ci_static_analysis/compile_commands.json
             - name: Run clang-tidy on the source.
               run: |
                 while IFS= read -r file; do
