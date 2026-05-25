@@ -1,5 +1,8 @@
 #include "renderable.h"
 
+#include <exception>
+#include <stdexcept>
+
 renderable::renderable()
 {
 	// need to make the transform to identity matrix.
@@ -125,6 +128,6 @@ void renderable::set_renderable_type(renderable_type renderable_type)
 	}
 	else
 	{
-		throw std::exception("Attempting to override renderable type");
+		throw std::runtime_error("Attempting to override renderable type");
 	}
 }

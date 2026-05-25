@@ -4,6 +4,9 @@
 #include "../../../assets/texture.h"
 
 #include <cassert>
+#include <exception>
+#include <stdexcept>
+
 #include <glm/gtc/type_ptr.inl>
 
 using namespace gl;
@@ -26,7 +29,7 @@ void text_block::initialise()
 {
 	if (!m_font_to_use.lock()->is_string_supported(m_text))
 	{
-		throw std::exception("string not supportable by font used.");
+		throw std::runtime_error("String not supportable by font used.");
 		return;
 	}
 	setup_glyphs();
@@ -88,12 +91,12 @@ void text_block::set_text(const std::u32string& new_text)
 {
 	if (new_text.size() > m_character_limit)
 	{
-		throw std::exception("tried to use too many characters.");
+		throw std::runtime_error("Tried to use too many characters.");
 		return;
 	}
 	if (!m_font_to_use.lock()->is_string_supported(new_text))
 	{
-		throw std::exception("string not supportable by font used.");
+		throw std::runtime_error("String not supportable by font used.");
 		return;
 	}
 	m_text = new_text;

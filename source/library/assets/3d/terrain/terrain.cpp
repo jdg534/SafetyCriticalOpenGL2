@@ -67,7 +67,7 @@ void terrain::initialise()
 {
 	using namespace std;
 	const string_view path = get_path();
-	if (!filesystem::exists(path)) throw exception("Couldn't find file at path");
+	if (!filesystem::exists(path)) throw runtime_error("Couldn't find file at path");
 
 	ifstream assets_list_file(path.data());
 	stringstream buffer;
@@ -75,19 +75,19 @@ void terrain::initialise()
 	rapidjson::Document doc;
 	if (doc.Parse(buffer.str().c_str()).HasParseError())
 	{
-		throw std::exception("asset_manager::initialise failed to parse the json");
+		throw std::runtime_error("asset_manager::initialise failed to parse the json");
 	}
 	assets_list_file.close();
 	buffer.clear();
 
 	if (!doc.HasMember("height_map"))
 	{
-		throw std::exception("terrain doesn't have a height map!");
+		throw std::runtime_error("terrain doesn't have a height map!");
 	}
 	const string resolved_path = asset_utils::resolve_file_path(doc["height_map"].GetString(), asset_utils::get_directory_path(get_path())); // ensure an absolute path.
 
 	TIFF* tiff_file = XTIFFOpen(resolved_path.data(), "r");
-	if (!tiff_file) throw exception("Failed to load tiff file");
+	if (!tiff_file) throw runtime_error("Failed to load tiff file");
 
 	GTIF* geo_tiff = GTIFNew(tiff_file);
 	if (!geo_tiff)

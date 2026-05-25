@@ -19,12 +19,12 @@ void texture::initialise()
 	const std::string_view file_path = get_path();
 	if (file_path.find(".png") == std::string::npos)
 	{
-		throw std::exception("load texture called with non png texture.");
+		throw std::runtime_error("load texture called with non png texture.");
 	}
 	FILE* file = fopen(file_path.data(), "rb"); // path needs to be relevent to the assets list.
 	if (!file)
 	{
-		throw std::exception("failed to load png file");
+		throw std::runtime_error("failed to load png file");
 	}
 	// Read header
 	png_byte header[8];

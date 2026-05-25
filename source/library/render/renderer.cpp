@@ -70,7 +70,7 @@ void renderer::render_frame()
 			case renderable_type::STATIC_GEOMETRY: switch_to_3d_static_mesh_shader(); break;
 			case renderable_type::_2D_GEOMETRY: switch_to_2d_shader(); break;
 			default:
-				throw std::exception("attempted to render unsupported type"); break;
+				throw std::runtime_error("Attempted to render unsupported type"); break;
 		}
 		to_draw->draw();
 	}
@@ -88,13 +88,13 @@ void renderer::add_to_render_list(std::weak_ptr<renderable> to_add)
 			case renderable_type::STATIC_GEOMETRY: to_add_to_mod->set_shader_program(m_static_geometry_program_id); break;
 			case renderable_type::_2D_GEOMETRY: to_add_to_mod->set_shader_program(m_textured_quad_geometry_program_id); break;
 			default:
-				throw std::exception("attempted to add unsupported renderable type");
+				throw std::runtime_error("Attempted to add unsupported renderable type");
 				break;
 		}
 	}
 	else
 	{
-		throw std::exception("Attempting to add too much to the render list");
+		throw std::runtime_error("Attempting to add too much to the render list");
 	}
 }
 

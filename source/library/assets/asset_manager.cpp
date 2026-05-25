@@ -21,20 +21,20 @@ void asset_manager::initialise(std::string_view assets_list_file_path)
 	std::ifstream assets_list_file(assets_list_file_path.data());
 	if (!assets_list_file.good())
 	{
-		throw std::exception("asset_manager::initialise failed to open file");
+		throw std::runtime_error("asset_manager::initialise failed to open file");
 	}
 	std::stringstream buffer;
 	buffer << assets_list_file.rdbuf();
 	rapidjson::Document doc;
 	if (doc.Parse(buffer.str().c_str()).HasParseError())
 	{
-		throw std::exception("asset_manager::initialise failed to parse the json");
+		throw std::runtime_error("asset_manager::initialise failed to parse the json");
 	}
 	assets_list_file.close();
 	buffer.clear();
 	if (!doc.HasMember("assets"))
 	{
-		throw std::exception("asset_manager::initialise now assets");
+		throw std::runtime_error("asset_manager::initialise now assets");
 	}
 	const std::string_view assets_relative_to = asset_utils::get_directory_path(assets_list_file_path);
 	const auto assets_entries = doc["assets"].GetArray();
@@ -46,7 +46,7 @@ void asset_manager::initialise(std::string_view assets_list_file_path)
 		|| !assets_entries[i].HasMember("type")
 		|| !assets_entries[i].HasMember("path"))
 		{
-			throw std::exception("asset_manager::initialise an asset doesn't have a required field");
+			throw std::runtime_error("asset_manager::initialise an asset doesn't have a required field");
 		}
 		const std::string actual_file_path = std::string(assets_relative_to) + assets_entries[i]["path"].GetString();
 		m_assets[i] = load_asset(assets_entries[i]["name"].GetString(),
@@ -110,7 +110,7 @@ std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::str
 		case asset_type::font: return load_font(name, path);
 		case asset_type::model: return load_model(name, path);
 		case asset_type::terrain: return load_terrain(name, path);
-		default: throw std::exception("asset type not recognised"); break;
+		default: throw std::runtime_error("asset type not recognised"); break;
 	}
 	return nullptr;
 }

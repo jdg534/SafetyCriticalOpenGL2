@@ -26,12 +26,12 @@ font::font(const std::string& name, const std::string& path, std::weak_ptr<const
 void font::initialise()
 {
 	std::ifstream assets_list_file(get_path().data());
-	if (!assets_list_file.good()) { throw std::exception("asset_manager::initialise failed to open file"); }
+	if (!assets_list_file.good()) { throw std::runtime_error("asset_manager::initialise failed to open file"); }
 	std::stringstream buffer;
 	buffer << assets_list_file.rdbuf();
 
 	Document font_info;
-	if (font_info.Parse(buffer.str().c_str()).HasParseError()) { throw std::exception("asset_manager::initialise failed to parse the json"); }
+	if (font_info.Parse(buffer.str().c_str()).HasParseError()) { throw std::runtime_error("asset_manager::initialise failed to parse the json"); }
 	assets_list_file.close();
 	buffer.clear();
 

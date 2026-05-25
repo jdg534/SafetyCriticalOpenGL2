@@ -68,7 +68,7 @@ void library_main::initialise()
 {
 	if (glfwInit() != GLFW_TRUE)
 	{
-		throw std::exception("glfwInit() failed");
+		throw std::runtime_error("glfwInit() failed");
 	}
 	m_window = initialise_window();
 	glfwMakeContextCurrent(m_window);
@@ -171,7 +171,7 @@ GLFWwindow* library_main::initialise_window()
 		error_str[0] = '\0';
 		const int error_code = glfwGetError(error_str);
 		std::cerr << "glfwCreateWindow() failed: " << *error_str << std::endl;
-		throw std::exception("glfwCreateWindow() failed");
+		throw std::runtime_error("glfwCreateWindow() failed");
 	}
 	return results;
 }
