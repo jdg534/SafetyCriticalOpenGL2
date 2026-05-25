@@ -168,7 +168,7 @@ GLFWwindow* library_main::initialise_window()
 	if (results == nullptr)
 	{
 		const char* error_str[256];
-		error_str[0] = '\0';
+		std::memset(error_str, 0, 256);
 		const int error_code = glfwGetError(error_str);
 		std::cerr << "glfwCreateWindow() failed: " << *error_str << std::endl;
 		throw std::runtime_error("glfwCreateWindow() failed");
