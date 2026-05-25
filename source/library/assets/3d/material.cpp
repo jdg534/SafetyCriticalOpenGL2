@@ -40,11 +40,6 @@ material::material(const string& name, const string& path, weak_ptr<const asset_
 
 }
 
-material::~material()
-{
-	// placeholder, this material objects don't put stuff on the head, so nothing to do.
-}
-
 void material::initialise()
 {
 	// This is a placeholder, this method needed to be overriden

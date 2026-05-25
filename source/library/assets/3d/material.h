@@ -31,7 +31,7 @@ public:
 
     material() = delete;
     material(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~material();
+	virtual ~material() = default;
 
 	void initialise() override;
     void initialise_assimp_struct(const aiMaterial* assimp_material);
