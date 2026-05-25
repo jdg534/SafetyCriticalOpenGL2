@@ -15,7 +15,9 @@
 /////////
 
 model::model(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager)
-	: asset(name, path, asset_manager)
+    : asset(name, path, asset_manager)
+    , m_materials(0)
+    , m_meshs(0)
 {
 
 }
