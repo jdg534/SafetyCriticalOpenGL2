@@ -5,6 +5,8 @@
 #include "render/3d/camera.h"
 #include "render/include_opengl.h"
 #include "render/renderer.h"
+#include "memory/memory_system.h"
+#include "memory/runtime_phase_allocator.h"
 #include "utilities/text_utilities.h"
 
 #include <filesystem>
@@ -41,7 +43,10 @@ library_main::~library_main()
 
 void library_main::run()
 {
+	memory_system::set_phase(memory_system::phase::initialisation);
 	initialise();
+	runtime_allocator::initialise();
+	memory_system::set_phase(memory_system::phase::runtime);
 	static float running_time = 0.0f;
 	while (!glfwWindowShouldClose(m_window))
 	{
@@ -52,6 +57,7 @@ void library_main::run()
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
 	}
+	memory_system::set_phase(memory_system::phase::shutdown);
 	shutdown();
 }
 
@@ -296,19 +302,6 @@ void library_main::tick(float delta_time)
 	text_to_set = U"Camera movement speed: ";
 	text_utilities::append_vec3(text_to_set, { m_camera->get_move_speed(), 0.0f, 0.0f });
 	m_camera_move_speed_text->set_text(text_to_set);
-
-	if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS)
-	{
-		m_renderer->set_render_mode(render_mode::FILL);
-	}
-	else if (glfwGetKey(m_window, GLFW_KEY_2) == GLFW_PRESS) 
-	{
-		m_renderer->set_render_mode(render_mode::LINES);
-	}
-	else if (glfwGetKey(m_window, GLFW_KEY_3) == GLFW_PRESS) 
-	{
-		m_renderer->set_render_mode(render_mode::POINTS);
-	}
 }
 
 void library_main::update_text_tints()

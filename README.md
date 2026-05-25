@@ -19,6 +19,9 @@ C++17 is used as the langage standard.
 	- All glsl shaders use `#version 100` which is the only accepted shader version supporting under OpenGL SC 2.0.
 - Clang-tidy is used with a [compilation database](https://cmake.org/cmake/help/latest/variable/CMAKE_EXPORT_COMPILE_COMMANDS.html) and jq to iterate over the files being compiled via a .sh script.
 	- Dependencies are excluded from the checks.
+- Custom memory allocators.
+    - Initialisation phase, no limit, but won't allow allocations once initialisation finishes.
+	- Running phase, fixed size, can allow allocations after Initialisation.
 
 ## TODOs
 
@@ -27,9 +30,6 @@ Some remaining improvements exist.
 ### Must Address areas
 
 - Bugfix: T-Junction detection and elimination. In the vertex & index buffer population code for the terrain.
-- Custom memory allocators.
-    - Initialisation phase, no limit, but won't allow allocations once initialisation finishes.
-	- Running phase, fixed size, can allow allocations after Initialisation.
 - (Once all of the above are addressed) Update the code to be HI C++ complient.
 
 ### Should Address areas (on revisiting the project)
