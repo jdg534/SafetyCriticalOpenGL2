@@ -475,8 +475,8 @@ void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
 		const float flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);
 		const float flt_west_tiff_px = static_cast<float>(current_leaf->west_tiff_px);
 		const float flt_east_tiff_px = static_cast<float>(current_leaf->east_tiff_px);
-		const std::uint32_t west_to_east_mid_point = static_cast<std::uint32_t>(std::floorf(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5F)));
-		const std::uint32_t north_to_south_mid_point = static_cast<std::uint32_t>(std::floorf(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5F)));
+		const std::uint32_t west_to_east_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5F)));
+		const std::uint32_t north_to_south_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5F)));
 		
 		current_leaf->north_west_child = new ROAM_leaf_node;
 		current_leaf->north_west_child->north_tiff_px = current_leaf->north_tiff_px;
