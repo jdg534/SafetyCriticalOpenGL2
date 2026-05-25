@@ -6,7 +6,8 @@
 
 // this class is LLM generated.
 
-class runtime_allocator
+
+class runtime_phase_allocator
 {
 public:
 	static constexpr size_t pool_size = 1024 * 1024; // 1MB.

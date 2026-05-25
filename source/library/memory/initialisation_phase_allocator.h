@@ -1,9 +1,7 @@
 #ifndef _INITIALISATION_PHASE_ALLOCATOR_H_
 #define _INITIALISATION_PHASE_ALLOCATOR_H_
 
-
-
-class initialisation_allocator
+class initialisation_phase_allocator
 {
 public:
 

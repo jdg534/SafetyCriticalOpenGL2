@@ -45,7 +45,7 @@ void library_main::run()
 {
 	memory_system::set_phase(memory_system::phase::initialisation);
 	initialise();
-	runtime_allocator::initialise();
+	runtime_phase_allocator::initialise();
 	memory_system::set_phase(memory_system::phase::runtime);
 	static float running_time = 0.0f;
 	while (!glfwWindowShouldClose(m_window))
