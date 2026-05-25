@@ -22,8 +22,9 @@
 #include <math.h>
 #include <filesystem>
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <stdlib.h>
 
 // public
 /////////
