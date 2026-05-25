@@ -37,7 +37,7 @@ void model::initialise()
     const aiScene* scene = importer.ReadFile(get_path().data(), flags);
     if (!scene || !scene->mRootNode)
     {
-        throw std::exception(static_cast<const char*>(importer.GetErrorString()));
+        throw std::runtime_error(static_cast<const char*>(importer.GetErrorString()));
     }
 
     initialise_materials(scene->mNumMaterials, *scene->mMaterials);
