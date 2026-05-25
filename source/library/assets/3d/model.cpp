@@ -35,7 +35,10 @@ void model::initialise()
         aiProcess_MakeLeftHanded; // see if the texutre coods come out right
 
     const aiScene* scene = importer.ReadFile(get_path().data(), flags);
-    if (!scene || !scene->mRootNode) { throw std::exception(importer.GetErrorString()); }
+    if (!scene || !scene->mRootNode)
+    {
+        throw std::exception(static_cast<const char*>(importer.GetErrorString()));
+    }
 
     initialise_materials(scene->mNumMaterials, *scene->mMaterials);
     initialise_meshes(scene);
