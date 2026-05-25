@@ -11,7 +11,7 @@ void runtime_phase_allocator::initialise()
 	initialised = true;
 }
 
-void* runtime_phase_allocator::allocate(size_t size)
+void* runtime_phase_allocator::allocate(std::size_t size)
 {
 	if (!initialised)
 	{
