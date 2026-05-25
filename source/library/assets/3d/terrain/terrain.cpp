@@ -19,6 +19,7 @@
 #include <glm/gtx/compatibility.hpp>
 
 #include <cmath>
+#include <cstring>
 #include <math.h>
 #include <filesystem>
 #include <fstream>

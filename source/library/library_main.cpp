@@ -9,6 +9,7 @@
 #include "memory/runtime_phase_allocator.h"
 #include "utilities/text_utilities.h"
 
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <sstream>

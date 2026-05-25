@@ -2,6 +2,7 @@
 
 #include "../include_opengl.h"
 
+#include <cstring>
 #include <iostream>
 #include <vector>
 

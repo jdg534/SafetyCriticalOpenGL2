@@ -4,6 +4,7 @@
 #include "../../../assets/texture.h"
 
 #include <cassert>
+#include <cstring>
 #include <exception>
 #include <stdexcept>
 
