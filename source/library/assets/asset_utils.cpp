@@ -1,5 +1,6 @@
 #include "asset_utils.h"
 
+#include <algorithm>
 #include <string_view>
 
 using namespace std;
