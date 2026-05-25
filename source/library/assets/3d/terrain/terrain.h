@@ -20,12 +20,12 @@ enum class tiff_pixel_units : uint8_t
 
 struct geo_tiff_height_info
 {
-	uint32 width = 0;
-	uint32 length = 0;
+	std::uint32_t width = 0;
+	std::uint32_t length = 0;
 
 	// Raster format
-	uint16 bits_per_sample = 0;
-	uint16 sample_format = 0;
+	std::uint16_t bits_per_sample = 0;
+	std::uint16_t sample_format = 0;
 
 	tiff_pixel_units pixel_units = tiff_pixel_units::METERS;
 
@@ -44,7 +44,7 @@ struct renderable_tile_area
 	float heighest_point_in_meters = 0.0f;
 	float lowest_point_in_meters = 0.0f;
 
-	int32 tile_index = -1;
+	std::int32_t tile_index = -1;
 	gl::GLuint vertex_buffer_id = 0;
 	gl::GLuint index_buffer_id = 0;
 	gl::GLuint vertex_array_object_id = 0;
@@ -55,10 +55,10 @@ struct renderable_tile_area
 
 struct ROAM_leaf_node
 {
-	uint32 north_tiff_px = 0;
-	uint32 south_tiff_px = 0;
-	uint32 west_tiff_px = 0;
-	uint32 east_tiff_px = 0;
+	std::uint32_t north_tiff_px = 0;
+	std::uint32_t south_tiff_px = 0;
+	std::uint32_t west_tiff_px = 0;
+	std::uint32_t east_tiff_px = 0;
 
 	ROAM_leaf_node* north_west_child = nullptr;
 	ROAM_leaf_node* north_east_child = nullptr;
@@ -90,7 +90,7 @@ public:
 	asset_type get_type() const override;
 
 	const geo_tiff_height_info& get_height_info() const;
-	float get_tiff_height_at(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const;
+	float get_tiff_height_at(std::uint32_t x_tiff_pixels, std::uint32_t y_tiff_pixels) const;
 
 	const std::vector<renderable_tile_area>& get_renderable_tiles() const;
 
@@ -110,23 +110,23 @@ private:
 	static void read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* tiff_file);
 	static void override_nan_values(std::vector<float>& output_buffer);
-	static void flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length);
-	static float calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 image_height, float pixel_latitude_scale_degrees);
+	static void flip_rows(std::vector<float>& output_buffer, std::uint32_t width, std::uint32_t length);
+	static float calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, std::uint32_t image_height, float pixel_latitude_scale_degrees);
 
-	size_t get_height_index(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const;
+	size_t get_height_index(std::uint32_t x_tiff_pixels, std::uint32_t y_tiff_pixels) const;
 	void generate_ROAM_tree();
 	void generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const;
 
 	float calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const leaf) const;
 	void populate_buffers(const ROAM_leaf_node* const leaf,
-		std::vector<std::vector<vertex_types::terrain_vertex>>& output_vertex_buffers, std::vector<std::vector<uint16>>& output_index_buffers);
+		std::vector<std::vector<vertex_types::terrain_vertex>>& output_vertex_buffers, std::vector<std::vector<std::uint16_t>>& output_index_buffers);
 
-	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16>& index_buffer_data); // debug code
+	void sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<std::uint16_t>& index_buffer_data); // debug code
 	static bool does_leaf_have_children(const ROAM_leaf_node* const leaf);
 
 	void generate_open_gl_buffers();
 
-	vertex_types::terrain_vertex get_vertex_for_tiff_pixel(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const;
+	vertex_types::terrain_vertex get_vertex_for_tiff_pixel(std::uint64_t x_tiff_pixels, std::uint64_t y_tiff_pixels) const;
 	
 	static void set_tile_bounds(const std::vector<vertex_types::terrain_vertex>& vertices, renderable_tile_area& to_set);
 	static void setup_vertex_attrib_array(gl::GLuint vertex_attrib_array_id);
