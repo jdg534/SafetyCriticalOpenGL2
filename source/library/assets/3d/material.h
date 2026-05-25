@@ -49,10 +49,10 @@ public:
 
 private:
 
-    glm::vec4 m_diffuse_colour { 1.0f, 1.0f, 1.0f, 1.0f };
-    glm::vec4 m_ambient_colour  { 0.0f, 0.0f, 0.0f, 1.0f };
-    glm::vec4 m_specular_colour { 0.0f, 0.0f, 0.0f, 1.0f };
-    float m_shininess = 0.0f;
+    glm::vec4 m_diffuse_colour  { 1.0F, 1.0F, 1.0F, 1.0F };
+    glm::vec4 m_ambient_colour  { 0.0F, 0.0F, 0.0F, 1.0F };
+    glm::vec4 m_specular_colour { 0.0F, 0.0F, 0.0F, 1.0F };
+    float m_shininess = 0.0F;
 
     std::unordered_map<texture_purpose, std::weak_ptr<const texture>> m_textures;
 };
