@@ -212,23 +212,23 @@ void terrain::compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff)
 	unsigned short num_pixel_scale_count = 0;
 	double* pixel_scale = nullptr;
 	// we're going to assume the tiff is using angular values (degees) for the X & Y in tiff, not linear (meters)
-	if (TIFFGetField(tiff, TIFFTAG_GEOPIXELSCALE, &num_pixel_scale_count, &pixel_scale))
+	if (TIFFGetField(tiff, TIFFTAG_GEOPIXELSCALE, &num_pixel_scale_count, &pixel_scale) != 0)
 	{
 		assert(pixel_scale != nullptr);
 
 		const float pixel_longitude_scale_in_degrees = pixel_scale[0];
 		const float pixel_latitude_scale_in_degrees = pixel_scale[1];
 
-		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0f;
+		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0F;
 		const float centre_latitude_degrees = calculate_centre_latitude_from_tiepoints(tiff, m_geo_tiff_height_info.length, pixel_latitude_scale_in_degrees);
 
-		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0f;
+		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0F;
 		const float meters_per_degree_longitude = METERS_PER_DEGREE_LATITUDE * std::cos(centre_latitude_radians);
 
 		m_geo_tiff_height_info.meters_per_pixel_x = pixel_longitude_scale_in_degrees * meters_per_degree_longitude;
 		m_geo_tiff_height_info.meters_per_pixel_z = pixel_latitude_scale_in_degrees * METERS_PER_DEGREE_LATITUDE;
 		m_geo_tiff_height_info.pixel_vertical_units_scale = num_pixel_scale_count > 2 ? pixel_scale[2] : m_geo_tiff_height_info.pixel_vertical_units_scale;
-		m_geo_tiff_height_info.pixel_vertical_units_scale = m_geo_tiff_height_info.pixel_vertical_units_scale == 0.0f ? 1.0f : m_geo_tiff_height_info.pixel_vertical_units_scale;
+		m_geo_tiff_height_info.pixel_vertical_units_scale = m_geo_tiff_height_info.pixel_vertical_units_scale == 0.0F ? 1.0F : m_geo_tiff_height_info.pixel_vertical_units_scale;
 	}
 
 	// --- Vertical units ---
@@ -243,7 +243,7 @@ void terrain::compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff)
 		else if (vertical_units == 9002)
 		{
 			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::FEET;
-			constexpr float feet_to_meters = 1.000000032f / 3.28084f;
+			constexpr float feet_to_meters = 1.000000032F / 3.28084F;
 			m_geo_tiff_height_info.pixel_vertical_units_scale *= feet_to_meters; // covert feet to meters.
 		}
 		else
@@ -299,7 +299,7 @@ void terrain::read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	const tsize_t scanline_size = TIFFScanlineSize(tiff_file);
 	std::vector<uint8_t> scanline(scanline_size);
 
-	constexpr float INV_255 = 1.0f / 255.0f;
+	constexpr float INV_255 = 1.0F / 255.0F;
 	for (uint32 row = 0; row < height; ++row)
 	{
 		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
@@ -320,7 +320,7 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	const tsize_t scanline_size = TIFFScanlineSize(tiff_file);
 	std::vector<int8_t> scanline(scanline_size);
 
-	constexpr float INV_128 = 1.0f / 128.0f;
+	constexpr float INV_128 = 1.0F / 128.0F;
 	for (uint32 row = 0; row < height; ++row)
 	{
 		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
@@ -328,7 +328,7 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 		for (uint32 col = 0; col < width; ++col)
 		{
 			dst[col] = static_cast<float>(scanline[col]) * INV_128;
-			dst[col] = (dst[col] + 1.0f) / 2.0f;
+			dst[col] = (dst[col] + 1.0F) / 2.0F;
 		}
 	}
 }
@@ -476,8 +476,8 @@ void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
 		const float flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);
 		const float flt_west_tiff_px = static_cast<float>(current_leaf->west_tiff_px);
 		const float flt_east_tiff_px = static_cast<float>(current_leaf->east_tiff_px);
-		const uint32 west_to_east_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5f)));
-		const uint32 north_to_south_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5f)));
+		const uint32 west_to_east_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5F)));
+		const uint32 north_to_south_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5F)));
 		
 		current_leaf->north_west_child = new ROAM_leaf_node;
 		current_leaf->north_west_child->north_tiff_px = current_leaf->north_tiff_px;
@@ -596,7 +596,7 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 	assert(vb_size < MAX_VERTEX_BUFFER_SIZE);
 	for (const terrain_vertex& vertex : vertex_buffer_data)
 	{
-		constexpr glm::vec3 origin{ 0.0f,0.0f,0.0f };
+		constexpr glm::vec3 origin{ 0.0F,0.0F,0.0F };
 		assert(vertex.position != origin);
 		assert(!glm::any(glm::isnan(vertex.position)));
 		assert(!glm::any(glm::isnan(vertex.texture_coordinates)));
@@ -704,8 +704,8 @@ vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pi
 	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
 
 	// the top north west corner
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
+	const float far_west = -(tiff_width_as_float * 0.5F) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5F) * m_geo_tiff_height_info.meters_per_pixel_z;
 
 	const float x_tiff_pixels_as_float = static_cast<float>(x_tiff_pixels);
 	const float y_tiff_pixels_as_float = static_cast<float>(y_tiff_pixels);
@@ -730,20 +730,20 @@ vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pi
 	result.position.y = current_px_height;
 	result.position.z = far_north + (y_tiff_pixels * m_geo_tiff_height_info.meters_per_pixel_z);
 	result.texture_coordinates.x = x_tiff_pixels_as_float / tiff_width_as_float;
-	result.texture_coordinates.y = 1.0f - (y_tiff_pixels_as_float / tiff_length_as_float);
+	result.texture_coordinates.y = 1.0F - (y_tiff_pixels_as_float / tiff_length_as_float);
 
 	result.terrain_texture_coordinates.x = x_tiff_pixels_as_float;
 	result.terrain_texture_coordinates.y = tiff_length_as_float - y_tiff_pixels_as_float;
 
-	const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
-	const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
+	const glm::vec3 dx = glm::vec3(2.0F * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0F);
+	const glm::vec3 dy = glm::vec3(0.0F, above_px_height - below_px_height, 2.0F * m_geo_tiff_height_info.meters_per_pixel_z);
 	result.normal = glm::normalize(glm::cross(dy, dx));
 	if (glm::any(glm::isnan(result.normal)) || std::isinf(current_px_height))
 	{
-		result.normal = glm::vec3(0, 1, 0);
+		result.normal = glm::vec3(0.0F, 1.0F, 0.0F);
 	}
 		
-	if (result.position == glm::vec3(0, 0, 0))
+	if (result.position == glm::vec3(0.0F, 0.0F, 0.0F))
 	{
 		assert(false && "Wrong terrain vertex");
 	}
