@@ -3,8 +3,9 @@
 #include "material.h"
 #include "mesh.h"
 
-#include <string_view>
+#include <exception>
 #include <filesystem>
+#include <string_view>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
