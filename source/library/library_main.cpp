@@ -5,6 +5,7 @@
 #include "render/3d/camera.h"
 #include "render/include_opengl.h"
 #include "render/renderer.h"
+#include "memory/memory_system.h"
 #include "utilities/text_utilities.h"
 
 #include <filesystem>
@@ -41,7 +42,9 @@ library_main::~library_main()
 
 void library_main::run()
 {
+	memory::set_phase(memory::phase::initialisation);
 	initialise();
+	memory::set_phase(memory::phase::runtime);
 	static float running_time = 0.0f;
 	while (!glfwWindowShouldClose(m_window))
 	{
@@ -52,6 +55,7 @@ void library_main::run()
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
 	}
+	memory::set_phase(memory::phase::shutdown);
 	shutdown();
 }
 
