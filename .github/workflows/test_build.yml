@@ -6,6 +6,10 @@ on:
             - 'source/**'
             - '**.yml'
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build-the-code:
         runs-on: ubuntu-latest

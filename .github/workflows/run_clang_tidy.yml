@@ -10,6 +10,10 @@ on:
         paths:
             - 'source/library/**'
             - '.clang-tidy'
+            
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
     run-clang-tidy:
