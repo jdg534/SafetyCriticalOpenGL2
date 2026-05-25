@@ -44,6 +44,9 @@ public:
 	font(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
 	~font() override = default;
 
+	font& operator=(const font&) = delete;
+	font& operator=(font&&) = delete;
+
 	void initialise() override;
 	void shutdown() override;
 	asset_type get_type() const override;

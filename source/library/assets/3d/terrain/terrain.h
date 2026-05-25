@@ -87,6 +87,9 @@ public:
 	terrain(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
 	~terrain() override = default;
 
+	terrain& operator=(const terrain&) = delete;
+	terrain& operator=(terrain&&) = delete;
+
 	void initialise() override;
 	void shutdown() override;
 	asset_type get_type() const override;

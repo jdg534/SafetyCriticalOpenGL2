@@ -24,6 +24,9 @@ public:
 	mesh(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
 	~mesh() override = default;
 
+	mesh& operator=(const mesh&) = delete;
+	mesh& operator=(mesh&&) = delete;
+
 	void initialise() override;
 	void initialise_assimp_struct(const aiMesh* initialise_with);
 	void shutdown() override;

@@ -19,6 +19,9 @@ public:
 	explicit asset(const std::string& name, const std::string& path,std::weak_ptr<const asset_manager> asset_manager);
 	virtual ~asset() = default;
 
+	asset& operator=(const asset&) = delete;
+	asset& operator=(asset&&) = delete;
+
 	virtual void initialise() = 0;
 	virtual void shutdown() = 0;
 	virtual asset_type get_type() const = 0;

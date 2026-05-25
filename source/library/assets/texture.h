@@ -17,6 +17,9 @@ public:
 	texture(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
 	~texture() override = default;
 
+	texture& operator=(const texture&) = delete;
+	texture& operator=(texture&&) = delete;
+
 	void initialise() override;
 	void shutdown() override;
 	asset_type get_type() const override;
