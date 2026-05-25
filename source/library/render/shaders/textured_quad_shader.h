@@ -1,7 +1,7 @@
 #ifndef _TEXTURED_QUAD_SHADER_H_
 #define _TEXTURED_QUAD_SHADER_H_
 
-static constexpr char* TEXTURED_QUAD_VERTEX_SHADER = R"(#version 100
+static constexpr char TEXTURED_QUAD_VERTEX_SHADER[] = R"(#version 100
 
 attribute vec2 vs_in_position_in_pixels;
 attribute vec2 vs_in_uv;
@@ -22,7 +22,7 @@ void main()
 }
 )";
 
-static constexpr char* TEXTURED_QUAD_FRAGMENT_SHADER = R"(#version 100
+static constexpr char TEXTURED_QUAD_FRAGMENT_SHADER[] = R"(#version 100
 
 precision mediump float;
 

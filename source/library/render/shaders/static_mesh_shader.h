@@ -2,7 +2,7 @@
 #define _STATIC_MESH_SHADER_H_
 
 // note we're only able to use #version 100 since the code needs to be glsl ES compilent.
-static constexpr char* STATIC_MESH_VERTEX_SHADER = R"(#version 100
+static constexpr char STATIC_MESH_VERTEX_SHADER[] = R"(#version 100
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -27,7 +27,7 @@ void main()
 }
 )";
 
-static constexpr char* STATIC_MESH_FRAGMENT_SHADER = R"(#version 100
+static constexpr char STATIC_MESH_FRAGMENT_SHADER[] = R"(#version 100
 
 precision mediump float;
 
