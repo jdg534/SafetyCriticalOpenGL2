@@ -5,6 +5,7 @@ on:
         paths:
             - 'source/**'
             - '**.yml'
+            - '.clang-tidy'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}

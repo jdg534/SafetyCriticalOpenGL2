@@ -1,8 +1,14 @@
-Checks: hicpp-*
+Checks: >
+	-*,
+	hicpp-*
 
-WarningsAsErrors: hicpp-*
+WarningsAsErrors: '*'
+HeaderFilterRegex: '^.*/source/.*'
+SystemHeaders: false
+FormatStyle: none
 
 CheckOptions:
   - key:             misc-unused-parameters.StrictMode
     value:           1
 FormatStyle: file
+
