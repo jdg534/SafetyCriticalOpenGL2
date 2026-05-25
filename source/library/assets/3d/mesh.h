@@ -20,7 +20,7 @@ public:
 
 	mesh() = delete;
 	mesh(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~mesh();
+	virtual ~mesh() = default;
 
 	void initialise() override;
 	void initialise_assimp_struct(const aiMesh* initialise_with);
