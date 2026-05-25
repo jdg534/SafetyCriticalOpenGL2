@@ -591,23 +591,52 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 {
 	using namespace vertex_types;
 	const size_t vb_size = vertex_buffer_data.size();
-	assert(vb_size > 0);
-	assert(vb_size < MAX_VERTEX_BUFFER_SIZE);
+	if (vb_size == 0)
+	{
+		throw std::runtime_error("Empty vertex buffer");
+	}
+	else if (vb_size > MAX_VERTEX_BUFFER_SIZE)
+	{ 
+		throw std::runtime_error("Vertex buffer too big.");
+	}
 	for (const terrain_vertex& vertex : vertex_buffer_data)
 	{
 		constexpr glm::vec3 origin{ 0.0F,0.0F,0.0F };
-		assert(vertex.position != origin);
-		assert(!glm::any(glm::isnan(vertex.position)));
-		assert(!glm::any(glm::isnan(vertex.texture_coordinates)));
-		assert(!glm::any(glm::isnan(vertex.normal)));
-		assert(!glm::any(glm::isnan(vertex.terrain_texture_coordinates)));
+		if (vertex.position == origin)
+		{
+			throw std::runtime_error("Invalid vertex position.");
+		}
+		else if (glm::any(glm::isnan(vertex.position)))
+		{
+			throw std::runtime_error("Invalid vertex position contains a NaN value.");
+		}
+		else if (glm::any(glm::isnan(vertex.texture_coordinates)))
+		{
+			throw std::runtime_error("Invalid vertex texture coordinates contains a NaN value.");
+		}
+		else if (glm::any(glm::isnan(vertex.normal)))
+		{
+			throw std::runtime_error("Invalid vertex normal contains a NaN value.");
+		}
+		else if (glm::any(glm::isnan(vertex.terrain_texture_coordinates)))
+		{
+			throw std::runtime_error("Invalid vertex terrain texture coordinates contains a NaN value.");
+		}
 	}
-	assert(index_buffer_data.size() % 6 == 0);
+	if (index_buffer_data.size() % 6 != 0)
+	{
+		throw std::runtime_error("Index buffer has the wrong size.");
+	}
 	for (const std::uint16_t index : index_buffer_data)
 	{
-		assert(!std::isnan(index));
-		assert(index >= 0);
-		assert(index < vb_size);
+		if (std::isnan(index))
+		{
+			throw std::runtime_error("Index buffer contains NaN value.");
+		}
+		else if (index >= vb_size)
+		{
+			throw std::runtime_error("Index buffer contains out of range value.");
+		}
 	}
 }
 
