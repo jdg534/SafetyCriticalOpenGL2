@@ -4,10 +4,7 @@ on:
     push:
         paths:
             - 'source/**'
-            
-    pull_request:
-        paths:
-            - 'source/**'
+            - '**.yml'
 
 jobs:
     build-the-code:
