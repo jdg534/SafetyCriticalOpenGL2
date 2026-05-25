@@ -3,6 +3,7 @@
 #include "memory_system.h"
 
 #include <memory>
+#include <cstdlib>
 
 void* initialisation_phase_allocator::allocate(size_t size)
 {
