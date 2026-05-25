@@ -10,5 +10,3 @@ FormatStyle: none
 CheckOptions:
   - key:             misc-unused-parameters.StrictMode
     value:           1
-FormatStyle: file
-
