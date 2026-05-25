@@ -1,5 +1,6 @@
 #include "texture.h"
 
+#include <iostream>
 #include <stdexcept>
 #include <png.h>
 
@@ -29,13 +30,17 @@ void texture::initialise()
 	// Read header
 	png_byte header[8];
 	fread(header, 1, 8, file);
-	if (png_sig_cmp(header, 0, 8)) {
+	if (png_sig_cmp(header, 0, 8))
+	{
 		fclose(file);
 		throw std::runtime_error(std::string("File is not a PNG: ") + file_path.data());
+		std::cerr << std::string("The PNG header was: ") << header << std::endl;
 	}
+
 	// Init png structures
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-	if (!png_ptr) {
+	if (!png_ptr)
+	{
 		fclose(file);
 		throw std::runtime_error("png_create_read_struct failed");
 	}
