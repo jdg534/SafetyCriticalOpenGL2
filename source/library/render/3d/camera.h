@@ -14,7 +14,7 @@ class camera
 public:
 
 	camera();
-	virtual ~camera();
+	virtual ~camera() = default;
 
 	virtual glm::mat4x4 get_view_matrix() const;
 	glm::mat4x4 get_projection_matrix() const;

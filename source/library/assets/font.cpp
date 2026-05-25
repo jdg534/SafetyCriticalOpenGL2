@@ -23,11 +23,6 @@ font::font(const std::string& name, const std::string& path, std::weak_ptr<const
 
 }
 
-font::~font()
-{
-
-}
-
 void font::initialise()
 {
 	std::ifstream assets_list_file(get_path().data());

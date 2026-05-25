@@ -13,7 +13,7 @@ class flying_camera
 public:
 
 	explicit flying_camera(GLFWwindow* window);
-	virtual ~flying_camera();
+	virtual ~flying_camera() = default;
 
 	void tick(float delta_time) override;
 

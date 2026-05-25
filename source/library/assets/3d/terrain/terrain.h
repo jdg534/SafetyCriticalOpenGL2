@@ -83,7 +83,7 @@ public:
 
 	terrain() = delete;
 	terrain(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~terrain();
+	virtual ~terrain() = default;
 
 	void initialise() override;
 	void shutdown() override;

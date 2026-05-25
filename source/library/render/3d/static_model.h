@@ -15,7 +15,7 @@ public:
 
 	static_model() = delete;
 	static_model(std::weak_ptr<const model> model);
-	virtual ~static_model();
+	virtual ~static_model() = default;
 
 	void initialise() override;
 	void shutdown() override;

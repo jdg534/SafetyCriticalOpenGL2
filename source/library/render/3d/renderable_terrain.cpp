@@ -19,11 +19,6 @@ renderable_terrain::renderable_terrain(std::weak_ptr<const terrain> terrain)
 	set_renderable_type(renderable_type::TERRAIN);
 }
 
-renderable_terrain::~renderable_terrain()
-{
-	renderable_3d::~renderable_3d();
-}
-
 void renderable_terrain::initialise()
 {
 	// place holder.

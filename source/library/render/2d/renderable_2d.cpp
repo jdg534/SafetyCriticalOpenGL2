@@ -7,11 +7,6 @@ renderable_2d::renderable_2d(const glm::vec4& tint)
 	set_renderable_type(renderable_type::_2D_GEOMETRY);
 }
 
-renderable_2d::~renderable_2d()
-{
-
-}
-
 glm::vec4 renderable_2d::get_tint() const
 {
 	return m_tint;

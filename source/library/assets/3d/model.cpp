@@ -19,11 +19,6 @@ model::model(const std::string& name, const std::string& path, std::weak_ptr<con
 
 }
 
-model::~model()
-{
-	// nothing needed, only smart pointers are needed.
-}
-
 void model::initialise()
 {
     Assimp::Importer importer;

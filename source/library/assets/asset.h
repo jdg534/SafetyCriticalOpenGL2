@@ -15,7 +15,7 @@ public:
 
 	asset() = delete;
 	asset(const std::string& name, const std::string& path,std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~asset();
+	virtual ~asset() = default;
 
 	virtual void initialise() = 0;
 	virtual void shutdown() = 0;

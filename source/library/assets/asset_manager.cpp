@@ -115,7 +115,7 @@ std::shared_ptr<asset> asset_manager::load_asset(std::string_view name, std::str
 	return nullptr;
 }
 
-// TODO: break this up into asset_loader. which knows about the manager.
+// TODO (on returning to the project): break this up into asset_loader. which knows about the manager.
 std::shared_ptr<asset> asset_manager::load_texture(std::string_view name, std::string_view path)
 {
 	std::shared_ptr<texture> result = std::make_shared<texture>(name.data(), path.data(), weak_from_this());

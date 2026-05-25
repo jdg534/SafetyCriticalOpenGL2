@@ -13,7 +13,7 @@ public:
 
 	texture() = delete;
 	texture(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~texture();
+	virtual ~texture() = default;
 
 	void initialise() override;
 	void shutdown() override;

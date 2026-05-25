@@ -18,11 +18,6 @@ static_model::static_model(std::weak_ptr<const model> model)
 	set_renderable_type(renderable_type::STATIC_GEOMETRY);
 }
 
-static_model::~static_model()
-{
-	renderable_3d::~renderable_3d();
-}
-
 void static_model::initialise()
 {
 	// place holder.

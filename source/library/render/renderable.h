@@ -23,7 +23,7 @@ class renderable
 public:
 
 	renderable();
-	virtual ~renderable();
+	virtual ~renderable() = default;
 
 	virtual void initialise() = 0;
 	virtual void shutdown() = 0;

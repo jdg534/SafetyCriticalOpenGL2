@@ -5,8 +5,3 @@ renderable_3d::renderable_3d()
 {
 
 }
-
-renderable_3d::~renderable_3d()
-{
-	renderable::~renderable();
-}

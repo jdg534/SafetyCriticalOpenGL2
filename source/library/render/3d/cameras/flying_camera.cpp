@@ -29,11 +29,6 @@ flying_camera::flying_camera(GLFWwindow* window)
 	set_look_at_position({0.0f, 0.0f, 10.0f});
 }
 
-flying_camera::~flying_camera()
-{
-
-}
-
 void flying_camera::tick(float delta_time)
 {
 	handle_rotation(delta_time);

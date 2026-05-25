@@ -10,11 +10,6 @@ renderable::renderable()
 		0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-renderable::~renderable()
-{
-
-}
-
 renderable_type renderable::get_renderable_type() const
 {
 	return m_renderable_type;

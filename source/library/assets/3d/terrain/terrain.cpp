@@ -64,10 +64,6 @@ terrain::terrain(const std::string& name, const std::string& path, std::weak_ptr
 
 }
 
-terrain::~terrain()
-{
-}
-
 void terrain::initialise()
 {
 	using namespace std;

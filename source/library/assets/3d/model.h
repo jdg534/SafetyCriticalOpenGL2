@@ -18,7 +18,7 @@ public:
 
 	model() = delete;
 	model(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~model();
+	virtual ~model() = default;
 
 	void initialise() override;
 	void shutdown() override;

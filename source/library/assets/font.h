@@ -40,7 +40,7 @@ public:
 
 	font() = delete;
 	font(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~font();
+	virtual ~font() = default;
 
 	void initialise() override;
 	void shutdown() override;

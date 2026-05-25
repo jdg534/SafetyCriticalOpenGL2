@@ -14,11 +14,6 @@ texture::texture(const std::string& name, const std::string& path, std::weak_ptr
 	, m_height(-1)
 {}
 
-texture::~texture()
-{
-	// delete stuff
-}
-
 void texture::initialise()
 {
 	const std::string_view file_path = get_path();

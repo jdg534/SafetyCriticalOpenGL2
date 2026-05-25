@@ -7,11 +7,6 @@ camera::camera()
 
 }
 
-camera::~camera()
-{
-
-}
-
 glm::mat4x4 camera::get_view_matrix() const
 {
 	return glm::lookAtLH(get_position(), get_look_at_position(), get_up_vector());

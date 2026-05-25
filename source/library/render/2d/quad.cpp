@@ -67,11 +67,6 @@ quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
 	glBindVertexArray(0);
 }
 
-quad::~quad()
-{
-
-}
-
 void quad::initialise()
 {
 	// done in the constructor

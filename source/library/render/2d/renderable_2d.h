@@ -10,7 +10,7 @@ public:
 
 	renderable_2d() = delete;
 	explicit renderable_2d(const glm::vec4& tint);
-	virtual ~renderable_2d();
+	virtual ~renderable_2d() = default;
 
 	glm::vec4 get_tint() const;
 	void set_tint(const glm::vec4& tint);

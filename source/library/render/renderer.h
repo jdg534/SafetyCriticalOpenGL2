@@ -26,6 +26,8 @@ public:
 	renderer() = delete;
 	explicit renderer(glm::vec2 framebuffer_size, const size_t render_list_cap, std::weak_ptr<const camera> camera);
 
+	~renderer() = default;
+
 	void initialise();
 	void shutdown();
 

@@ -18,7 +18,7 @@ public:
 
 	renderable_terrain() = delete;
 	renderable_terrain(std::weak_ptr<const terrain> terrain);
-	virtual ~renderable_terrain();
+	virtual ~renderable_terrain() = default;
 
 	void initialise() override;
 	void shutdown() override;
