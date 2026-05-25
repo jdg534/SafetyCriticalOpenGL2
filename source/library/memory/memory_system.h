@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace memory
+namespace memory_system
 {
 	enum class phase : std::uint8_t
 	{

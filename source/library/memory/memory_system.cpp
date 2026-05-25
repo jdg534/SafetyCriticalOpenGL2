@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace memory
+namespace memory_system
 {
 	static phase current_phase = phase::initialisation;
 
