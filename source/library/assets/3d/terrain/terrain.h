@@ -144,7 +144,7 @@ private:
 	gl::GLuint m_blue_channel_mapped_texture_texture_id;
 	gl::GLuint m_alpha_channel_mapped_texture_texture_id;
 
-	static constexpr size_t MAX_VERTEX_BUFFER_SIZE = std::numeric_limits<uint16>::max();
+	static constexpr size_t MAX_VERTEX_BUFFER_SIZE = std::numeric_limits<std::uint16_t>::max();
 };
 
 #endif // _TERRAIN_H_
