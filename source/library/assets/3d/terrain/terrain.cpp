@@ -26,6 +26,8 @@
 #include <sstream>
 #include <stdlib.h>
 
+#pragma GCC diagnostic ignored "-Winvalid-offsetof" // done for the terrain_vertex usage. CI flagged it.
+
 // public
 /////////
 
