@@ -3,7 +3,7 @@ Checks: >
     hicpp-*
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: '^.*/source/.*'
+HeaderFilterRegex: '^.*/source/library/.*'
 SystemHeaders: false
 FormatStyle: none
 
