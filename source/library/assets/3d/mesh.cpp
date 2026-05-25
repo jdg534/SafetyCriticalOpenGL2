@@ -80,8 +80,7 @@ void mesh::initialise_assimp_struct(const aiMesh* initialise_with)
     glGenVertexArrays(1, &m_vertex_array_id);
     glBindVertexArray(m_vertex_array_id);
 
-    // make the buffer, want to get to off set.
-    std::array<GLuint, 2> buffer_ids;
+    std::array<GLuint, 2> buffer_ids { 0, 0 };
     glGenBuffers(2, buffer_ids.data()); // [0] vertex buffer, [1] index buffer
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer_ids[0]);
