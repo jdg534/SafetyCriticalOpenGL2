@@ -30,8 +30,10 @@ class material : public asset
 public:
 
     material() = delete;
+    material(const material& other) = delete;
+    material(material&& to_move) = delete;
     material(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~material() = default;
+	~material() override = default;
 
 	void initialise() override;
     void initialise_assimp_struct(const aiMaterial* assimp_material);

@@ -82,8 +82,10 @@ class terrain : public asset
 public:
 
 	terrain() = delete;
+	terrain(const terrain& other) = delete;
+	terrain(terrain&& to_move) = delete;
 	terrain(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~terrain() = default;
+	~terrain() override = default;
 
 	void initialise() override;
 	void shutdown() override;
