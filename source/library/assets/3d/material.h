@@ -35,6 +35,9 @@ public:
     material(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
 	~material() override = default;
 
+    material& operator=(const material&) = delete;
+    material& operator=(material&&) = delete;
+
 	void initialise() override;
     void initialise_assimp_struct(const aiMaterial* assimp_material);
 	void shutdown() override;
