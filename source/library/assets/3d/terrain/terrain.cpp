@@ -435,11 +435,8 @@ float terrain::calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, std::ui
 	double* tiepoints = nullptr;
 	std::uint16_t tiepoint_count = 0;
 
-	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &tiepoint_count, &tiepoints))
-		throw std::runtime_error("GeoTIFF has no tiepoints");
-
-	if (tiepoint_count < 6)
-		throw std::runtime_error("Invalid GeoTIFF tiepoint data");
+	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &tiepoint_count, &tiepoints)) { throw std::runtime_error("GeoTIFF has no tiepoints"); }
+	if (tiepoint_count < 6) { throw std::runtime_error("Invalid GeoTIFF tiepoint data"); }
 
 	// First tiepoint (usually top-left)
 	const double tie_latitude = tiepoints[4]; // Y
@@ -475,12 +472,12 @@ void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
 	const float vertical_delta = calculate_vertical_delta_for_leaf(current_leaf);
 	if (can_subdivide && vertical_delta > m_ROAM_tree.vertical_delta_to_stop_recursion_at_in_meters)
 	{
-		const float flt_north_tiff_px = static_cast<float>(current_leaf->north_tiff_px);
-		const float flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);
-		const float flt_west_tiff_px = static_cast<float>(current_leaf->west_tiff_px);
-		const float flt_east_tiff_px = static_cast<float>(current_leaf->east_tiff_px);
-		const std::uint32_t west_to_east_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5F)));
-		const std::uint32_t north_to_south_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5F)));
+		const auto flt_north_tiff_px = static_cast<float>(current_leaf->north_tiff_px);
+		const auto flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);
+		const auto flt_west_tiff_px = static_cast<float>(current_leaf->west_tiff_px);
+		const auto flt_east_tiff_px = static_cast<float>(current_leaf->east_tiff_px);
+		const auto west_to_east_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5F)));
+		const auto north_to_south_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5F)));
 		
 		current_leaf->north_west_child = new ROAM_leaf_node;
 		current_leaf->north_west_child->north_tiff_px = current_leaf->north_tiff_px;
@@ -543,8 +540,8 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 	{
 		if (output_vertex_buffers.size() == 0 || output_index_buffers.size() == 0)
 		{
-			output_vertex_buffers.push_back({});
-			output_index_buffers.push_back({});
+			output_vertex_buffers.emplace_back();
+			output_index_buffers.emplace_back();
 			const size_t end_buffer_index = output_vertex_buffers.size() - 1;
 			output_vertex_buffers[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
 			output_index_buffers[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
@@ -553,8 +550,8 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 		const size_t current_vb_size = output_vertex_buffers[output_vertex_buffers.size() - 1].size();
 		if (current_vb_size + 4 >= MAX_VERTEX_BUFFER_SIZE)
 		{
-			output_vertex_buffers.push_back({});
-			output_index_buffers.push_back({});
+			output_vertex_buffers.emplace_back();
+			output_index_buffers.emplace_back();
 			const size_t end_buffer_index = output_vertex_buffers.size() - 1;
 			output_vertex_buffers[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
 			output_index_buffers[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
@@ -646,10 +643,10 @@ void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_v
 
 bool terrain::does_leaf_have_children(const ROAM_leaf_node* const leaf)
 {
-	if (leaf->north_west_child) return true;
-	if (leaf->north_east_child) return true;
-	if (leaf->south_west_child) return true;
-	if (leaf->south_east_child) return true;
+	if (leaf->north_west_child) { return true; }
+	if (leaf->north_east_child) { return true; }
+	if (leaf->south_west_child) { return true; }
+	if (leaf->south_east_child) { return true; }
 	return false;
 }
 
@@ -729,18 +726,18 @@ void terrain::generate_open_gl_buffers()
 
 vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(std::uint64_t x_tiff_pixels, std::uint64_t y_tiff_pixels) const
 {
-	vertex_types::terrain_vertex result;
+	vertex_types::terrain_vertex result {};
 	std::memset(&result, 0, vertex_types::terrain_vertex_struct_size);
 
-	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
-	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
+	const auto tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
+	const auto tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
 
 	// the top north west corner
 	const float far_west = -(tiff_width_as_float * 0.5F) * m_geo_tiff_height_info.meters_per_pixel_x;
 	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5F) * m_geo_tiff_height_info.meters_per_pixel_z;
 
-	const float x_tiff_pixels_as_float = static_cast<float>(x_tiff_pixels);
-	const float y_tiff_pixels_as_float = static_cast<float>(y_tiff_pixels);
+	const auto x_tiff_pixels_as_float = static_cast<float>(x_tiff_pixels);
+	const auto y_tiff_pixels_as_float = static_cast<float>(y_tiff_pixels);
 
 	const bool got_left_px = x_tiff_pixels > 0;
 	const bool got_above_px = y_tiff_pixels > 0;
