@@ -37,5 +37,6 @@ jobs:
             - name: Run clang-tidy on the source.
               run: |
                 while IFS= read -r file; do
-                    clang-tidy "$file" -p "./ci_static_analysis"
+                    echo "Analysing file: $file"
+                    clang-tidy -quiet "$file" -p "./ci_static_analysis"
                 done < <(jq -r '.[].file | select(contains("submodules") | not)' "./ci_static_analysis/compile_commands.json")
