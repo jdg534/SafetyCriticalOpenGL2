@@ -34,9 +34,15 @@ jobs:
               run: sudo apt install --quiet -y libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
             - run: git submodule update --init --recursive
             - run: cmake --preset=ci-static-analysis
-            - name: Run clang-tidy on the source.
+            - name: Run clang-tidy on the source
               run: |
-                while IFS= read -r file; do
-                    echo "Analysing file: $file"
-                    clang-tidy -quiet "$file" -p "./ci_static_analysis"
-                done < <(jq -r '.[].file | select(contains("submodules") | not)' "./ci_static_analysis/compile_commands.json")
+                    jq -r '.[].file' "./ci_static_analysis/compile_commands.json" |
+                    grep '/source/library/' |
+                    sort -u |
+                    while IFS= read -r file; do
+                        echo "Analysing file: $file"
+                        clang-tidy \
+                            --quiet \
+                            "$file" \
+                            -p "./ci_static_analysis"
+                    done
