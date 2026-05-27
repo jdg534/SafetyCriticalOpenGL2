@@ -21,7 +21,7 @@ public:
 	model(const model& other) = delete;
 	model(model&& to_move) = delete;
 	model(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~model() = default;
+	~model() override = default;
 
 	model& operator=(const model&) = delete;
 	model& operator=(model&&) = delete;
