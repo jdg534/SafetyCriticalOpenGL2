@@ -30,19 +30,19 @@ struct geo_tiff_height_info
 	tiff_pixel_units pixel_units = tiff_pixel_units::METERS;
 
 	// Horizontal scale
-	float meters_per_pixel_x = 1.0f;
-	float meters_per_pixel_z = 1.0f;
-	float pixel_vertical_units_scale = 1.0f;
+	float meters_per_pixel_x = 1.0F;
+	float meters_per_pixel_z = 1.0F;
+	float pixel_vertical_units_scale = 1.0F;
 };
 
 struct renderable_tile_area
 {
-	float north_edge_in_meters = 0.0f;
-	float south_edge_in_meters = 0.0f;
-	float west_edge_in_meters = 0.0f;
-	float east_edge_in_meters = 0.0f;
-	float heighest_point_in_meters = 0.0f;
-	float lowest_point_in_meters = 0.0f;
+	float north_edge_in_meters = 0.0F;
+	float south_edge_in_meters = 0.0F;
+	float west_edge_in_meters = 0.0F;
+	float east_edge_in_meters = 0.0F;
+	float heighest_point_in_meters = 0.0F;
+	float lowest_point_in_meters = 0.0F;
 
 	std::int32_t tile_index = -1;
 	gl::GLuint vertex_buffer_id = 0;
@@ -50,7 +50,7 @@ struct renderable_tile_area
 	gl::GLuint vertex_array_object_id = 0;
 	gl::GLuint num_indices_to_draw = 0;
 
-	glm::vec4 blend_colour { 1.0f, 1.0f, 1.0f, 1.0f };
+	glm::vec4 blend_colour { 1.0F, 1.0F, 1.0F, 1.0F };
 };
 
 struct ROAM_leaf_node
@@ -71,7 +71,7 @@ struct ROAM_leaf_node
 struct ROAM_tree
 {
 	ROAM_leaf_node* root = nullptr;
-	float vertical_delta_to_stop_recursion_at_in_meters = 0.001f;
+	float vertical_delta_to_stop_recursion_at_in_meters = 0.001F;
 
 	std::vector<renderable_tile_area> renderable_areas;
 };
