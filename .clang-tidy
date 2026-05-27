@@ -1,7 +1,8 @@
 Checks: >
     -*,
     hicpp-*,
-	clang-diagnostic-*
+	# clang-diagnostic-*, # not supported by clang-tidy in the Git Hub action.
+	bugprone-*
 
 WarningsAsErrors: 'hicpp-*'
 HeaderFilterRegex: '^.*/source/library/.*'
