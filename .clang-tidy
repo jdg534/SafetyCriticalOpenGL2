@@ -1,7 +1,6 @@
 Checks: >
     -*,
     hicpp-*,
-	# clang-diagnostic-*, # not supported by clang-tidy in the Git Hub action.
 	bugprone-*
 
 WarningsAsErrors: 'hicpp-*'
@@ -12,7 +11,3 @@ FormatStyle: none
 CheckOptions:
   - key:             misc-unused-parameters.StrictMode
     value:           1
-
-# temp logic, comments out when no other HI-C++ checks find problem code.
-ExtraArgs:
-  - -Wno-everything
