@@ -1,7 +1,6 @@
 Checks: >
     -*,
-    hicpp-*,
-	bugprone-*
+    hicpp-*
 
 WarningsAsErrors: 'hicpp-*'
 HeaderFilterRegex: '^.*/source/library/.*'
