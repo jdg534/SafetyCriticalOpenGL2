@@ -29,6 +29,11 @@
 
 #pragma GCC diagnostic ignored "-Winvalid-offsetof" // done for the terrain_vertex usage. CI flagged it.
 
+// NOLINTBEGIN(hicpp-vararg)
+// The above comment stops clang-tidy from running the HI C++ variadic functions check for this file.
+// This is done because a lot of the tiff API functions can only be accessed as variadic functions.
+// These functions just read state and are safe.
+
 // public
 /////////
 
@@ -816,3 +821,5 @@ gl::GLuint terrain::get_texture_id(std::string_view texture_asset_name) const
 	std::weak_ptr<const asset> result = get_asset_manager().lock()->get_asset_on_name(texture_asset_name);
 	return std::dynamic_pointer_cast<const texture>(result.lock())->get_id();
 }
+
+// NOLINTEND(hicpp-vararg)
