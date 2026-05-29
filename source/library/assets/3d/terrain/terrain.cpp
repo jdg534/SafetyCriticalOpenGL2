@@ -22,7 +22,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <math.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -72,7 +71,7 @@ void terrain::initialise()
 {
 	using namespace std;
 	const string_view path = get_path();
-	if (!filesystem::exists(path)) throw runtime_error("Couldn't find file at path");
+	if (!filesystem::exists(path)) { throw runtime_error("Couldn't find file at path"); }
 
 	ifstream assets_list_file(path.data());
 	stringstream buffer;
@@ -92,11 +91,10 @@ void terrain::initialise()
 	const string resolved_path = asset_utils::resolve_file_path(doc["height_map"].GetString(), asset_utils::get_directory_path(get_path())); // ensure an absolute path.
 
 	TIFF* tiff_file = XTIFFOpen(resolved_path.data(), "r");
-	if (!tiff_file) throw runtime_error("Failed to load tiff file");
+	if (!tiff_file) { throw runtime_error("Failed to load tiff file"); }
 
 	GTIF* geo_tiff = GTIFNew(tiff_file);
-	if (!geo_tiff)
-		throw std::runtime_error("GTIFNew failed");
+	if (!geo_tiff) { throw std::runtime_error("GTIFNew failed"); }
 
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &m_geo_tiff_height_info.width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &m_geo_tiff_height_info.length);
@@ -306,7 +304,7 @@ void terrain::read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	constexpr float INV_255 = 1.0F / 255.0F;
 	for (std::uint32_t row = 0; row < height; ++row)
 	{
-		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) { throw std::runtime_error("TIFFReadScanline failed"); }
 		float* dst = output_buffer.data() + row * width;
 		for (std::uint32_t col = 0; col < width; ++col)
 		{
@@ -347,7 +345,7 @@ void terrain::read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_fil
 
 	for (std::uint32_t row = 0; row < height; ++row)
 	{
-		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) { throw std::runtime_error("TIFFReadScanline failed"); }
 
 		float* dst = output_buffer.data() + row * width;
 		std::memcpy(dst, scanline.data(), width * sizeof(float));
@@ -371,7 +369,7 @@ void terrain::read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* ti
 	{
 		for (std::uint32_t tile_x = 0; tile_x < image_width; tile_x += tile_width)
 		{
-			if (TIFFReadTile(tiff_file, tile.data(), tile_x, tile_y, 0, 0) == -1) throw std::runtime_error("TIFFReadTile failed");
+			if (TIFFReadTile(tiff_file, tile.data(), tile_x, tile_y, 0, 0) == -1) { throw std::runtime_error("TIFFReadTile failed"); }
 			const std::uint32_t max_y = std::min(tile_height, image_height - tile_y);
 			const std::uint32_t max_x = std::min(tile_width, image_width - tile_x);
 			for (std::uint32_t y = 0; y < max_y; ++y)
@@ -406,11 +404,8 @@ void terrain::override_nan_values(std::vector<float>& output_buffer)
 
 void terrain::flip_rows(std::vector<float>& output_buffer, std::uint32_t width, std::uint32_t length)
 {
-	if (width == 0 || length == 0)
-		return;
-
-	if (output_buffer.size() != static_cast<size_t>(width) * length)
-		throw std::runtime_error("Invalid heightmap buffer size");
+	if (width == 0 || length == 0) { return; }
+	if (output_buffer.size() != static_cast<size_t>(width) * length) { throw std::runtime_error("Invalid heightmap buffer size"); }
 
 	const size_t row_elements = width;
 	const size_t row_bytes = row_elements * sizeof(float);
