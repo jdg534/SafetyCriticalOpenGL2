@@ -65,6 +65,13 @@ struct ROAM_leaf_node
 	ROAM_leaf_node* south_west_child = nullptr;
 	ROAM_leaf_node* south_east_child = nullptr;
 
+	ROAM_leaf_node() = default;
+	ROAM_leaf_node(const ROAM_leaf_node& other) = delete;
+	ROAM_leaf_node(ROAM_leaf_node&& to_move) = delete;
+
+	ROAM_leaf_node& operator=(const ROAM_leaf_node&) = delete;
+	ROAM_leaf_node& operator=(ROAM_leaf_node&&) = delete;
+
 	~ROAM_leaf_node();
 };
 

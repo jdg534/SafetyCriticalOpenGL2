@@ -330,7 +330,7 @@ void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_f
 	constexpr float INV_128 = 1.0F / 128.0F;
 	for (std::uint32_t row = 0; row < height; ++row)
 	{
-		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) { throw std::runtime_error("TIFFReadScanline failed"); }
 		float* dst = output_buffer.data() + row * width;
 		for (std::uint32_t col = 0; col < width; ++col)
 		{
