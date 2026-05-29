@@ -19,13 +19,13 @@
 #include <glm/gtx/compatibility.hpp>
 
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <math.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <stdlib.h>
 
 #pragma GCC diagnostic ignored "-Winvalid-offsetof" // done for the terrain_vertex usage. CI flagged it.
 
