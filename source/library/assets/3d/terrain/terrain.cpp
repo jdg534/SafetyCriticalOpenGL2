@@ -3,6 +3,7 @@
 #include "../../asset_utils.h"
 
 #include "../../../render/vertex_types.h"
+#include "../../../utilities/constants.h"
 #include "../../asset_manager.h"
 #include "../../texture.h"
 
@@ -225,7 +226,7 @@ void terrain::compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff)
 		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0F;
 		const float centre_latitude_degrees = calculate_centre_latitude_from_tiepoints(tiff, m_geo_tiff_height_info.length, pixel_latitude_scale_in_degrees);
 
-		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0F;
+		const float centre_latitude_radians = centre_latitude_degrees * constants::PI / 180.0F;
 		const float meters_per_degree_longitude = METERS_PER_DEGREE_LATITUDE * std::cos(centre_latitude_radians);
 
 		m_geo_tiff_height_info.meters_per_pixel_x = pixel_longitude_scale_in_degrees * meters_per_degree_longitude;
