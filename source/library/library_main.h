@@ -25,7 +25,13 @@ class library_main
 public:
 
 	library_main();
+	library_main(const library_main& other) = delete;
+	library_main(library_main&& to_move) = delete;
+
 	~library_main();
+
+	library_main& operator=(const library_main&) = delete;
+	library_main& operator=(library_main&&) = delete;
 
 	void run();
 
