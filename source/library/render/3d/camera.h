@@ -2,10 +2,11 @@
 #define _CAMERA_H_
 
 #include <glm/glm.hpp>
+#include <array>
 
 struct frustum
 {
-	glm::vec4 planes[6];
+	std::array<glm::vec4,6> planes;
 };
 
 class camera
