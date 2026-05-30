@@ -24,7 +24,6 @@ renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap, std
 	, m_render_list_cap(render_list_cap)
 	, m_camera(camera)
 {
-
 }
 
 void renderer::initialise()
@@ -305,9 +304,6 @@ void renderer::switch_to_3d_static_mesh_shader()
 
 	// just hard code the light: direction & color, also the ambient light. Add in the control later if needed.
 	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(m_directional_light_direction));
-	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 1.0f, 1.0f, 1.0f }));
-	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 0.1f, 0.1f, 0.1f }));
-
 	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(m_directional_light_colour));
 	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(m_ambient_light_colour));
 }
