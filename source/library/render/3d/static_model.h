@@ -14,8 +14,14 @@ class static_model : public renderable_3d
 public:
 
 	static_model() = delete;
-	static_model(std::weak_ptr<const model> model);
+	static_model(const static_model& other) = delete;
+	static_model(static_model&& to_move) = delete;
+	explicit static_model(std::weak_ptr<const model> model);
 	~static_model() override = default;
+
+	static_model& operator=(const static_model&) = delete;
+	static_model& operator=(static_model&&) = delete;
+
 
 	void initialise() override;
 	void shutdown() override;
