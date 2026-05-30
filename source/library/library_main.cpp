@@ -169,12 +169,14 @@ GLFWwindow* library_main::initialise_window()
 	if (results == nullptr)
 	{
 		// NOLINTBEGIN(hicpp-no-array-decay)
+		// NOLINTBEGIN(hicpp-avoid-c-arrays)
 		// ignoring since glfw is designed this way. It's safe, the program boots or it doesn't.
 		const char* error_str[256];
 		std::memset(error_str, 0, 256);
 		const int error_code = glfwGetError(error_str);
 		std::cerr << "glfwCreateWindow() failed: " << *error_str << std::endl;
 		throw std::runtime_error("glfwCreateWindow() failed");
+		// NOLINTEND(hicpp-avoid-c-arrays)
 		// NOLINTEND(hicpp-no-array-decay)
 	}
 	return results;
