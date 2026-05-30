@@ -1,5 +1,6 @@
 #include "texture.h"
 
+#include <array>
 #include <iostream>
 #include <stdexcept>
 #include <png.h>
@@ -28,13 +29,13 @@ void texture::initialise()
 		throw std::runtime_error("failed to load png file");
 	}
 	// Read header
-	png_byte header[8];
-	fread(header, 1, 8, file);
-	if (png_sig_cmp(header, 0, 8))
+	std::array < png_byte, 8> header;
+	fread(header.data(), 1, 8, file);
+	if (png_sig_cmp(header.data(), 0, 8))
 	{
 		fclose(file);
 		throw std::runtime_error(std::string("File is not a PNG: ") + file_path.data());
-		std::cerr << std::string("The PNG header was: ") << header << std::endl;
+		std::cerr << std::string("The PNG header was: ") << header.data() << std::endl;
 	}
 
 	// Init png structures
