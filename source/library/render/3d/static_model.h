@@ -15,14 +15,13 @@ public:
 
 	static_model() = delete;
 	static_model(std::weak_ptr<const model> model);
-	virtual ~static_model() = default;
+	~static_model() override = default;
 
 	void initialise() override;
 	void shutdown() override;
 	void draw() override;
 
 private:
-
 
 	std::weak_ptr<const model> m_model;
 };
