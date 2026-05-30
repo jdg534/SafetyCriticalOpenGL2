@@ -67,7 +67,7 @@ private:
 	std::vector<glyph_info> m_glyph_info;
 	std::vector<kerning_info> m_kerning_info;
 	std::string m_atlas_asset_name;
-	float m_default_spacing = 10.0f; // pixels...
+	float m_default_spacing = 10.0F; // pixels...
 };
 
 #endif // _FONT_H_
