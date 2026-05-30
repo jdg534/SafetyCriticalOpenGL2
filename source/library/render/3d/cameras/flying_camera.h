@@ -36,11 +36,11 @@ private:
 	bool m_is_moving = false;
 
 	// LLM generated code.
-	float m_move_speed = 5.0f;
-	float m_rotation_speed = 1.5f;
-	float m_yaw = 0.0f;
-	float m_pitch = 0.0f;
-	glm::vec3 m_forward{ 0.0f, 0.0f, 1.0f };
+	float m_move_speed = 5.0F;
+	float m_rotation_speed = 1.5F;
+	float m_yaw = 0.0F;
+	float m_pitch = 0.0F;
+	glm::vec3 m_forward { 0.0F, 0.0F, 1.0F };
 
 	// glfw API friendly types used.
 	int m_move_forward_key = 0;

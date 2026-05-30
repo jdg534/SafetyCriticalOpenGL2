@@ -6,7 +6,7 @@
 #include "renderable_3d.h"
 #include "../../assets/3d/model.h"
 
-// note that this doesn't own any 
+// note that this doesn't own any data.
 
 class static_model : public renderable_3d
 {

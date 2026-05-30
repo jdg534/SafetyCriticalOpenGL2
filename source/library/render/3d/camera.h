@@ -52,14 +52,14 @@ public:
 
 private:
 
-	glm::vec3 m_position = { 0.0f, 0.0f, 0.0f };
-	glm::vec3 m_look_at_position = {0.0f, 0.0f, 10.0f};
-	glm::vec3 m_up_vector = {0.0f, 1.0f, 0.0f};
-	float m_field_of_view_angle_radians = { 0.785398f }; // 45 degrees
-	float m_view_port_width = { 800.0f };
-	float m_view_port_height ={ 600.0f };
-	float m_near_clipping_distance = { 0.001f };
-	float m_far_clipping_distance = { 800.0f * 1000.0f }; // GPT says max view distence is 800km for a fast jet, using that since viewing from space would be overkill.
+	glm::vec3 m_position = { 0.0F, 0.0F, 0.0F };
+	glm::vec3 m_look_at_position = { 0.0F, 0.0F, 10.0F};
+	glm::vec3 m_up_vector = {0.0F, 1.0F, 0.0F};
+	float m_field_of_view_angle_radians = { 0.785398F }; // 45 degrees
+	float m_view_port_width = { 800.0F };
+	float m_view_port_height ={ 600.0F };
+	float m_near_clipping_distance = { 0.001F };
+	float m_far_clipping_distance = { 800.0F * 1000.0F }; // GPT says max view distence is 800km for a fast jet, using that since viewing from space would be overkill.
 };
 
 #endif // _CAMERA_H_
