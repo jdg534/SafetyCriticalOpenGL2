@@ -3,6 +3,7 @@
 #include "../../vertex_types.h"
 #include "../../../assets/texture.h"
 
+#include <array>
 #include <cassert>
 #include <cstring>
 #include <exception>
@@ -17,7 +18,7 @@ using namespace vertex_types;
 /////////
 
 text_block::text_block(const std::u32string& starting_text, const std::weak_ptr<const font>& font_to_use, size_t character_limit, line_spaceing line_spaceing)
-	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
+	: renderable_2d({1.0F, 1.0F, 1.0F, 1.0F})
 	, m_text(starting_text)
 	, m_font_to_use(font_to_use)
 	, m_character_limit(character_limit)
@@ -39,8 +40,8 @@ void text_block::initialise()
 void text_block::shutdown()
 {
 	m_text.clear();
-	GLuint buffer_ids[2]{ get_vertex_buffer_id(), get_index_buffer_id() };
-	glDeleteBuffers(2, buffer_ids);
+	const std::array<GLuint, 2> buffer_ids{ get_vertex_buffer_id(), get_index_buffer_id() };
+	glDeleteBuffers(2, buffer_ids.data());
 	GLuint vertex_array_id = get_vertex_array_id();
 	glDeleteVertexArrays(1, &vertex_array_id);
 	set_vertex_buffer_id(0);
@@ -131,8 +132,8 @@ void text_block::setup_glyphs()
 	glBindVertexArray(vertex_array_id);
 
 	// make the buffer, want to get to off set.
-	GLuint buffer_ids[2];
-	glGenBuffers(2, buffer_ids); // [0] vertex buffer, [1] index buffer
+	std::array<GLuint, 2> buffer_ids{};
+	glGenBuffers(2, buffer_ids.data()); // [0] vertex buffer, [1] index buffer
 	// buffer size vertex2d_struct_size * 4 * character limit
 	const size_t vertex_buffer_size = vertex_types::vertex2d_struct_size * m_character_limit * 4;
 	std::vector<vertex_types::vertex_2d> vertex_buffer_data;
@@ -175,8 +176,8 @@ void text_block::update_glyphs()
 	index_buffer.resize(m_character_limit * 6);
 	std::memset(&index_buffer[0], 0, index_buffer_size);
 
-	float current_x = 0.0f;
-	float current_y = 0.0f;
+	float current_x = 0.0F;
+	float current_y = 0.0F;
 	
 	// remember that memset 0 was done on both buffers (everything will be set to 0)
 	// 0,0 is bottom left in texutre coordinates.
@@ -256,10 +257,10 @@ float text_block::get_vertical_spacing_modifier() const
 {
 	switch (m_line_spaceing)
 	{
-		case line_spaceing::FIXED: return 1.0f;
-		case line_spaceing::RELATIVE_1_2: return 1.2f;
-		case line_spaceing::RELATIVE_1_5: return 1.5f;
-		case line_spaceing::DOUBLE: return 2.0f;
+		case line_spaceing::FIXED: return 1.0F;
+		case line_spaceing::RELATIVE_1_2: return 1.2F;
+		case line_spaceing::RELATIVE_1_5: return 1.5F;
+		case line_spaceing::DOUBLE: return 2.0F;
 	}
-	return 1.0f;
+	return 1.0F;
 }
