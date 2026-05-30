@@ -76,7 +76,7 @@ void library_main::initialise()
 	glbinding::initialize(glfwGetProcAddress);
 	int framebuffer_width = 0, framebuffer_height = 0;
 	glfwGetFramebufferSize(m_window, &framebuffer_width, &framebuffer_height);
-	const float flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
+	const auto flt_framebuffer_width = static_cast<float>(framebuffer_width), flt_framebuffer_height = static_cast<float>(framebuffer_height);
 
 	m_camera = make_shared<flying_camera>(m_window);
 	m_camera->set_view_port_width(flt_framebuffer_width);
@@ -168,11 +168,14 @@ GLFWwindow* library_main::initialise_window()
 	GLFWwindow* results = glfwCreateWindow(window_width, window_height, window_title.c_str(), nullptr, nullptr);
 	if (results == nullptr)
 	{
+		// NOLINTBEGIN(hicpp-no-array-decay)
+		// ignoring since glfw is designed this way. It's safe, the program boots or it doesn't.
 		const char* error_str[256];
 		std::memset(error_str, 0, 256);
 		const int error_code = glfwGetError(error_str);
 		std::cerr << "glfwCreateWindow() failed: " << *error_str << std::endl;
 		throw std::runtime_error("glfwCreateWindow() failed");
+		// NOLINTEND(hicpp-vararg)
 	}
 	return results;
 }
@@ -258,8 +261,8 @@ void library_main::s_on_framebuffer_resize(GLFWwindow* window, int width, int he
 
 void library_main::on_framebuffer_resize(GLFWwindow* window, int width, int height)
 {
-	const float flt_width = static_cast<float>(width);
-	const float flt_height = static_cast<float>(height);
+	const auto flt_width = static_cast<float>(width);
+	const auto flt_height = static_cast<float>(height);
 	m_renderer->set_framebuffer_size(glm::vec2(flt_width, flt_height));
 	m_camera->set_view_port_width(flt_width);
 	m_camera->set_view_port_height(flt_height);
