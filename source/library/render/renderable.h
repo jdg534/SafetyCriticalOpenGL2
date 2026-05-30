@@ -23,7 +23,13 @@ class renderable
 public:
 
 	renderable();
+	renderable(const renderable& other) = delete;
+	renderable(renderable&& to_move) = delete;
+	
 	virtual ~renderable() = default;
+
+	renderable& operator=(const renderable&) = delete;
+	renderable& operator=(renderable&&) = delete;
 
 	virtual void initialise() = 0;
 	virtual void shutdown() = 0;
