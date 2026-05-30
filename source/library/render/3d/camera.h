@@ -14,7 +14,12 @@ class camera
 public:
 
 	camera();
+	camera(const camera& other) = delete;
+	camera(camera&& to_move) = delete;
 	virtual ~camera() = default;
+
+	camera& operator=(const camera&) = delete;
+	camera& operator=(camera&&) = delete;
 
 	virtual glm::mat4x4 get_view_matrix() const;
 	glm::mat4x4 get_projection_matrix() const;

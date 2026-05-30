@@ -12,8 +12,14 @@ class flying_camera
 {
 public:
 
+	flying_camera() = delete;
+	flying_camera(const flying_camera& other) = delete;
+	flying_camera(flying_camera&& to_move) = delete;
 	explicit flying_camera(GLFWwindow* window);
-	virtual ~flying_camera() = default;
+	~flying_camera() override = default;
+
+	flying_camera& operator=(const flying_camera&) = delete;
+	flying_camera& operator=(flying_camera&&) = delete;
 
 	void tick(float delta_time) override;
 
