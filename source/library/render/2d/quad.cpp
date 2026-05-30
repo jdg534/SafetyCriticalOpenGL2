@@ -107,6 +107,6 @@ void quad::draw()
 	glBindBuffer(GL_ARRAY_BUFFER, get_vertex_buffer_id());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, get_index_buffer_id());
 	glBindVertexArray(get_vertex_array_id()); // drawable specfic
-	glDrawElements(GL_TRIANGLES, get_index_count(), GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, get_index_count(), GL_UNSIGNED_SHORT, nullptr);
 	glBindVertexArray(0);
 }
