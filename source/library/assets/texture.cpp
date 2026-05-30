@@ -29,7 +29,8 @@ void texture::initialise()
 		throw std::runtime_error("failed to load png file");
 	}
 	// Read header
-	std::array < png_byte, 8> header;
+	std::array<png_byte, 8> header {};
+
 	fread(header.data(), 1, 8, file);
 	if (png_sig_cmp(header.data(), 0, 8))
 	{
