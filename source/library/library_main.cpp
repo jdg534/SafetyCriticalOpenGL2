@@ -25,9 +25,9 @@ using namespace std;
 
 library_main* library_main::s_instance_ptr = nullptr;
 
-constexpr glm::vec4 text_changing_tint = { 1.0f, 0.0f, 0.0f, 1.0f };
-constexpr glm::vec4 text_normal_tint   = { 1.0f, 1.0f, 1.0f, 1.0f };
-constexpr glm::vec3 camera_starting_position = { 0.0f, 705.0f, -10.0f };
+constexpr glm::vec4 text_changing_tint = { 1.0F, 0.0F, 0.0F, 1.0F };
+constexpr glm::vec4 text_normal_tint = { 1.0F, 1.0F, 1.0F, 1.0F };
+constexpr glm::vec3 camera_starting_position = { 0.0F, 705.0F, -10.0F };
 
 // public
 /////////
@@ -48,7 +48,7 @@ void library_main::run()
 	initialise();
 	runtime_phase_allocator::initialise();
 	memory_system::set_phase(memory_system::phase::runtime);
-	static float running_time = 0.0f;
+	static float running_time = 0.0F;
 	while (!glfwWindowShouldClose(m_window))
 	{
 		const float delta_time = static_cast<float>(glfwGetTime()) - running_time;
@@ -201,13 +201,13 @@ void library_main::initialise_test_data()
 
 	for (auto camera_text_block : { m_camera_look_at_position_text , m_camera_position_text, m_camera_move_speed_text })
 	{
-		camera_text_block->set_transform(glm::translate(identity<mat4x4>(), { 0.0f, 25.0f, 0.0f }));
+		camera_text_block->set_transform(glm::translate(identity<mat4x4>(), { 0.0F, 25.0F, 0.0F }));
 	}
 
 	weak_ptr<const texture> smiley_texture = dynamic_pointer_cast<const texture>(m_asset_manager->get_asset_on_name("smiley").lock());
-	m_textured_quad = make_shared<quad>(smiley_texture, vec2{50.0f, 50.0f});
+	m_textured_quad = make_shared<quad>(smiley_texture, vec2{50.0F, 50.0F});
 	m_textured_quad->initialise();
-	m_textured_quad->set_transform(glm::translate(identity<mat4x4>(), {45.0f, 175.0f, 0.0f}));
+	m_textured_quad->set_transform(glm::translate(identity<mat4x4>(), {45.0F, 175.0F, 0.0F}));
 
 	weak_ptr<const terrain> test_terrain = dynamic_pointer_cast<const terrain>(m_asset_manager->get_asset_on_name("st_helena").lock());
 	m_terrain = make_shared<renderable_terrain>(test_terrain);
@@ -280,7 +280,7 @@ void library_main::tick(float delta_time)
 	using namespace glm;
 	using namespace std;
 
-	static constexpr float delta_time_cap = 0.25f;
+	static constexpr float delta_time_cap = 0.25F;
 	const float delta_time_to_use = std::min(delta_time, delta_time_cap);
 	update_test_cube(delta_time_to_use);
 
@@ -301,7 +301,7 @@ void library_main::tick(float delta_time)
 	text_utilities::append_vec3(text_to_set, m_camera->get_look_at_position());
 	m_camera_look_at_position_text->set_text(text_to_set);
 	text_to_set = U"Camera movement speed: ";
-	text_utilities::append_vec3(text_to_set, { m_camera->get_move_speed(), 0.0f, 0.0f });
+	text_utilities::append_vec3(text_to_set, { m_camera->get_move_speed(), 0.0F, 0.0F });
 	m_camera_move_speed_text->set_text(text_to_set);
 }
 
@@ -319,7 +319,7 @@ void library_main::update_text_tint(std::shared_ptr<text_block> to_update, bool 
 void library_main::update_test_cube(float delta_time)
 {
 	using namespace glm;
-	static float angle = 0.0f, turn_speed_degrees = 1.0f;
+	static float angle = 0.0F, turn_speed_degrees = 1.0F;
 	angle += turn_speed_degrees * delta_time;
-	m_test_cube->set_transform(translate(identity<mat4x4>(), {0.0f, 700.0f, 0.0f}) * rotate(identity<mat4x4>(), angle, { 0.0f, 1.0f, 0.0f }));
+	m_test_cube->set_transform(translate(identity<mat4x4>(), {0.0F, 700.0F, 0.0F}) * rotate(identity<mat4x4>(), angle, { 0.0F, 1.0F, 0.0F }));
 }
