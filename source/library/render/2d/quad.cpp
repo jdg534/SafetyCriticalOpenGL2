@@ -8,7 +8,7 @@ using namespace gl;
 /////////
 
 quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
-	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
+	: renderable_2d({1.0F, 1.0F, 1.0F, 1.0F})
 	, m_texture(texture)
 {
 	using namespace gl;
@@ -19,14 +19,14 @@ quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
 	// 0-1-2
 	// 3-2-1
 
-	const glm::vec2 quarer_size = { size.x * 0.25f, size.y * 0.25f };
+	const glm::vec2 quarer_size = { size.x * 0.25F, size.y * 0.25F };
 
 	vertex_2d vertex_buffer_data[4] = // pos, tc
 	{
-		{ glm::vec2 { 0.0f - quarer_size.x, 0.0f - quarer_size.y },glm::vec2{0.0f, 0.0}},
-		{ glm::vec2 { 0.0f + quarer_size.x, 0.0f - quarer_size.y },glm::vec2{1.0, 0.0}},
-		{ glm::vec2 { 0.0f - quarer_size.x, 0.0f + quarer_size.y },glm::vec2{0.0, 1.0}},
-		{ glm::vec2 { 0.0f + quarer_size.x, 0.0f + quarer_size.y },glm::vec2{1.0, 1.0}}
+		{ glm::vec2 { 0.0F - quarer_size.x, 0.0F - quarer_size.y },glm::vec2{0.0F, 0.0F}},
+		{ glm::vec2 { 0.0F + quarer_size.x, 0.0F - quarer_size.y },glm::vec2{1.0F, 0.0F}},
+		{ glm::vec2 { 0.0F - quarer_size.x, 0.0F + quarer_size.y },glm::vec2{0.0F, 1.0F}},
+		{ glm::vec2 { 0.0F + quarer_size.x, 0.0F + quarer_size.y },glm::vec2{1.0F, 1.0F}}
 	};
 	constexpr GLsizeiptr vertex_buffer_size = vertex2d_struct_size * 4;
 	
