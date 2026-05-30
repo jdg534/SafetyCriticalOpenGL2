@@ -175,7 +175,7 @@ GLFWwindow* library_main::initialise_window()
 		const int error_code = glfwGetError(error_str);
 		std::cerr << "glfwCreateWindow() failed: " << *error_str << std::endl;
 		throw std::runtime_error("glfwCreateWindow() failed");
-		// NOLINTEND(hicpp-vararg)
+		// NOLINTEND(hicpp-no-array-decay)
 	}
 	return results;
 }
