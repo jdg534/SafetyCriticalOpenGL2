@@ -9,15 +9,15 @@ class renderable_3d : public renderable
 public:
 
 	renderable_3d();
-	virtual ~renderable_3d() = default;
+	renderable_3d(const renderable_3d& other) = delete;
+	renderable_3d(renderable_3d&& to_move) = delete;
+	~renderable_3d() override = default;
 
+	renderable_3d& operator=(const renderable_3d&) = delete;
+	renderable_3d& operator=(renderable_3d&&) = delete;
 
 private:
 
 };
-
-// This is a placeholder.
-// This will be the base class for geomentry.
-// Terrain will be another class (inheriting from this)
 
 #endif // _RENDERABLE_3D_H_
