@@ -19,7 +19,7 @@ public:
 	renderable_terrain() = delete;
 	renderable_terrain(const renderable_terrain& other) = delete;
 	renderable_terrain(renderable_terrain&& to_move) = delete;
-	renderable_terrain(std::weak_ptr<const terrain> terrain);
+	explicit renderable_terrain(std::weak_ptr<const terrain> terrain);
 	~renderable_terrain() override = default;
 
 	renderable_terrain& operator=(const renderable_terrain&) = delete;
