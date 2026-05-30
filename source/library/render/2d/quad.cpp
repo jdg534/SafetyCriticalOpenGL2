@@ -39,7 +39,7 @@ quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
 
 	constexpr GLsizeiptr index_buffer_size = sizeof(unsigned short) * index_buffer.size();
 
-	std::array<GLuint, 2> buffer_ids;
+	std::array<GLuint, 2> buffer_ids {};
 	glGenBuffers(2, buffer_ids.data());
 	GLuint vertex_array_id;
 	glGenVertexArrays(1, &vertex_array_id);
