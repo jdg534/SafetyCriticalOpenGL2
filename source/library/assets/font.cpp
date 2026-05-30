@@ -4,6 +4,7 @@
 #include "asset_manager.h"
 
 #include <algorithm>
+#include <cstring>
 #include <fstream>
 #include <string_view>
 #include <sstream>
@@ -111,7 +112,8 @@ source_rect font::get_texture_coordinates_for_glyph(char32_t glyph) const
 {
 	const glyph_info info = get_glyph_info(glyph);
 	const auto texture = get_texture();
-	source_rect result;
+	source_rect result {};
+	std::memset(&result, 0, sizeof(source_rect));
 	const float atlas_width = static_cast<float>(texture.lock()->get_width());
 	const float atlas_height = static_cast<float>(texture.lock()->get_height());
 	result.left = info.left_px / atlas_width;
