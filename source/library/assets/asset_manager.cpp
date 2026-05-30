@@ -88,17 +88,12 @@ std::weak_ptr<const asset> asset_manager::get_asset_on_path(std::string_view ass
 	throw std::runtime_error(std::string("Could not find the asset with path: ") + asset_path.data());
 }
 
-void asset_manager::request_load_texture(std::string_view name, std::string_view file_path)
-{
-	throw std::runtime_error("CODE asset_manager::request_load_texture");
-}
-
 asset_type asset_manager::to_type(std::string_view s)
 {
-	if (s == "texture") return asset_type::texture;
-	if (s == "font") return asset_type::font;
-	if (s == "model") return asset_type::model;
-	if (s == "terrain") return asset_type::terrain;
+	if (s == "texture") { return asset_type::texture; }
+	if (s == "font") { return asset_type::font; }
+	if (s == "model") { return asset_type::model; }
+	if (s == "terrain") { return asset_type::terrain; }
 	return asset_type::invalid;
 }
 
