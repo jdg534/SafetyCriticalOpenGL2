@@ -34,7 +34,7 @@ char32_t text_utilities::utf8_to_char32(const char* utf8str)
 		return ((s[0] & 0x07) << 18) | ((s[1] & 0x3F) << 12)
 			| ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
 	}
-	// NOLINTBEGIN(hicpp-signed-bitwise)
+	// NOLINTEND(hicpp-signed-bitwise)
 	throw std::runtime_error("Invalid UTF-8 sequence");
 	return '\0';
 }
