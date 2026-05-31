@@ -14,7 +14,7 @@ class camera
 
 public:
 
-	camera();
+	camera() = default;
 	camera(const camera& other) = delete;
 	camera(camera&& to_move) = delete;
 	virtual ~camera() = default;
