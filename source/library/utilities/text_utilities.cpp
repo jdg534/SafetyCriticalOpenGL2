@@ -41,19 +41,23 @@ char32_t text_utilities::utf8_to_char32(const char* utf8str)
 
 void text_utilities::append_vec3(std::u32string& append_to, const glm::vec3& to_append)
 {
-	std::array<char, 128> temp;
+	std::array<char, 128> temp{};
 
+	// NOLINTBEGIN(hicpp-vararg)
+	// Suppressing the check, the buffer is fixed in size and we won't be anywhere near the limit.
 	int written = std::snprintf(temp.data(), sizeof(temp),
 		"(%.4f, %.4f, %.4f)",
 		static_cast<double>(to_append.x),
 		static_cast<double>(to_append.y),
 		static_cast<double>(to_append.z));
-	const size_t add = static_cast<size_t>(written);
-	const size_t start = append_to.size();
+	// NOLINTEND(hicpp-vararg)
+
+	const auto add = static_cast<size_t>(written);
+	const auto start = append_to.size();
 	append_to.resize(start + add); // may allocate once if capacity insufficient
 
 	// copy bytes -> char32_t codepoints
-	for (size_t i = 0; i < add; ++i)
+	for (auto i = 0; i < add; ++i)
 	{
 		append_to[start + i] = static_cast<char32_t>(temp[i]);
 	}
