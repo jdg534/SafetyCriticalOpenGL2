@@ -74,7 +74,7 @@ void static_model::draw()
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
 
 		// draw
-		glDrawElements(GL_TRIANGLES, index_element_count, GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, index_element_count, GL_UNSIGNED_SHORT, nullptr);
 	}
 	glBindVertexArray(0); // clear the vertex array.
 }
