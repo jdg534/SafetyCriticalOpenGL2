@@ -59,7 +59,7 @@ void flying_camera::handle_rotation(float delta_time)
 	if (glfwGetKey(m_window, m_turn_up_key) == GLFW_PRESS) { m_pitch += delta; }
 	if (glfwGetKey(m_window, m_turn_down_key) == GLFW_PRESS) { m_pitch -= delta; }
 
-	constexpr float pitch_limit = glm::radians(89.0f);
+	constexpr float pitch_limit = glm::radians(89.0F);
 	m_pitch = std::clamp(m_pitch, -pitch_limit, pitch_limit);
 
 	m_forward.x = cosf(m_pitch) * sinf(m_yaw);
@@ -77,7 +77,7 @@ void flying_camera::handle_movement(float delta_time)
 	const glm::vec3 right = glm::normalize(glm::cross(get_up_vector(), forward));
 	const glm::vec3 up = glm::normalize(get_up_vector());
 
-	glm::vec3 movement{ 0.0f };
+	glm::vec3 movement{ 0.0F };
 
 	if (glfwGetKey(m_window, m_move_forward_key) == GLFW_PRESS) { movement += forward; }
 	if (glfwGetKey(m_window, m_move_back_key) == GLFW_PRESS) { movement -= forward; }
