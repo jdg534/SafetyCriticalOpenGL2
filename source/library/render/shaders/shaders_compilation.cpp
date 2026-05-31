@@ -51,5 +51,5 @@ gl::GLuint shaders_compilation::link_shaders_to_program(gl::GLuint vertex_shader
 	return shader_program;
 }
 
-// NOLINTBEGIN(hicpp-no-array-decay)
+// NOLINTEND(hicpp-no-array-decay)
 // NOLINTEND(hicpp-avoid-c-arrays)
