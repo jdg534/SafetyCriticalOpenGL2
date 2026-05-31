@@ -70,7 +70,7 @@ void text_block::draw()
 	const glm::mat4x4 net_transform = get_net_transform();
 
 	glUniform4fv(u_tint_loc, 1, glm::value_ptr(get_tint()));
-	glUniform1f(u_alphaCut_loc, 0.0f);
+	glUniform1f(u_alphaCut_loc, 0.0F);
 	glUniformMatrix4fv(u_transform_loc, 1, GL_FALSE, glm::value_ptr(net_transform));
 	
 	// set the texture
@@ -85,7 +85,7 @@ void text_block::draw()
 
 	// draw
 	glBindVertexArray(get_vertex_array_id()); // clear the vertex array.
-	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_SHORT, nullptr);
 	glBindVertexArray(0); // clear the vertex array.
 }
 
@@ -190,7 +190,7 @@ void text_block::update_glyphs()
 	const auto texture = font_ptr->get_texture();
 	const unsigned int atlas_width = texture.lock()->get_width();
 	const unsigned int atlas_height = texture.lock()->get_height();
-	const float tallest_glyph_height = static_cast<float>(font_ptr->get_character_height());
+	const auto tallest_glyph_height = static_cast<float>(font_ptr->get_character_height());
 
 	const int num_glyphs_to_set = std::min(static_cast<int>(m_character_limit), static_cast<int>(m_text.size()));
 
@@ -242,7 +242,7 @@ void text_block::update_glyphs()
 		if (current_glyph == '\r' || current_glyph == '\n')
 		{
 			// new line, only dealing with left alighment for now.
-			current_x = 0.0f;
+			current_x = 0.0F;
 			current_y += tallest_glyph_height * get_vertical_spacing_modifier();
 		}
 	}
