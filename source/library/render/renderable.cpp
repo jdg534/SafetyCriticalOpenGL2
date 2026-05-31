@@ -3,14 +3,11 @@
 #include <exception>
 #include <stdexcept>
 
+#include <glm/ext/matrix_transform.inl>
+
 renderable::renderable()
+	: m_transform(glm::identity<glm::mat4x4>())
 {
-	// need to make the transform to identity matrix.
-	m_transform = glm::mat4x4(
-		1.0F, 0.0F, 0.0F, 0.0F,
-		0.0F, 1.0F, 0.0F, 0.0F,
-		0.0F, 0.0F, 1.0F, 0.0F,
-		0.0F, 0.0F, 0.0F, 1.0F);
 }
 
 renderable_type renderable::get_renderable_type() const
@@ -67,11 +64,7 @@ glm::mat4x4 renderable::get_net_transform() const
 {
 	const glm::mat4x4 parent_transform = is_parent_set()
 		? get_parent().lock()->get_net_transform()
-		: glm::mat4x4(
-			1.0F, 0.0F, 0.0F, 0.0F,
-			0.0F, 1.0F, 0.0F, 0.0F,
-			0.0F, 0.0F, 1.0F, 0.0F,
-			0.0F, 0.0F, 0.0F, 1.0F);
+		: glm::identity<glm::mat4x4>();
 	return parent_transform * m_transform;
 }
 
