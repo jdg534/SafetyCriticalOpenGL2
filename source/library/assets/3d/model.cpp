@@ -3,8 +3,9 @@
 #include "material.h"
 #include "mesh.h"
 
-#include <string_view>
+#include <exception>
 #include <filesystem>
+#include <string_view>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -14,14 +15,11 @@
 /////////
 
 model::model(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager)
-	: asset(name, path, asset_manager)
+    : asset(name, path, asset_manager)
+    , m_materials(0)
+    , m_meshs(0)
 {
 
-}
-
-model::~model()
-{
-	// nothing needed, only smart pointers are needed.
 }
 
 void model::initialise()
@@ -37,7 +35,10 @@ void model::initialise()
         aiProcess_MakeLeftHanded; // see if the texutre coods come out right
 
     const aiScene* scene = importer.ReadFile(get_path().data(), flags);
-    if (!scene || !scene->mRootNode) { throw std::exception(importer.GetErrorString()); }
+    if (!scene || !scene->mRootNode)
+    {
+        throw std::runtime_error(static_cast<const char*>(importer.GetErrorString()));
+    }
 
     initialise_materials(scene->mNumMaterials, *scene->mMaterials);
     initialise_meshes(scene);

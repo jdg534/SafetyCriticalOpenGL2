@@ -1,6 +1,7 @@
 #include "quad.h"
 
 #include <glm/gtc/type_ptr.inl>
+#include <array>
 
 using namespace gl;
 
@@ -8,7 +9,7 @@ using namespace gl;
 /////////
 
 quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
-	: renderable_2d({1.0f, 1.0f, 1.0f, 1.0f})
+	: renderable_2d({1.0F, 1.0F, 1.0F, 1.0F})
 	, m_texture(texture)
 {
 	using namespace gl;
@@ -19,27 +20,27 @@ quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
 	// 0-1-2
 	// 3-2-1
 
-	const glm::vec2 quarer_size = { size.x * 0.25f, size.y * 0.25f };
+	const glm::vec2 quarer_size = { size.x * 0.25F, size.y * 0.25F };
 
-	vertex_2d vertex_buffer_data[4] = // pos, tc
+	const std::array<vertex_2d,4> vertex_buffer_data = // pos, tc
 	{
-		{ glm::vec2 { 0.0f - quarer_size.x, 0.0f - quarer_size.y },glm::vec2{0.0f, 0.0}},
-		{ glm::vec2 { 0.0f + quarer_size.x, 0.0f - quarer_size.y },glm::vec2{1.0, 0.0}},
-		{ glm::vec2 { 0.0f - quarer_size.x, 0.0f + quarer_size.y },glm::vec2{0.0, 1.0}},
-		{ glm::vec2 { 0.0f + quarer_size.x, 0.0f + quarer_size.y },glm::vec2{1.0, 1.0}}
+		vertex_2d { glm::vec2 { 0.0F - quarer_size.x, 0.0F - quarer_size.y },glm::vec2{0.0F, 0.0F}},
+		vertex_2d { glm::vec2 { 0.0F + quarer_size.x, 0.0F - quarer_size.y },glm::vec2{1.0F, 0.0F}},
+		vertex_2d { glm::vec2 { 0.0F - quarer_size.x, 0.0F + quarer_size.y },glm::vec2{0.0F, 1.0F}},
+		vertex_2d { glm::vec2 { 0.0F + quarer_size.x, 0.0F + quarer_size.y },glm::vec2{1.0F, 1.0F}}
 	};
-	constexpr GLsizeiptr vertex_buffer_size = vertex2d_struct_size * 4;
+	constexpr GLsizeiptr vertex_buffer_size = vertex2d_struct_size * vertex_buffer_data.size();
 	
-	unsigned short index_buffer[6] =
+	const std::array<unsigned short,6> index_buffer =
 	{
 		0,1,2,
 		3,2,1
 	};
 
-	constexpr GLsizeiptr index_buffer_size = sizeof(unsigned short) * 6;
+	constexpr GLsizeiptr index_buffer_size = sizeof(unsigned short) * index_buffer.size();
 
-	GLuint buffer_ids[2];
-	glGenBuffers(2, buffer_ids);
+	std::array<GLuint, 2> buffer_ids {};
+	glGenBuffers(2, buffer_ids.data());
 	GLuint vertex_array_id;
 	glGenVertexArrays(1, &vertex_array_id);
 
@@ -47,10 +48,10 @@ quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
 	glBindVertexArray(vertex_array_id);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, buffer_ids[0]);
-	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_size, vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
 	set_vertex_buffer_id(buffer_ids[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_ids[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_size, index_buffer, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_buffer_size, index_buffer.data(), GL_STATIC_DRAW);
 	set_index_buffer_id(buffer_ids[1]);
 	set_start_in_index_buffer(0);
 	set_index_count(6);
@@ -67,11 +68,6 @@ quad::quad(std::weak_ptr<const texture> texture, const glm::vec2& size)
 	glBindVertexArray(0);
 }
 
-quad::~quad()
-{
-
-}
-
 void quad::initialise()
 {
 	// done in the constructor
@@ -81,8 +77,8 @@ void quad::shutdown()
 {
 	using namespace gl;
 	// delete the buffers 
-	GLuint buffer_ids[2]{ get_vertex_buffer_id(), get_index_buffer_id() };
-	glDeleteBuffers(2, buffer_ids);
+	std::array<GLuint, 2> buffer_ids{ get_vertex_buffer_id(), get_index_buffer_id() };
+	glDeleteBuffers(2, buffer_ids.data());
 	GLuint vertex_array_id = get_vertex_array_id();
 	glDeleteVertexArrays(1, &vertex_array_id);
 }
@@ -101,7 +97,7 @@ void quad::draw()
 
 	glUniformMatrix4fv(loc_transform, 1, GL_FALSE, glm::value_ptr(transform_matrix_to_pass));
 	glUniform4fv(loc_tint, 1, glm::value_ptr(get_tint()));
-	glUniform1f(loc_alpha_cut, 0.0f);
+	glUniform1f(loc_alpha_cut, 0.0F);
 	glUniform1i(loc_texture, 0); // 0 as in GL_TEXTURE0
 
 	// --- Texture binding ---
@@ -112,6 +108,6 @@ void quad::draw()
 	glBindBuffer(GL_ARRAY_BUFFER, get_vertex_buffer_id());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, get_index_buffer_id());
 	glBindVertexArray(get_vertex_array_id()); // drawable specfic
-	glDrawElements(GL_TRIANGLES, get_index_count(), GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, get_index_count(), GL_UNSIGNED_SHORT, nullptr);
 	glBindVertexArray(0);
 }

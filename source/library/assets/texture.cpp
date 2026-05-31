@@ -1,5 +1,7 @@
 #include "texture.h"
 
+#include <array>
+#include <iostream>
 #include <stdexcept>
 #include <png.h>
 
@@ -14,33 +16,33 @@ texture::texture(const std::string& name, const std::string& path, std::weak_ptr
 	, m_height(-1)
 {}
 
-texture::~texture()
-{
-	// delete stuff
-}
-
 void texture::initialise()
 {
 	const std::string_view file_path = get_path();
 	if (file_path.find(".png") == std::string::npos)
 	{
-		throw std::exception("load texture called with non png texture.");
+		throw std::runtime_error("load texture called with non png texture.");
 	}
 	FILE* file = fopen(file_path.data(), "rb"); // path needs to be relevent to the assets list.
 	if (!file)
 	{
-		throw std::exception("failed to load png file");
+		throw std::runtime_error("failed to load png file");
 	}
 	// Read header
-	png_byte header[8];
-	fread(header, 1, 8, file);
-	if (png_sig_cmp(header, 0, 8)) {
+	std::array<png_byte, 8> header {};
+
+	fread(header.data(), 1, 8, file);
+	if (png_sig_cmp(header.data(), 0, 8))
+	{
 		fclose(file);
 		throw std::runtime_error(std::string("File is not a PNG: ") + file_path.data());
+		std::cerr << std::string("The PNG header was: ") << header.data() << std::endl;
 	}
+
 	// Init png structures
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-	if (!png_ptr) {
+	if (!png_ptr)
+	{
 		fclose(file);
 		throw std::runtime_error("png_create_read_struct failed");
 	}

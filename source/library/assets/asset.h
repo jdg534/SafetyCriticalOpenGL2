@@ -14,8 +14,13 @@ class asset
 public:
 
 	asset() = delete;
-	asset(const std::string& name, const std::string& path,std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~asset();
+	asset(const asset& other) = delete;
+	asset(asset&& right_hand) = delete;
+	explicit asset(const std::string& name, const std::string& path,std::weak_ptr<const asset_manager> asset_manager);
+	virtual ~asset() = default;
+
+	asset& operator=(const asset&) = delete;
+	asset& operator=(asset&&) = delete;
 
 	virtual void initialise() = 0;
 	virtual void shutdown() = 0;

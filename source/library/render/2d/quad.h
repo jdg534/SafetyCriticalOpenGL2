@@ -13,7 +13,12 @@ public:
 
 	quad() = delete;
 	explicit quad(std::weak_ptr<const texture> texture, const glm::vec2& size);
-	virtual ~quad();
+	quad(const quad& other) = delete;
+	quad(quad&& to_move) = delete;
+	~quad() override = default;
+
+	quad& operator=(const quad&) = delete;
+	quad& operator=(quad&&) = delete;
 
 	void initialise() override;
 	void shutdown() override;

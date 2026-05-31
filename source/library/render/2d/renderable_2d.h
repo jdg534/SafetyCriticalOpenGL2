@@ -9,8 +9,14 @@ class renderable_2d : public renderable
 public:
 
 	renderable_2d() = delete;
+	renderable_2d(const renderable_2d& other) = delete;
+	renderable_2d(renderable_2d&& to_move) = delete;
 	explicit renderable_2d(const glm::vec4& tint);
-	virtual ~renderable_2d();
+	
+	~renderable_2d() override = default;
+
+	renderable_2d& operator=(const renderable_2d&) = delete;
+	renderable_2d& operator=(renderable_2d&&) = delete;
 
 	glm::vec4 get_tint() const;
 	void set_tint(const glm::vec4& tint);

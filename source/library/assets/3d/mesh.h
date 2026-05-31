@@ -19,8 +19,13 @@ class mesh : public asset
 public:
 
 	mesh() = delete;
+	mesh(const mesh& other) = delete;
+	mesh(mesh&& to_move) = delete;
 	mesh(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~mesh();
+	~mesh() override = default;
+
+	mesh& operator=(const mesh&) = delete;
+	mesh& operator=(mesh&&) = delete;
 
 	void initialise() override;
 	void initialise_assimp_struct(const aiMesh* initialise_with);

@@ -22,8 +22,6 @@ mesh::mesh(const std::string& name, const std::string& path, std::weak_ptr<const
 
 }
 
-mesh::~mesh() { }
-
 void mesh::initialise()
 {
     // this is a placeholder, initialise_assimp_struct() should be called instead.
@@ -82,9 +80,8 @@ void mesh::initialise_assimp_struct(const aiMesh* initialise_with)
     glGenVertexArrays(1, &m_vertex_array_id);
     glBindVertexArray(m_vertex_array_id);
 
-    // make the buffer, want to get to off set.
-    GLuint buffer_ids[2];
-    glGenBuffers(2, buffer_ids); // [0] vertex buffer, [1] index buffer
+    std::array<GLuint, 2> buffer_ids { 0, 0 };
+    glGenBuffers(2, buffer_ids.data()); // [0] vertex buffer, [1] index buffer
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer_ids[0]);
     glBufferData(GL_ARRAY_BUFFER, vertex_buffer_size, vertex_buffer_data.data(), GL_STATIC_DRAW);
@@ -115,8 +112,8 @@ void mesh::initialise_assimp_struct(const aiMesh* initialise_with)
 
 void mesh::shutdown()
 {
-    GLuint buffer_ids[2]{ m_vertex_buffer_id, m_index_buffer_id };
-    glDeleteBuffers(2, buffer_ids);
+    std::array<GLuint,2> buffer_ids{ m_vertex_buffer_id, m_index_buffer_id };
+    glDeleteBuffers(2, buffer_ids.data());
     glDeleteVertexArrays(1, &m_vertex_array_id);
     m_vertex_array_id = m_vertex_buffer_id = m_index_buffer_id = m_index_element_count = 0;
 }

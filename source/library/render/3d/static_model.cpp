@@ -18,11 +18,6 @@ static_model::static_model(std::weak_ptr<const model> model)
 	set_renderable_type(renderable_type::STATIC_GEOMETRY);
 }
 
-static_model::~static_model()
-{
-	renderable_3d::~renderable_3d();
-}
-
 void static_model::initialise()
 {
 	// place holder.
@@ -79,7 +74,7 @@ void static_model::draw()
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id);
 
 		// draw
-		glDrawElements(GL_TRIANGLES, index_element_count, GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, index_element_count, GL_UNSIGNED_SHORT, nullptr);
 	}
 	glBindVertexArray(0); // clear the vertex array.
 }

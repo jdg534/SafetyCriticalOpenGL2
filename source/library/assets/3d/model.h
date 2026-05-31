@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <assimp/material.h>
 #include <assimp/scene.h>
@@ -17,8 +18,13 @@ class model : public asset
 public:
 
 	model() = delete;
+	model(const model& other) = delete;
+	model(model&& to_move) = delete;
 	model(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~model();
+	~model() override = default;
+
+	model& operator=(const model&) = delete;
+	model& operator=(model&&) = delete;
 
 	void initialise() override;
 	void shutdown() override;

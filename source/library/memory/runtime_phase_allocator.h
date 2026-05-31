@@ -1,25 +1,27 @@
 #ifndef _RUNTIME_PHASE_ALLOCATOR_H_
 #define _RUNTIME_PHASE_ALLOCATOR_H_
 
-#include <mutex>
 #include <array>
+#include <cstddef>
+#include <mutex>
 
 // this class is LLM generated.
 
-class runtime_allocator
+
+class runtime_phase_allocator
 {
 public:
-	static constexpr size_t pool_size = 1024 * 1024; // 1MB.
+	static constexpr std::size_t pool_size = 1024 * 1024; // 1MB.
 
 	static void initialise();
 
-	static void* allocate(size_t size);
+	static void* allocate(std::size_t size);
 	static void deallocate(void* ptr) noexcept;
 
 private:
 	struct block_header
 	{
-		size_t size;
+		std::size_t size;
 		bool free;
 		block_header* next;
 	};

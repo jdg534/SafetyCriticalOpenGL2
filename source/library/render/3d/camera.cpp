@@ -2,16 +2,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-camera::camera()
-{
-
-}
-
-camera::~camera()
-{
-
-}
-
 glm::mat4x4 camera::get_view_matrix() const
 {
 	return glm::lookAtLH(get_position(), get_look_at_position(), get_up_vector());
@@ -19,7 +9,7 @@ glm::mat4x4 camera::get_view_matrix() const
 
 glm::mat4x4 camera::get_projection_matrix() const
 {
-	const float aspect_ratio = get_view_port_width() / std::max(get_view_port_height(), 1.0f);
+	const float aspect_ratio = get_view_port_width() / std::max(get_view_port_height(), 1.0F);
 	return glm::perspectiveLH_NO(get_field_of_view_angle_radians(), aspect_ratio, get_near_clipping_distance(), get_far_clipping_distance());
 }
 
@@ -44,7 +34,7 @@ void camera::set_far_clipping_distance(float distance) { m_far_clipping_distance
 
 frustum camera::get_frustrum() const
 {
-    frustum f;
+    frustum f {};
 
     const glm::mat4 vp = get_projection_matrix() * get_view_matrix();
 

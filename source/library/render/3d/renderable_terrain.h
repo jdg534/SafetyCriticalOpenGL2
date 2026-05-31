@@ -17,8 +17,13 @@ class renderable_terrain : public renderable_3d
 public:
 
 	renderable_terrain() = delete;
-	renderable_terrain(std::weak_ptr<const terrain> terrain);
-	virtual ~renderable_terrain();
+	renderable_terrain(const renderable_terrain& other) = delete;
+	renderable_terrain(renderable_terrain&& to_move) = delete;
+	explicit renderable_terrain(std::weak_ptr<const terrain> terrain);
+	~renderable_terrain() override = default;
+
+	renderable_terrain& operator=(const renderable_terrain&) = delete;
+	renderable_terrain& operator=(renderable_terrain&&) = delete;
 
 	void initialise() override;
 	void shutdown() override;
@@ -37,7 +42,7 @@ private:
 	std::weak_ptr<const terrain> m_terrain;
 	std::weak_ptr<const camera> m_active_camera;
 
-	float m_clip_area_meters_padding = 2000.0f;
+	float m_clip_area_meters_padding = 2000.0F;
 };
 
 #endif // _RENDERABLE_TERRAIN_H_

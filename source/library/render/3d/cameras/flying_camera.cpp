@@ -25,13 +25,8 @@ flying_camera::flying_camera(GLFWwindow* window)
 	m_increase_move_speed_key = GLFW_KEY_PAGE_UP;
 	m_decrease_move_speed_key = GLFW_KEY_PAGE_DOWN;
 
-	set_position({0.0f,10.0f, 0.0f});
-	set_look_at_position({0.0f, 0.0f, 10.0f});
-}
-
-flying_camera::~flying_camera()
-{
-
+	set_position({0.0F,10.0F, 0.0F});
+	set_look_at_position({0.0F, 0.0F, 10.0F});
 }
 
 void flying_camera::tick(float delta_time)
@@ -59,12 +54,12 @@ void flying_camera::handle_rotation(float delta_time)
 {
 	const float delta = m_rotation_speed * delta_time;
 
-	if (glfwGetKey(m_window, m_turn_left_key) == GLFW_PRESS) m_yaw -= delta;
-	if (glfwGetKey(m_window, m_turn_right_key) == GLFW_PRESS) m_yaw += delta;
-	if (glfwGetKey(m_window, m_turn_up_key) == GLFW_PRESS) m_pitch += delta;
-	if (glfwGetKey(m_window, m_turn_down_key) == GLFW_PRESS) m_pitch -= delta;
+	if (glfwGetKey(m_window, m_turn_left_key) == GLFW_PRESS) { m_yaw -= delta; }
+	if (glfwGetKey(m_window, m_turn_right_key) == GLFW_PRESS) { m_yaw += delta; }
+	if (glfwGetKey(m_window, m_turn_up_key) == GLFW_PRESS) { m_pitch += delta; }
+	if (glfwGetKey(m_window, m_turn_down_key) == GLFW_PRESS) { m_pitch -= delta; }
 
-	constexpr float pitch_limit = glm::radians(89.0f);
+	constexpr float pitch_limit = glm::radians(89.0F);
 	m_pitch = std::clamp(m_pitch, -pitch_limit, pitch_limit);
 
 	m_forward.x = cosf(m_pitch) * sinf(m_yaw);
@@ -82,17 +77,16 @@ void flying_camera::handle_movement(float delta_time)
 	const glm::vec3 right = glm::normalize(glm::cross(get_up_vector(), forward));
 	const glm::vec3 up = glm::normalize(get_up_vector());
 
-	glm::vec3 movement{ 0.0f };
+	glm::vec3 movement{ 0.0F };
 
-	if (glfwGetKey(m_window, m_move_forward_key) == GLFW_PRESS) movement += forward;
-	if (glfwGetKey(m_window, m_move_back_key) == GLFW_PRESS) movement -= forward;
-	if (glfwGetKey(m_window, m_move_right_key) == GLFW_PRESS) movement += right;
-	if (glfwGetKey(m_window, m_move_left_key) == GLFW_PRESS) movement -= right;
+	if (glfwGetKey(m_window, m_move_forward_key) == GLFW_PRESS) { movement += forward; }
+	if (glfwGetKey(m_window, m_move_back_key) == GLFW_PRESS) { movement -= forward; }
+	if (glfwGetKey(m_window, m_move_right_key) == GLFW_PRESS) { movement += right; }
+	if (glfwGetKey(m_window, m_move_left_key) == GLFW_PRESS) { movement -= right; }
+	if (glfwGetKey(m_window, m_move_up_key) == GLFW_PRESS) { movement += up; }
+	if (glfwGetKey(m_window, m_move_down_key) == GLFW_PRESS) { movement -= up; }
 
-	if (glfwGetKey(m_window, m_move_up_key) == GLFW_PRESS) movement += up;
-	if (glfwGetKey(m_window, m_move_down_key) == GLFW_PRESS) movement -= up;
-
-	m_is_moving = glm::length2(movement) > 0.0f;
+	m_is_moving = glm::length2(movement) != 0.0F;
 
 	if (m_is_moving)
 	{
@@ -102,6 +96,6 @@ void flying_camera::handle_movement(float delta_time)
 
 void flying_camera::handle_speed_change(float delta_time)
 {
-	if (glfwGetKey(m_window, m_increase_move_speed_key) == GLFW_PRESS) m_move_speed += delta_time * 10.0f;
-	if (glfwGetKey(m_window, m_decrease_move_speed_key) == GLFW_PRESS) m_move_speed -= delta_time * 10.0f;
+	if (glfwGetKey(m_window, m_increase_move_speed_key) == GLFW_PRESS) { m_move_speed += delta_time * 10.0F; }
+	if (glfwGetKey(m_window, m_decrease_move_speed_key) == GLFW_PRESS) { m_move_speed -= delta_time * 10.0F; }
 }

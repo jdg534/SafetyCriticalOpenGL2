@@ -12,7 +12,6 @@ asset::asset(const std::string& name, const std::string& path, std::weak_ptr<con
 	, m_asset_manager(asset_manager)
 {}
 
-asset::~asset() {}
 std::string_view asset::get_name() const { return m_name; }
 std::string_view asset::get_path() const { return m_path; }
 

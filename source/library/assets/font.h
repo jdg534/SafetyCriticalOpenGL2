@@ -39,8 +39,13 @@ class font : public asset
 public:
 
 	font() = delete;
+	font(const font& other) = delete;
+	font(font&& to_move) = delete;
 	font(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~font();
+	~font() override = default;
+
+	font& operator=(const font&) = delete;
+	font& operator=(font&&) = delete;
 
 	void initialise() override;
 	void shutdown() override;
@@ -62,7 +67,7 @@ private:
 	std::vector<glyph_info> m_glyph_info;
 	std::vector<kerning_info> m_kerning_info;
 	std::string m_atlas_asset_name;
-	float m_default_spacing = 10.0f; // pixels...
+	float m_default_spacing = 10.0F; // pixels...
 };
 
 #endif // _FONT_H_

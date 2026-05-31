@@ -19,11 +19,6 @@ renderable_terrain::renderable_terrain(std::weak_ptr<const terrain> terrain)
 	set_renderable_type(renderable_type::TERRAIN);
 }
 
-renderable_terrain::~renderable_terrain()
-{
-	renderable_3d::~renderable_3d();
-}
-
 void renderable_terrain::initialise()
 {
 	// place holder.
@@ -93,7 +88,7 @@ void renderable_terrain::draw()
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrain_cell.index_buffer_id);
 
 			// draw
-			glDrawElements(GL_TRIANGLES, terrain_cell.num_indices_to_draw, GL_UNSIGNED_SHORT, 0);
+			glDrawElements(GL_TRIANGLES, terrain_cell.num_indices_to_draw, GL_UNSIGNED_SHORT, nullptr);
 		}
 	}
 
@@ -139,7 +134,7 @@ volumes::axis_aligned_bounding_box renderable_terrain::get_aabb_of_camera_view_a
 	vec2 forward_2d = normalize(vec2(forward_3d.x, forward_3d.z)); // x is same, z is changed to y.
 
 
-	const float half_fov_radians = camera->get_field_of_view_angle_radians() * 0.5f;
+	const float half_fov_radians = camera->get_field_of_view_angle_radians() * 0.5F;
 	const float max_distance = camera->get_far_clipping_distance();
 
 	// Rotate forward vector left and right
@@ -159,7 +154,7 @@ volumes::axis_aligned_bounding_box renderable_terrain::get_aabb_of_camera_view_a
 	vec2 far_left = pos_2d + left_dir * max_distance;
 	vec2 far_right = pos_2d + right_dir * max_distance;
 
-	volumes::axis_aligned_bounding_box result;
+	volumes::axis_aligned_bounding_box result{};
 	result.min_x = std::min({ pos_2d.x, far_left.x, far_right.x, far_center.x });
 	result.max_x = std::max({ pos_2d.x, far_left.x, far_right.x, far_center.x });
 	result.min_y = std::min({ pos_2d.y, far_left.y, far_right.y, far_center.y });
@@ -177,7 +172,7 @@ volumes::axis_aligned_bounding_box renderable_terrain::get_aabb_of_camera_view_a
 
 volumes::axis_aligned_bounding_box renderable_terrain::tile_area_to_aabb(const renderable_tile_area& area)
 {
-	volumes::axis_aligned_bounding_box result;
+	volumes::axis_aligned_bounding_box result{};
 	result.min_x = area.west_edge_in_meters;
 	result.max_x = area.east_edge_in_meters;
 	result.min_y = area.south_edge_in_meters;

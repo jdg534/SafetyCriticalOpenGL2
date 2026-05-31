@@ -12,8 +12,14 @@ class flying_camera
 {
 public:
 
+	flying_camera() = delete;
+	flying_camera(const flying_camera& other) = delete;
+	flying_camera(flying_camera&& to_move) = delete;
 	explicit flying_camera(GLFWwindow* window);
-	virtual ~flying_camera();
+	~flying_camera() override = default;
+
+	flying_camera& operator=(const flying_camera&) = delete;
+	flying_camera& operator=(flying_camera&&) = delete;
 
 	void tick(float delta_time) override;
 
@@ -30,11 +36,11 @@ private:
 	bool m_is_moving = false;
 
 	// LLM generated code.
-	float m_move_speed = 5.0f;
-	float m_rotation_speed = 1.5f;
-	float m_yaw = 0.0f;
-	float m_pitch = 0.0f;
-	glm::vec3 m_forward{ 0.0f, 0.0f, 1.0f };
+	float m_move_speed = 5.0F;
+	float m_rotation_speed = 1.5F;
+	float m_yaw = 0.0F;
+	float m_pitch = 0.0F;
+	glm::vec3 m_forward { 0.0F, 0.0F, 1.0F };
 
 	// glfw API friendly types used.
 	int m_move_forward_key = 0;

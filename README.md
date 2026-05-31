@@ -22,6 +22,7 @@ C++17 is used as the langage standard.
 - Custom memory allocators.
     - Initialisation phase, no limit, but won't allow allocations once initialisation finishes.
 	- Running phase, fixed size, can allow allocations after Initialisation.
+- The code is HI C++ complient.
 
 ## TODOs
 
@@ -30,7 +31,6 @@ Some remaining improvements exist.
 ### Must Address areas
 
 - Bugfix: T-Junction detection and elimination. In the vertex & index buffer population code for the terrain.
-- (Once all of the above are addressed) Update the code to be HI C++ complient.
 
 ### Should Address areas (on revisiting the project)
 

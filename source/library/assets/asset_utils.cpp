@@ -1,5 +1,6 @@
 #include "asset_utils.h"
 
+#include <algorithm>
 #include <string_view>
 
 using namespace std;
@@ -18,7 +19,7 @@ std::string asset_utils::resolve_file_path(std::string to_resolve, const std::fi
 {
     // LLM generated code...
     // --- Detect path type ---
-    if (to_resolve.empty()) return {};
+    if (to_resolve.empty()) { return {}; }
 
     if (!to_resolve.empty() && to_resolve[0] == '*') { throw std::runtime_error("Unsupported wild card reference: " + to_resolve); }
     if (to_resolve.compare(0, 5, "data:") == 0) { throw std::runtime_error("Unsupported base64-encoded data URI: " + to_resolve.substr(0, 16) + "..."); }

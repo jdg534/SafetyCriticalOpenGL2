@@ -24,7 +24,6 @@ renderer::renderer(glm::vec2 framebuffer_size, const size_t render_list_cap, std
 	, m_render_list_cap(render_list_cap)
 	, m_camera(camera)
 {
-
 }
 
 void renderer::initialise()
@@ -70,7 +69,7 @@ void renderer::render_frame()
 			case renderable_type::STATIC_GEOMETRY: switch_to_3d_static_mesh_shader(); break;
 			case renderable_type::_2D_GEOMETRY: switch_to_2d_shader(); break;
 			default:
-				throw std::exception("attempted to render unsupported type"); break;
+				throw std::runtime_error("Attempted to render unsupported type"); break;
 		}
 		to_draw->draw();
 	}
@@ -88,13 +87,13 @@ void renderer::add_to_render_list(std::weak_ptr<renderable> to_add)
 			case renderable_type::STATIC_GEOMETRY: to_add_to_mod->set_shader_program(m_static_geometry_program_id); break;
 			case renderable_type::_2D_GEOMETRY: to_add_to_mod->set_shader_program(m_textured_quad_geometry_program_id); break;
 			default:
-				throw std::exception("attempted to add unsupported renderable type");
+				throw std::runtime_error("Attempted to add unsupported renderable type");
 				break;
 		}
 	}
 	else
 	{
-		throw std::exception("Attempting to add too much to the render list");
+		throw std::runtime_error("Attempting to add too much to the render list");
 	}
 }
 
@@ -170,9 +169,9 @@ void renderer::initialise_shaders()
 {
 #ifdef _DEBUG
 	printf_s("Compiling static mesh vertex shader\n");
-	m_static_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, STATIC_MESH_VERTEX_SHADER);
+	m_static_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, STATIC_MESH_VERTEX_SHADER.data());
 	printf_s("Compiling static mesh fragment shader\n");
-	m_static_geometry_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, STATIC_MESH_FRAGMENT_SHADER);
+	m_static_geometry_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, STATIC_MESH_FRAGMENT_SHADER.data());
 	printf_s("linking static mesh shader\n");
 	m_static_geometry_program_id = shaders_compilation::link_shaders_to_program(m_static_geometry_vertex_shader_object_id, m_static_geometry_fragment_shader_id,
 		{
@@ -182,9 +181,9 @@ void renderer::initialise_shaders()
 		});
 
 	printf_s("Compiling textured quad vertex shader\n");
-	m_textured_quad_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TEXTURED_QUAD_VERTEX_SHADER);
+	m_textured_quad_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TEXTURED_QUAD_VERTEX_SHADER.data());
 	printf_s("Compiling textured quad fragment shader\n");
-	m_textured_quad_geometry_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TEXTURED_QUAD_FRAGMENT_SHADER);
+	m_textured_quad_geometry_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TEXTURED_QUAD_FRAGMENT_SHADER.data());
 	printf_s("linking textured quad vertex shader\n");
 	m_textured_quad_geometry_program_id = shaders_compilation::link_shaders_to_program(m_textured_quad_geometry_vertex_shader_object_id, m_textured_quad_geometry_fragment_shander_id,
 		{
@@ -193,9 +192,9 @@ void renderer::initialise_shaders()
 		});
 
 	printf_s("Compiling terrain vertex shader\n");
-	m_terrain_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TERRAIN_VERTEX_SHADER);
+	m_terrain_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TERRAIN_VERTEX_SHADER.data());
 	printf_s("Compiling terrain fragment shader\n");
-	m_terrain_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TERRAIN_FRAGMENT_SHADER);
+	m_terrain_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TERRAIN_FRAGMENT_SHADER.data());
 	printf_s("linking terrain shader\n");
 	m_terrain_program_id = shaders_compilation::link_shaders_to_program(m_terrain_vertex_shader_object_id, m_terrain_fragment_shander_id,
 		{
@@ -205,8 +204,8 @@ void renderer::initialise_shaders()
 			"vs_in_terrain_uv"
 		});
 #else
-	m_static_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, STATIC_MESH_VERTEX_SHADER);
-	m_static_geometry_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, STATIC_MESH_FRAGMENT_SHADER);
+	m_static_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, STATIC_MESH_VERTEX_SHADER.data());
+	m_static_geometry_fragment_shader_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, STATIC_MESH_FRAGMENT_SHADER.data());
 	m_static_geometry_program_id = shaders_compilation::link_shaders_to_program(m_static_geometry_vertex_shader_object_id, m_static_geometry_fragment_shader_id,
 		{
 			"vs_in_position",
@@ -214,16 +213,16 @@ void renderer::initialise_shaders()
 			"vs_in_normal"
 		});
 
-	m_textured_quad_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TEXTURED_QUAD_VERTEX_SHADER);
-	m_textured_quad_geometry_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TEXTURED_QUAD_FRAGMENT_SHADER);
+	m_textured_quad_geometry_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TEXTURED_QUAD_VERTEX_SHADER.data());
+	m_textured_quad_geometry_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TEXTURED_QUAD_FRAGMENT_SHADER.data());
 	m_textured_quad_geometry_program_id = shaders_compilation::link_shaders_to_program(m_textured_quad_geometry_vertex_shader_object_id, m_textured_quad_geometry_fragment_shander_id,
 		{
 			"vs_in_position_in_pixels",
 			"vs_in_uv"
 		});
 
-	m_terrain_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TERRAIN_VERTEX_SHADER);
-	m_terrain_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TERRAIN_FRAGMENT_SHADER);
+	m_terrain_vertex_shader_object_id = shaders_compilation::compile_shader(gl::GL_VERTEX_SHADER, TERRAIN_VERTEX_SHADER.data());
+	m_terrain_fragment_shander_id = shaders_compilation::compile_shader(gl::GL_FRAGMENT_SHADER, TERRAIN_FRAGMENT_SHADER.data());
 	m_terrain_program_id = shaders_compilation::link_shaders_to_program(m_terrain_vertex_shader_object_id, m_terrain_fragment_shander_id,
 		{
 			"vs_in_position",
@@ -253,7 +252,7 @@ void renderer::shutdown_shaders()
 void renderer::switch_to_terrain_shader()
 {
 	using namespace gl;
-	if (m_current_shader_program == m_terrain_program_id) return;
+	if (m_current_shader_program == m_terrain_program_id) { return; }
 	glUseProgram(m_terrain_program_id);
 	m_current_shader_program = m_terrain_program_id;
 	glEnable(GL_DEPTH_TEST);
@@ -283,7 +282,7 @@ void renderer::switch_to_terrain_shader()
 void renderer::switch_to_3d_static_mesh_shader()
 {
 	using namespace gl;
-	if (m_current_shader_program == m_static_geometry_program_id) return;
+	if (m_current_shader_program == m_static_geometry_program_id) { return; }
 	glUseProgram(m_static_geometry_program_id);
 	m_current_shader_program = m_static_geometry_program_id;
 	glEnable(GL_DEPTH_TEST);
@@ -305,9 +304,6 @@ void renderer::switch_to_3d_static_mesh_shader()
 
 	// just hard code the light: direction & color, also the ambient light. Add in the control later if needed.
 	glUniform3fv(u_light_direction_loc, 1, glm::value_ptr(m_directional_light_direction));
-	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 1.0f, 1.0f, 1.0f }));
-	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(glm::vec3{ 0.1f, 0.1f, 0.1f }));
-
 	glUniform3fv(u_light_colour_loc, 1, glm::value_ptr(m_directional_light_colour));
 	glUniform3fv(u_ambient_light_colour_loc, 1, glm::value_ptr(m_ambient_light_colour));
 }
@@ -315,7 +311,7 @@ void renderer::switch_to_3d_static_mesh_shader()
 void renderer::switch_to_2d_shader()
 {
 	using namespace gl;
-	if (m_current_shader_program == m_textured_quad_geometry_program_id) return;
+	if (m_current_shader_program == m_textured_quad_geometry_program_id) { return; }
 	glUseProgram(m_textured_quad_geometry_program_id);
 	m_current_shader_program = m_textured_quad_geometry_program_id;
 

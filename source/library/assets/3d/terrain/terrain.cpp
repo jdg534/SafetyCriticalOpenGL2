@@ -3,6 +3,7 @@
 #include "../../asset_utils.h"
 
 #include "../../../render/vertex_types.h"
+#include "../../../utilities/constants.h"
 #include "../../asset_manager.h"
 #include "../../texture.h"
 
@@ -19,12 +20,19 @@
 #include <glm/gtx/compatibility.hpp>
 
 #include <cmath>
-#include <math.h>
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
+#pragma GCC diagnostic ignored "-Winvalid-offsetof" // done for the terrain_vertex usage. CI flagged it.
+
+// NOLINTBEGIN(hicpp-vararg)
+// The above comment stops clang-tidy from running the HI C++ variadic functions check for this file.
+// This is done because a lot of the tiff API functions can only be accessed as variadic functions.
+// These functions just read state and are safe.
 
 // public
 /////////
@@ -64,15 +72,11 @@ terrain::terrain(const std::string& name, const std::string& path, std::weak_ptr
 
 }
 
-terrain::~terrain()
-{
-}
-
 void terrain::initialise()
 {
 	using namespace std;
 	const string_view path = get_path();
-	if (!filesystem::exists(path)) throw exception("Couldn't find file at path");
+	if (!filesystem::exists(path)) { throw runtime_error("Couldn't find file at path"); }
 
 	ifstream assets_list_file(path.data());
 	stringstream buffer;
@@ -80,23 +84,22 @@ void terrain::initialise()
 	rapidjson::Document doc;
 	if (doc.Parse(buffer.str().c_str()).HasParseError())
 	{
-		throw std::exception("asset_manager::initialise failed to parse the json");
+		throw std::runtime_error("asset_manager::initialise failed to parse the json");
 	}
 	assets_list_file.close();
 	buffer.clear();
 
 	if (!doc.HasMember("height_map"))
 	{
-		throw std::exception("terrain doesn't have a height map!");
+		throw std::runtime_error("terrain doesn't have a height map!");
 	}
 	const string resolved_path = asset_utils::resolve_file_path(doc["height_map"].GetString(), asset_utils::get_directory_path(get_path())); // ensure an absolute path.
 
 	TIFF* tiff_file = XTIFFOpen(resolved_path.data(), "r");
-	if (!tiff_file) throw exception("Failed to load tiff file");
+	if (!tiff_file) { throw runtime_error("Failed to load tiff file"); }
 
 	GTIF* geo_tiff = GTIFNew(tiff_file);
-	if (!geo_tiff)
-		throw std::runtime_error("GTIFNew failed");
+	if (!geo_tiff) { throw std::runtime_error("GTIFNew failed"); }
 
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &m_geo_tiff_height_info.width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &m_geo_tiff_height_info.length);
@@ -162,7 +165,7 @@ const geo_tiff_height_info& terrain::get_height_info() const
 	return m_geo_tiff_height_info;
 }
 
-float terrain::get_tiff_height_at(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const
+float terrain::get_tiff_height_at(std::uint32_t x_tiff_pixels, std::uint32_t y_tiff_pixels) const
 {
 	x_tiff_pixels = std::min(x_tiff_pixels, m_geo_tiff_height_info.width -1);
 	y_tiff_pixels = std::min(y_tiff_pixels, m_geo_tiff_height_info.length -1);
@@ -216,23 +219,23 @@ void terrain::compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff)
 	unsigned short num_pixel_scale_count = 0;
 	double* pixel_scale = nullptr;
 	// we're going to assume the tiff is using angular values (degees) for the X & Y in tiff, not linear (meters)
-	if (TIFFGetField(tiff, TIFFTAG_GEOPIXELSCALE, &num_pixel_scale_count, &pixel_scale))
+	if (TIFFGetField(tiff, TIFFTAG_GEOPIXELSCALE, &num_pixel_scale_count, &pixel_scale) != 0)
 	{
 		assert(pixel_scale != nullptr);
 
 		const float pixel_longitude_scale_in_degrees = pixel_scale[0];
 		const float pixel_latitude_scale_in_degrees = pixel_scale[1];
 
-		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0f;
+		constexpr float METERS_PER_DEGREE_LATITUDE = 111320.0F;
 		const float centre_latitude_degrees = calculate_centre_latitude_from_tiepoints(tiff, m_geo_tiff_height_info.length, pixel_latitude_scale_in_degrees);
 
-		const float centre_latitude_radians = centre_latitude_degrees * M_PI / 180.0f;
+		const float centre_latitude_radians = centre_latitude_degrees * constants::PI / 180.0F;
 		const float meters_per_degree_longitude = METERS_PER_DEGREE_LATITUDE * std::cos(centre_latitude_radians);
 
 		m_geo_tiff_height_info.meters_per_pixel_x = pixel_longitude_scale_in_degrees * meters_per_degree_longitude;
 		m_geo_tiff_height_info.meters_per_pixel_z = pixel_latitude_scale_in_degrees * METERS_PER_DEGREE_LATITUDE;
 		m_geo_tiff_height_info.pixel_vertical_units_scale = num_pixel_scale_count > 2 ? pixel_scale[2] : m_geo_tiff_height_info.pixel_vertical_units_scale;
-		m_geo_tiff_height_info.pixel_vertical_units_scale = m_geo_tiff_height_info.pixel_vertical_units_scale == 0.0f ? 1.0f : m_geo_tiff_height_info.pixel_vertical_units_scale;
+		m_geo_tiff_height_info.pixel_vertical_units_scale = m_geo_tiff_height_info.pixel_vertical_units_scale == 0.0F ? 1.0F : m_geo_tiff_height_info.pixel_vertical_units_scale;
 	}
 
 	// --- Vertical units ---
@@ -247,7 +250,7 @@ void terrain::compute_tiff_pixel_dimensions(GTIF* gtif, TIFF* tiff)
 		else if (vertical_units == 9002)
 		{
 			m_geo_tiff_height_info.pixel_units = tiff_pixel_units::FEET;
-			constexpr float feet_to_meters = 1.000000032f / 3.28084f;
+			constexpr float feet_to_meters = 1.000000032F / 3.28084F;
 			m_geo_tiff_height_info.pixel_vertical_units_scale *= feet_to_meters; // covert feet to meters.
 		}
 		else
@@ -296,19 +299,19 @@ void terrain::read_heights(TIFF* tiff_file)
 
 void terrain::read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_file)
 {
-	uint32 width = 0, height = 0;
+	std::uint32_t width = 0, height = 0;
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
 
 	const tsize_t scanline_size = TIFFScanlineSize(tiff_file);
 	std::vector<uint8_t> scanline(scanline_size);
 
-	constexpr float INV_255 = 1.0f / 255.0f;
-	for (uint32 row = 0; row < height; ++row)
+	constexpr float INV_255 = 1.0F / 255.0F;
+	for (std::uint32_t row = 0; row < height; ++row)
 	{
-		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) { throw std::runtime_error("TIFFReadScanline failed"); }
 		float* dst = output_buffer.data() + row * width;
-		for (uint32 col = 0; col < width; ++col)
+		for (std::uint32_t col = 0; col < width; ++col)
 		{
 			dst[col] = static_cast<float>(scanline[col]) * INV_255;
 		}
@@ -317,37 +320,37 @@ void terrain::read_heights_uint8(std::vector<float>& output_buffer, TIFF* tiff_f
 
 void terrain::read_heights_sint8(std::vector<float>& output_buffer, TIFF* tiff_file)
 {
-	uint32 width = 0, height = 0;
+	std::uint32_t width = 0, height = 0;
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
 
 	const tsize_t scanline_size = TIFFScanlineSize(tiff_file);
 	std::vector<int8_t> scanline(scanline_size);
 
-	constexpr float INV_128 = 1.0f / 128.0f;
-	for (uint32 row = 0; row < height; ++row)
+	constexpr float INV_128 = 1.0F / 128.0F;
+	for (std::uint32_t row = 0; row < height; ++row)
 	{
-		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) { throw std::runtime_error("TIFFReadScanline failed"); }
 		float* dst = output_buffer.data() + row * width;
-		for (uint32 col = 0; col < width; ++col)
+		for (std::uint32_t col = 0; col < width; ++col)
 		{
 			dst[col] = static_cast<float>(scanline[col]) * INV_128;
-			dst[col] = (dst[col] + 1.0f) / 2.0f;
+			dst[col] = (dst[col] + 1.0F) / 2.0F;
 		}
 	}
 }
 
 void terrain::read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_file)
 {
-	uint32 width = 0, height = 0;
+	std::uint32_t width = 0, height = 0;
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &height);
 	const tsize_t scanline_size_bytes = TIFFScanlineSize(tiff_file);
 	std::vector<float> scanline(scanline_size_bytes / sizeof(float));
 
-	for (uint32 row = 0; row < height; ++row)
+	for (std::uint32_t row = 0; row < height; ++row)
 	{
-		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) throw std::runtime_error("TIFFReadScanline failed");
+		if (TIFFReadScanline(tiff_file, scanline.data(), row) != 1) { throw std::runtime_error("TIFFReadScanline failed"); }
 
 		float* dst = output_buffer.data() + row * width;
 		std::memcpy(dst, scanline.data(), width * sizeof(float));
@@ -356,8 +359,8 @@ void terrain::read_heights_f32(std::vector<float>& output_buffer, TIFF* tiff_fil
 
 void terrain::read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* tiff_file)
 {
-	uint32 image_width = 0, image_height = 0;
-	uint32 tile_width = 0, tile_height = 0;
+	std::uint32_t image_width = 0, image_height = 0;
+	std::uint32_t tile_width = 0, tile_height = 0;
 
 	TIFFGetField(tiff_file, TIFFTAG_IMAGEWIDTH, &image_width);
 	TIFFGetField(tiff_file, TIFFTAG_IMAGELENGTH, &image_height);
@@ -367,14 +370,14 @@ void terrain::read_heights_f32_tiled(std::vector<float>& output_buffer, TIFF* ti
 	const tsize_t tile_size_bytes = TIFFTileSize(tiff_file);
 	std::vector<float> tile(tile_size_bytes / sizeof(float));
 
-	for (uint32 tile_y = 0; tile_y < image_height; tile_y += tile_height)
+	for (std::uint32_t tile_y = 0; tile_y < image_height; tile_y += tile_height)
 	{
-		for (uint32 tile_x = 0; tile_x < image_width; tile_x += tile_width)
+		for (std::uint32_t tile_x = 0; tile_x < image_width; tile_x += tile_width)
 		{
-			if (TIFFReadTile(tiff_file, tile.data(), tile_x, tile_y, 0, 0) == -1) throw std::runtime_error("TIFFReadTile failed");
-			const uint32 max_y = std::min(tile_height, image_height - tile_y);
-			const uint32 max_x = std::min(tile_width, image_width - tile_x);
-			for (uint32 y = 0; y < max_y; ++y)
+			if (TIFFReadTile(tiff_file, tile.data(), tile_x, tile_y, 0, 0) == -1) { throw std::runtime_error("TIFFReadTile failed"); }
+			const std::uint32_t max_y = std::min(tile_height, image_height - tile_y);
+			const std::uint32_t max_x = std::min(tile_width, image_width - tile_x);
+			for (std::uint32_t y = 0; y < max_y; ++y)
 			{
 				float* dst = output_buffer.data()
 					+ (tile_y + y) * image_width
@@ -404,13 +407,10 @@ void terrain::override_nan_values(std::vector<float>& output_buffer)
 	}
 }
 
-void terrain::flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 length)
+void terrain::flip_rows(std::vector<float>& output_buffer, std::uint32_t width, std::uint32_t length)
 {
-	if (width == 0 || length == 0)
-		return;
-
-	if (output_buffer.size() != static_cast<size_t>(width) * length)
-		throw std::runtime_error("Invalid heightmap buffer size");
+	if (width == 0 || length == 0) { return; }
+	if (output_buffer.size() != static_cast<size_t>(width) * length) { throw std::runtime_error("Invalid heightmap buffer size"); }
 
 	const size_t row_elements = width;
 	const size_t row_bytes = row_elements * sizeof(float);
@@ -431,16 +431,13 @@ void terrain::flip_rows(std::vector<float>& output_buffer, uint32 width, uint32 
 	}
 }
 
-float terrain::calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 image_height, float pixel_latitude_scale_degrees)
+float terrain::calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, std::uint32_t image_height, float pixel_latitude_scale_degrees)
 {
 	double* tiepoints = nullptr;
-	uint16 tiepoint_count = 0;
+	std::uint16_t tiepoint_count = 0;
 
-	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &tiepoint_count, &tiepoints))
-		throw std::runtime_error("GeoTIFF has no tiepoints");
-
-	if (tiepoint_count < 6)
-		throw std::runtime_error("Invalid GeoTIFF tiepoint data");
+	if (!TIFFGetField(tiff_file, TIFFTAG_GEOTIEPOINTS, &tiepoint_count, &tiepoints)) { throw std::runtime_error("GeoTIFF has no tiepoints"); }
+	if (tiepoint_count < 6) { throw std::runtime_error("Invalid GeoTIFF tiepoint data"); }
 
 	// First tiepoint (usually top-left)
 	const double tie_latitude = tiepoints[4]; // Y
@@ -448,7 +445,7 @@ float terrain::calculate_centre_latitude_from_tiepoints(TIFF* tiff_file, uint32 
 	return tie_latitude - (image_height * 0.5 * pixel_latitude_scale_degrees);
 }
 
-size_t terrain::get_height_index(uint32 x_tiff_pixels, uint32 y_tiff_pixels) const
+size_t terrain::get_height_index(std::uint32_t x_tiff_pixels, std::uint32_t y_tiff_pixels) const
 {
 	size_t results = (m_geo_tiff_height_info.width * y_tiff_pixels) + x_tiff_pixels;
 	assert(results >= y_tiff_pixels && results>= x_tiff_pixels);
@@ -470,18 +467,18 @@ void terrain::generate_ROAM_tree()
 
 void terrain::generate_ROAM_tree_worker(ROAM_leaf_node* current_leaf) const
 {
-	const uint32 width = current_leaf->east_tiff_px - current_leaf->west_tiff_px;
-	const uint32 length = current_leaf->south_tiff_px - current_leaf->north_tiff_px;
+	const std::uint32_t width = current_leaf->east_tiff_px - current_leaf->west_tiff_px;
+	const std::uint32_t length = current_leaf->south_tiff_px - current_leaf->north_tiff_px;
 	const bool can_subdivide = width > 3 && length > 3;
 	const float vertical_delta = calculate_vertical_delta_for_leaf(current_leaf);
 	if (can_subdivide && vertical_delta > m_ROAM_tree.vertical_delta_to_stop_recursion_at_in_meters)
 	{
-		const float flt_north_tiff_px = static_cast<float>(current_leaf->north_tiff_px);
-		const float flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);
-		const float flt_west_tiff_px = static_cast<float>(current_leaf->west_tiff_px);
-		const float flt_east_tiff_px = static_cast<float>(current_leaf->east_tiff_px);
-		const uint32 west_to_east_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5f)));
-		const uint32 north_to_south_mid_point = static_cast<uint32>(std::floorf(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5f)));
+		const auto flt_north_tiff_px = static_cast<float>(current_leaf->north_tiff_px);
+		const auto flt_south_tiff_px = static_cast<float>(current_leaf->south_tiff_px);
+		const auto flt_west_tiff_px = static_cast<float>(current_leaf->west_tiff_px);
+		const auto flt_east_tiff_px = static_cast<float>(current_leaf->east_tiff_px);
+		const auto west_to_east_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_west_tiff_px, flt_east_tiff_px,  0.5F)));
+		const auto north_to_south_mid_point = static_cast<std::uint32_t>(std::floor(glm::lerp(flt_north_tiff_px, flt_south_tiff_px, 0.5F)));
 		
 		current_leaf->north_west_child = new ROAM_leaf_node;
 		current_leaf->north_west_child->north_tiff_px = current_leaf->north_tiff_px;
@@ -518,9 +515,9 @@ float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const lea
 {
 	float min_value = std::numeric_limits<float>::max();
 	float max_value = std::numeric_limits<float>::lowest();
-	for (uint32 i = leaf->north_tiff_px; i <= leaf->south_tiff_px; ++i)
+	for (std::uint32_t i = leaf->north_tiff_px; i <= leaf->south_tiff_px; ++i)
 	{
-		for (uint32 j = leaf->west_tiff_px; j <= leaf->east_tiff_px; ++j)
+		for (std::uint32_t j = leaf->west_tiff_px; j <= leaf->east_tiff_px; ++j)
 		{
 			const float px_height = get_tiff_height_at(j, i);
 			min_value = std::min(px_height, min_value);
@@ -531,7 +528,7 @@ float terrain::calculate_vertical_delta_for_leaf(const ROAM_leaf_node* const lea
 }
 
 void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
-	std::vector<std::vector<vertex_types::terrain_vertex>>& output_vertex_buffers, std::vector<std::vector<uint16>>& output_index_buffers)
+	std::vector<std::vector<vertex_types::terrain_vertex>>& output_vertex_buffers, std::vector<std::vector<std::uint16_t>>& output_index_buffers)
 {
 	if (does_leaf_have_children(leaf))
 	{
@@ -544,8 +541,8 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 	{
 		if (output_vertex_buffers.size() == 0 || output_index_buffers.size() == 0)
 		{
-			output_vertex_buffers.push_back({});
-			output_index_buffers.push_back({});
+			output_vertex_buffers.emplace_back();
+			output_index_buffers.emplace_back();
 			const size_t end_buffer_index = output_vertex_buffers.size() - 1;
 			output_vertex_buffers[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
 			output_index_buffers[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
@@ -554,15 +551,15 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 		const size_t current_vb_size = output_vertex_buffers[output_vertex_buffers.size() - 1].size();
 		if (current_vb_size + 4 >= MAX_VERTEX_BUFFER_SIZE)
 		{
-			output_vertex_buffers.push_back({});
-			output_index_buffers.push_back({});
+			output_vertex_buffers.emplace_back();
+			output_index_buffers.emplace_back();
 			const size_t end_buffer_index = output_vertex_buffers.size() - 1;
 			output_vertex_buffers[end_buffer_index].reserve(MAX_VERTEX_BUFFER_SIZE);
 			output_index_buffers[end_buffer_index].reserve((MAX_VERTEX_BUFFER_SIZE - 4) * 6);
 		}
 
 		std::vector<vertex_types::terrain_vertex>& vertex_buffer = output_vertex_buffers[output_vertex_buffers.size() - 1];
-		std::vector<uint16>& index_buffer = output_index_buffers[output_index_buffers.size() - 1];
+		std::vector<std::uint16_t>& index_buffer = output_index_buffers[output_index_buffers.size() - 1];
 
 		const size_t pre_insert_vertex_buffer_size = vertex_buffer.size();
 
@@ -572,10 +569,10 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 		vertex_buffer.push_back(get_vertex_for_tiff_pixel(leaf->east_tiff_px, leaf->south_tiff_px));
 
 
-		const uint32 north_west_vert_index = pre_insert_vertex_buffer_size + 0;
-		const uint32 north_east_vert_index = pre_insert_vertex_buffer_size + 1;
-		const uint32 south_west_vert_index = pre_insert_vertex_buffer_size + 2;
-		const uint32 south_east_vert_index = pre_insert_vertex_buffer_size + 3;
+		const std::uint32_t north_west_vert_index = pre_insert_vertex_buffer_size + 0;
+		const std::uint32_t north_east_vert_index = pre_insert_vertex_buffer_size + 1;
+		const std::uint32_t south_west_vert_index = pre_insert_vertex_buffer_size + 2;
+		const std::uint32_t south_east_vert_index = pre_insert_vertex_buffer_size + 3;
 
 		assert(north_west_vert_index >= pre_insert_vertex_buffer_size);
 		assert(north_east_vert_index >= pre_insert_vertex_buffer_size);
@@ -592,36 +589,65 @@ void terrain::populate_buffers(const ROAM_leaf_node* const leaf,
 	}
 }
 
-void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<uint16>& index_buffer_data)
+void terrain::sanity_check_buffer_data(const std::vector<vertex_types::terrain_vertex>& vertex_buffer_data, const std::vector<std::uint16_t>& index_buffer_data)
 {
 	using namespace vertex_types;
 	const size_t vb_size = vertex_buffer_data.size();
-	assert(vb_size > 0);
-	assert(vb_size < MAX_VERTEX_BUFFER_SIZE);
+	if (vb_size == 0)
+	{
+		throw std::runtime_error("Empty vertex buffer");
+	}
+	else if (vb_size > MAX_VERTEX_BUFFER_SIZE)
+	{ 
+		throw std::runtime_error("Vertex buffer too big.");
+	}
 	for (const terrain_vertex& vertex : vertex_buffer_data)
 	{
-		constexpr glm::vec3 origin{ 0.0f,0.0f,0.0f };
-		assert(vertex.position != origin);
-		assert(!glm::any(glm::isnan(vertex.position)));
-		assert(!glm::any(glm::isnan(vertex.texture_coordinates)));
-		assert(!glm::any(glm::isnan(vertex.normal)));
-		assert(!glm::any(glm::isnan(vertex.terrain_texture_coordinates)));
+		constexpr glm::vec3 origin{ 0.0F,0.0F,0.0F };
+		if (vertex.position == origin)
+		{
+			throw std::runtime_error("Invalid vertex position.");
+		}
+		else if (glm::any(glm::isnan(vertex.position)))
+		{
+			throw std::runtime_error("Invalid vertex position contains a NaN value.");
+		}
+		else if (glm::any(glm::isnan(vertex.texture_coordinates)))
+		{
+			throw std::runtime_error("Invalid vertex texture coordinates contains a NaN value.");
+		}
+		else if (glm::any(glm::isnan(vertex.normal)))
+		{
+			throw std::runtime_error("Invalid vertex normal contains a NaN value.");
+		}
+		else if (glm::any(glm::isnan(vertex.terrain_texture_coordinates)))
+		{
+			throw std::runtime_error("Invalid vertex terrain texture coordinates contains a NaN value.");
+		}
 	}
-	assert(index_buffer_data.size() % 6 == 0);
-	for (const uint16 index : index_buffer_data)
+	if (index_buffer_data.size() % 6 != 0)
 	{
-		assert(!std::isnan(index));
-		assert(index >= 0);
-		assert(index < vb_size);
+		throw std::runtime_error("Index buffer has the wrong size.");
+	}
+	for (const std::uint16_t index : index_buffer_data)
+	{
+		if (std::isnan(index))
+		{
+			throw std::runtime_error("Index buffer contains NaN value.");
+		}
+		else if (index >= vb_size)
+		{
+			throw std::runtime_error("Index buffer contains out of range value.");
+		}
 	}
 }
 
 bool terrain::does_leaf_have_children(const ROAM_leaf_node* const leaf)
 {
-	if (leaf->north_west_child) return true;
-	if (leaf->north_east_child) return true;
-	if (leaf->south_west_child) return true;
-	if (leaf->south_east_child) return true;
+	if (leaf->north_west_child) { return true; }
+	if (leaf->north_east_child) { return true; }
+	if (leaf->south_west_child) { return true; }
+	if (leaf->south_east_child) { return true; }
 	return false;
 }
 
@@ -632,7 +658,7 @@ void terrain::generate_open_gl_buffers()
 	using namespace gl;
 
 	std::vector<std::vector<vertex_types::terrain_vertex>> vertex_buffers;
-	std::vector<std::vector<uint16>> index_buffers;
+	std::vector<std::vector<std::uint16_t>> index_buffers;
 	populate_buffers(m_ROAM_tree.root, vertex_buffers, index_buffers);
 
 	const size_t num_buffers_needed_for_ROAM = vertex_buffers.size();
@@ -669,7 +695,7 @@ void terrain::generate_open_gl_buffers()
 		// 2. Bind and upload EBO (captured by VAO)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, area.index_buffer_id);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-			index_buffers[i].size() * sizeof(uint16),
+			index_buffers[i].size() * sizeof(std::uint16_t),
 			index_buffers[i].data(),
 			GL_STATIC_DRAW);
 
@@ -699,30 +725,30 @@ void terrain::generate_open_gl_buffers()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pixels, uint64 y_tiff_pixels) const
+vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(std::uint64_t x_tiff_pixels, std::uint64_t y_tiff_pixels) const
 {
-	vertex_types::terrain_vertex result;
+	vertex_types::terrain_vertex result {};
 	std::memset(&result, 0, vertex_types::terrain_vertex_struct_size);
 
-	const float tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
-	const float tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
+	const auto tiff_width_as_float = static_cast<float>(m_geo_tiff_height_info.width); // of the entire file in px
+	const auto tiff_length_as_float = static_cast<float>(m_geo_tiff_height_info.length); // of the entire file in px
 
 	// the top north west corner
-	const float far_west = -(tiff_width_as_float * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_x;
-	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5f) * m_geo_tiff_height_info.meters_per_pixel_z;
+	const float far_west = -(tiff_width_as_float * 0.5F) * m_geo_tiff_height_info.meters_per_pixel_x;
+	const float far_north = -(static_cast<float>(m_geo_tiff_height_info.length) * 0.5F) * m_geo_tiff_height_info.meters_per_pixel_z;
 
-	const float x_tiff_pixels_as_float = static_cast<float>(x_tiff_pixels);
-	const float y_tiff_pixels_as_float = static_cast<float>(y_tiff_pixels);
+	const auto x_tiff_pixels_as_float = static_cast<float>(x_tiff_pixels);
+	const auto y_tiff_pixels_as_float = static_cast<float>(y_tiff_pixels);
 
 	const bool got_left_px = x_tiff_pixels > 0;
 	const bool got_above_px = y_tiff_pixels > 0;
 	const bool got_right_px = (x_tiff_pixels + 1) < m_geo_tiff_height_info.width;
 	const bool got_below_px = (y_tiff_pixels + 1) < m_geo_tiff_height_info.length;
 
-	const uint64 left_px = got_left_px ? x_tiff_pixels - 1 : x_tiff_pixels;
-	const uint64 above_px = got_above_px ? y_tiff_pixels - 1 : y_tiff_pixels;
-	const uint64 right_px = got_right_px ? x_tiff_pixels + 1 : x_tiff_pixels;
-	const uint64 below_px = got_below_px ? y_tiff_pixels + 1 : y_tiff_pixels;
+	const std::uint64_t left_px = got_left_px ? x_tiff_pixels - 1 : x_tiff_pixels;
+	const std::uint64_t above_px = got_above_px ? y_tiff_pixels - 1 : y_tiff_pixels;
+	const std::uint64_t right_px = got_right_px ? x_tiff_pixels + 1 : x_tiff_pixels;
+	const std::uint64_t below_px = got_below_px ? y_tiff_pixels + 1 : y_tiff_pixels;
 
 	const float current_px_height = get_tiff_height_at(x_tiff_pixels, y_tiff_pixels);
 	const float above_px_height = get_tiff_height_at(x_tiff_pixels, above_px);
@@ -734,20 +760,20 @@ vertex_types::terrain_vertex terrain::get_vertex_for_tiff_pixel(uint64 x_tiff_pi
 	result.position.y = current_px_height;
 	result.position.z = far_north + (y_tiff_pixels * m_geo_tiff_height_info.meters_per_pixel_z);
 	result.texture_coordinates.x = x_tiff_pixels_as_float / tiff_width_as_float;
-	result.texture_coordinates.y = 1.0f - (y_tiff_pixels_as_float / tiff_length_as_float);
+	result.texture_coordinates.y = 1.0F - (y_tiff_pixels_as_float / tiff_length_as_float);
 
 	result.terrain_texture_coordinates.x = x_tiff_pixels_as_float;
 	result.terrain_texture_coordinates.y = tiff_length_as_float - y_tiff_pixels_as_float;
 
-	const glm::vec3 dx = glm::vec3(2.0f * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0f);
-	const glm::vec3 dy = glm::vec3(0.0f, above_px_height - below_px_height, 2.0f * m_geo_tiff_height_info.meters_per_pixel_z);
+	const glm::vec3 dx = glm::vec3(2.0F * m_geo_tiff_height_info.meters_per_pixel_x, right_px_height - left_px_height, 0.0F);
+	const glm::vec3 dy = glm::vec3(0.0F, above_px_height - below_px_height, 2.0F * m_geo_tiff_height_info.meters_per_pixel_z);
 	result.normal = glm::normalize(glm::cross(dy, dx));
 	if (glm::any(glm::isnan(result.normal)) || std::isinf(current_px_height))
 	{
-		result.normal = glm::vec3(0, 1, 0);
+		result.normal = glm::vec3(0.0F, 1.0F, 0.0F);
 	}
 		
-	if (result.position == glm::vec3(0, 0, 0))
+	if (result.position == glm::vec3(0.0F, 0.0F, 0.0F))
 	{
 		assert(false && "Wrong terrain vertex");
 	}
@@ -795,3 +821,5 @@ gl::GLuint terrain::get_texture_id(std::string_view texture_asset_name) const
 	std::weak_ptr<const asset> result = get_asset_manager().lock()->get_asset_on_name(texture_asset_name);
 	return std::dynamic_pointer_cast<const texture>(result.lock())->get_id();
 }
+
+// NOLINTEND(hicpp-vararg)

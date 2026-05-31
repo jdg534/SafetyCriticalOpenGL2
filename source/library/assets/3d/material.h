@@ -30,8 +30,13 @@ class material : public asset
 public:
 
     material() = delete;
+    material(const material& other) = delete;
+    material(material&& to_move) = delete;
     material(const std::string& name, const std::string& path, std::weak_ptr<const asset_manager> asset_manager);
-	virtual ~material();
+	~material() override = default;
+
+    material& operator=(const material&) = delete;
+    material& operator=(material&&) = delete;
 
 	void initialise() override;
     void initialise_assimp_struct(const aiMaterial* assimp_material);
@@ -47,10 +52,10 @@ public:
 
 private:
 
-    glm::vec4 m_diffuse_colour { 1.0f, 1.0f, 1.0f, 1.0f };
-    glm::vec4 m_ambient_colour  { 0.0f, 0.0f, 0.0f, 1.0f };
-    glm::vec4 m_specular_colour { 0.0f, 0.0f, 0.0f, 1.0f };
-    float m_shininess = 0.0f;
+    glm::vec4 m_diffuse_colour  { 1.0F, 1.0F, 1.0F, 1.0F };
+    glm::vec4 m_ambient_colour  { 0.0F, 0.0F, 0.0F, 1.0F };
+    glm::vec4 m_specular_colour { 0.0F, 0.0F, 0.0F, 1.0F };
+    float m_shininess = 0.0F;
 
     std::unordered_map<texture_purpose, std::weak_ptr<const texture>> m_textures;
 };
