@@ -6,6 +6,10 @@
 #include <iostream>
 #include <vector>
 
+// NOLINTBEGIN(hicpp-avoid-c-arrays)
+// NOLINTBEGIN(hicpp-no-array-decay)
+// disabling HI C++ checks for C arrays. They're only used for error logging code.
+
 gl::GLuint shaders_compilation::compile_shader(gl::GLenum type, const char* src)
 {
 	gl::GLuint s = gl::glCreateShader(type);
@@ -46,3 +50,6 @@ gl::GLuint shaders_compilation::link_shaders_to_program(gl::GLuint vertex_shader
 	}
 	return shader_program;
 }
+
+// NOLINTBEGIN(hicpp-no-array-decay)
+// NOLINTEND(hicpp-avoid-c-arrays)
